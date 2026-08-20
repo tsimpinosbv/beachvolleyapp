@@ -133,41 +133,6 @@
     box-shadow: 0 16px 36px rgba(13,58,92,0.16);
     position:relative;
   }
-  .card.is-soon{ opacity:.72; }
-  .badge-soon{
-    position:absolute;
-    top:14px;
-    right:14px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:9.5px;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-    font-weight:600;
-    color:#fff;
-    background: var(--accent-bg);
-    padding:4px 9px;
-    border-radius:999px;
-  }
-  .toast{
-    position:fixed;
-    left:50%;
-    bottom:28px;
-    transform:translate(-50%, 12px);
-    background: var(--blue-900);
-    color:#fff;
-    font-size:13px;
-    line-height:1.5;
-    padding:12px 18px;
-    border-radius:12px;
-    box-shadow: 0 16px 36px rgba(13,58,92,0.28);
-    max-width:min(360px, calc(100vw - 40px));
-    text-align:center;
-    opacity:0;
-    pointer-events:none;
-    transition:.22s ease;
-    z-index:10;
-  }
-  .toast.show{ opacity:1; transform:translate(-50%, 0); }
   .card:hover{
     transform:translateY(-3px);
     box-shadow: 0 20px 42px rgba(13,58,92,0.22);
@@ -315,8 +280,7 @@
     </span>
   </a>
 
-  <a class="card is-soon" href="files/" target="_self" rel="noopener" onclick="return handleSoonCard(event)">
-    <span class="badge-soon">Σύντομα</span>
+  <a class="card" href="files/" target="_self" rel="noopener">
     <div class="icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
     </div>
@@ -342,18 +306,6 @@
 <footer>
   Beach Volley — Γιάννης Τσιμπινός. Κάθε εργαλείο ανοίγει σε νέα καρτέλα και φιλοξενείται στο δικό του repository στο GitHub Pages.
 </footer>
-
-<div class="toast" id="soonToast">Αυτή η ενότητα δεν είναι ακόμα διαθέσιμη — έρχεται σύντομα.</div>
-<script>
-function handleSoonCard(evt){
-  evt.preventDefault();
-  var t = document.getElementById('soonToast');
-  t.classList.add('show');
-  clearTimeout(window.__soonTimer);
-  window.__soonTimer = setTimeout(function(){ t.classList.remove('show'); }, 2600);
-  return false;
-}
-</script>
 
 
 <script>
