@@ -1,0 +1,47 @@
+{
+  "name": "Beach Volleyball Supervisor Tools",
+  "short_name": "BV Tools",
+  "description": "Εργαλεία διοργάνωσης Beach Volleyball: βαθμολογία, υπολογισμός βαθμών, επάθλων και πρόγραμμα αγώνων.",
+  "id": "/",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#0d3a5c",
+  "lang": "el",
+  "dir": "ltr",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ατομική Βαθμολογία",
+      "short_name": "Βαθμολογία",
+      "url": "./Ranking.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Υπολογισμός Βαθμών",
+      "short_name": "Βαθμοί",
+      "url": "./PointSystem.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Υπολογισμός Επάθλων",
+      "short_name": "Έπαθλα",
+      "url": "./Prices.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Πρόγραμμα Αγώνων",
+      "short_name": "Πρόγραμμα",
+      "url": "./Schedules.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
