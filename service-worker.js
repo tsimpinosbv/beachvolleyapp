@@ -1,6 +1,6 @@
 // Beach Volleyball Supervisor Tools — service worker
 // Bump CACHE_VERSION any time app-shell files change, so clients pick up the update.
-const CACHE_VERSION = 'bv-tools-v1';
+const CACHE_VERSION = 'bv-tools-v3';
 const SHELL_CACHE = CACHE_VERSION + '-shell';
 const DATA_CACHE = CACHE_VERSION + '-data';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
@@ -12,6 +12,8 @@ const APP_SHELL = [
   './PointSystem.html',
   './Prices.html',
   './Schedules.html',
+  './files/',
+  './files/index.html',
   './offline.html',
   './manifest.json',
   './icons/icon-192.png',
