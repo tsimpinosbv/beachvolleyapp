@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEV Beach Volleyball Supervisor Checklist 2026</title>
+<style>
+  :root{
+    --navy:#0a1130;
+    --navy-2:#101a45;
+    --blue:#2b57d6;
+    --gold:#f5a623;
+    --coral:#e8703a;
+    --teal:#1fae8e;
+    --sand:#faf6ec;
+    --sand-2:#f1e9d8;
+    --ink:#16213e;
+    --muted:#5c6480;
+    --line:#e3ddc9;
+    --white:#ffffff;
+    --ok:#1fae8e;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--sand);
+    color:var(--ink);
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--blue);}
+  .app{max-width:980px;margin:0 auto;padding:0 16px 60px;}
+
+  /* HEADER */
+  header.top{
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 60%,#1c2a63 100%);
+    color:#fff;
+    padding:28px 16px 22px;
+    border-radius:0 0 22px 22px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.top::after{
+    content:"";
+    position:absolute; right:-60px; top:-60px;
+    width:220px; height:220px; border-radius:50%;
+    background:radial-gradient(circle,rgba(245,166,35,.28),transparent 65%);
+  }
+  .top-inner{max-width:980px;margin:0 auto;position:relative;z-index:1;}
+  .eyebrow{
+    text-transform:uppercase;letter-spacing:.14em;font-size:11.5px;font-weight:700;
+    color:var(--gold);margin:0 0 6px;
+  }
+  h1.title{font-size:clamp(21px,4.2vw,28px);margin:0 0 6px;font-weight:800;letter-spacing:-.01em;}
+  .subtitle{color:#c9d2f2;font-size:14px;margin:0 0 18px;max-width:640px;}
+
+  /* NAV */
+  nav.tabs{
+    display:flex;gap:6px;overflow-x:auto;
+    margin:18px 0 16px;padding:4px;
+    background:var(--sand-2);
+    border-radius:12px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  nav.tabs::-webkit-scrollbar{display:none;}
+  nav.tabs button{
+    flex:0 0 auto;
+    border:none;background:transparent;color:var(--muted);
+    padding:9px 13px;border-radius:9px;font-size:13px;font-weight:700;
+    cursor:pointer;white-space:nowrap;
+    transition:background .15s,color .15s;
+  }
+  nav.tabs button.active{background:var(--navy);color:#fff;}
+  nav.tabs button:not(.active):hover{background:#e9e1c9;color:var(--ink);}
+
+  section.panel{display:none;}
+  section.panel.active{display:block;animation:fade .18s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:none;}}
+
+  .panel-head{margin-bottom:14px;}
+  .panel-head h2{font-size:19px;margin:0 0 4px;font-weight:800;color:var(--navy);}
+  .panel-head p{margin:0;color:var(--muted);font-size:13.5px;max-width:640px;}
+
+  /* EVENT SELECT */
+  .event-select-wrap{margin-bottom:16px;}
+  select#eventSelect{
+    width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);
+    background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="9"><path d="M1 1l6 6 6-6" stroke="%23334" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>') no-repeat right 14px center;
+    appearance:none;-webkit-appearance:none;
+    font-size:14.5px;font-weight:700;color:var(--navy);
+    cursor:pointer;
+  }
+
+  /* PROGRESS */
+  .progress-wrap{
+    display:flex;align-items:center;gap:10px;margin:0 0 18px;
+    background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 14px;
+  }
+  .progress-bar{flex:1;height:8px;background:#eee6cf;border-radius:6px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));border-radius:6px;width:0%;transition:width .25s;}
+  .progress-label{font-size:12.5px;font-weight:700;color:var(--muted);white-space:nowrap;}
+  .reset-btn{
+    border:none;background:var(--sand-2);color:var(--muted);font-size:12px;font-weight:700;
+    padding:6px 10px;border-radius:8px;cursor:pointer;white-space:nowrap;
+  }
+  .reset-btn:hover{background:#e9e1c9;color:var(--ink);}
+
+  /* PHASE BLOCKS */
+  .phase{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    margin-bottom:14px;overflow:hidden;
+  }
+  .phase-head{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:13px 16px;cursor:pointer;user-select:none;
+    border-bottom:1px solid transparent;
+  }
+  .phase-head:hover{background:#fbf9f2;}
+  .phase-head .htxt{display:flex;align-items:center;gap:9px;}
+  .phase-num{
+    width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;
+    font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+  }
+  .phase-title{font-size:14.5px;font-weight:800;color:var(--navy);}
+  .phase-meta{font-size:11.5px;color:var(--muted);font-weight:700;}
+  .chev{transition:transform .18s;color:var(--muted);font-size:12px;}
+  .phase.open .chev{transform:rotate(180deg);}
+  .phase.open .phase-head{border-bottom-color:var(--line);}
+  .phase-body{display:none;padding:6px 16px 12px;}
+  .phase.open .phase-body{display:block;}
+
+  ul.checklist{list-style:none;margin:0;padding:0;}
+  ul.checklist li{
+    display:flex;align-items:flex-start;gap:10px;
+    padding:9px 2px;border-bottom:1px dashed #ece4cc;
+    font-size:13.8px;
+  }
+  ul.checklist li:last-child{border-bottom:none;}
+  ul.checklist input[type=checkbox]{
+    appearance:none;-webkit-appearance:none;
+    width:19px;height:19px;flex:0 0 auto;margin-top:1px;
+    border:2px solid #c9c0a0;border-radius:6px;cursor:pointer;position:relative;
+    background:#fff;
+  }
+  ul.checklist input[type=checkbox]:checked{
+    background:var(--teal);border-color:var(--teal);
+  }
+  ul.checklist input[type=checkbox]:checked::after{
+    content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;
+    border:solid #fff;border-width:0 2px 2px 0;transform:rotate(40deg);
+  }
+  ul.checklist label{cursor:pointer;color:var(--ink);}
+  ul.checklist li.checked label{color:#9aa1b8;text-decoration:line-through;}
+  .tag{
+    display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;
+    padding:1px 6px;border-radius:5px;margin-left:6px;vertical-align:1px;
+  }
+  .tag.mandatory{background:#fde3d5;color:#b5501c;}
+  .tag.link{background:#dfe8ff;color:#2b4fbf;}
+
+  /* REFERENCE CARDS (non-checklist tabs) */
+  .card{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 18px;margin-bottom:14px;
+  }
+  .card h3{margin:0 0 8px;font-size:15px;color:var(--navy);font-weight:800;}
+  .card p{margin:0 0 8px;font-size:13.8px;color:var(--ink);}
+  .card ul{margin:6px 0 0;padding-left:20px;font-size:13.8px;}
+  .card li{margin-bottom:5px;}
+  .card.warn{border-left:4px solid var(--coral);}
+  .card.info{border-left:4px solid var(--blue);}
+  .card.ok{border-left:4px solid var(--teal);}
+
+  table.ref{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;}
+  table.ref th,table.ref td{border:1px solid var(--line);padding:7px 9px;text-align:left;}
+  table.ref th{background:var(--sand-2);color:var(--navy);font-weight:800;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;}
+  table.ref tr:nth-child(even) td{background:#fdfbf4;}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+
+  details.case{
+    background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;
+  }
+  details.case summary{
+    padding:12px 14px;font-weight:700;font-size:13.8px;cursor:pointer;color:var(--navy);
+    list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;
+  }
+  details.case summary::-webkit-details-marker{display:none;}
+  details.case summary::after{content:"+";font-size:18px;color:var(--muted);font-weight:400;}
+  details.case[open] summary::after{content:"–";}
+  details.case .abody{padding:0 14px 14px;font-size:13.5px;color:var(--ink);}
+  details.case .abody ul{margin:4px 0 0;padding-left:18px;}
+
+  .links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;}
+  .link-card{
+    background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+  }
+  .link-card .lk-title{font-weight:800;font-size:13.5px;color:var(--navy);margin-bottom:3px;}
+  .link-card .lk-desc{font-size:12.3px;color:var(--muted);margin-bottom:6px;}
+  .link-card code{font-size:11.5px;background:var(--sand-2);padding:2px 5px;border-radius:5px;word-break:break-all;}
+
+  footer.foot{
+    text-align:center;color:var(--muted);font-size:11.5px;margin-top:26px;padding-top:16px;
+    border-top:1px solid var(--line);
+  }
+  @media (max-width:520px){
+    .progress-wrap{flex-wrap:wrap;}
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <p class="eyebrow">CEV Beach Volleyball · Officials Toolkit</p>
+    <h1 class="title">Supervisor &amp; Technical Delegate Checklist</h1>
+    <p class="subtitle">Step-by-step checklists for CEV Beach Volleyball events and Volleyball World Beach Pro Tour Futures, built from the CEV BV Supervisors Handbook (2026 Edition) and the CEV Supervisors Webinar 2026.</p>
+  </div>
+</header>
+
+<div class="app">
+  <nav class="tabs" id="tabs"></nav>
+
+  <!-- TIMELINE -->
+  <section class="panel active" id="panel-timeline">
+    <div class="panel-head">
+      <h2>Universal Supervisor Timeline</h2>
+      <p>Applies to every CEV Beach Volleyball competition and BPT Futures assignment — from accepting the assignment to closing the post-event report.</p>
+    </div>
+    <div class="progress-wrap">
+      <span class="progress-label" id="prog-timeline-label">0 / 0 done</span>
+      <div class="progress-bar"><div class="progress-fill" id="prog-timeline-fill"></div></div>
+      <button class="reset-btn" data-reset="timeline">Reset</button>
+    </div>
+    <div id="timeline-phases"></div>
+  </section>
+
+  <!-- EVENT CHECKLISTS -->
+  <section class="panel" id="panel-events">
+    <div class="panel-head">
+      <h2>Event-Specific Checklists</h2>
+      <p>Select the competition category. Each checklist follows the CEV Supervisors Handbook, Section 6.</p>
+    </div>
+    <div class="event-select-wrap">
+      <select id="eventSelect"></select>
+    </div>
+    <div class="progress-wrap">
+      <span class="progress-label" id="prog-event-label">0 / 0 done</span>
+      <div class="progress-bar"><div class="progress-fill" id="prog-event-fill"></div></div>
+      <button class="reset-btn" id="resetEventBtn">Reset</button>
+    </div>
+    <div id="event-phases"></div>
+  </section>
+
+  <!-- WEATHER -->
+  <section class="panel" id="panel-weather">
+    <div class="panel-head">
+      <h2>Weather Conditions &amp; Force Majeure</h2>
+      <p>Authority and conduct — Section 3 of the Handbook.</p>
+    </div>
+    <div class="card warn">
+      <h3>Authority</h3>
+      <p>The CEV Supervisor has the authority to suspend the competition if weather or other Force Majeure has a direct impact on the tournament, until normal conditions are re-established. Before stopping a match/event for safety reasons, the Supervisor must consult the LOC and inform the CEV Head Office.</p>
+    </div>
+    <div class="card">
+      <h3>Light / moderate rain</h3>
+      <p>Tournaments will <strong>not</strong> be stopped or cancelled. Play should only be suspended in case of thunder and/or lightning in the area where the event is held. Postponement, rescheduling, short delays or cancellation may apply in case of thunderstorms, hurricanes, flooding and other dangerous conditions.</p>
+    </div>
+    <div class="card warn">
+      <h3>Lightning &amp; inclement weather protocol</h3>
+      <ul>
+        <li>All participants, team staff, spectators, staff and volunteers must immediately evacuate the beach and go to cars or indoor facilities — <strong>do not seek shelter under trees</strong>.</li>
+        <li>To resume play, the area must be free of lightning for at least <strong>30 minutes</strong>.</li>
+        <li>Count the seconds between lightning and thunder. More than 30 seconds = safe to play. Less than 30 seconds = seek shelter.</li>
+      </ul>
+    </div>
+    <div class="card info">
+      <h3>Case book — "Both captains request the 1st referee to stop play during heavy rain"</h3>
+      <p>The decision to stop playing is made by the Beach Volleyball Organising Committee (Supervisor/TD, National Federation Delegate and Tournament Director). Only if they are unavailable and the referee foresees significant danger to players from lightning or sudden wind gusts, can the referee stop play and send players to their time-out areas.</p>
+    </div>
+    <div class="card">
+      <h3>Webinar reminders</h3>
+      <ul>
+        <li><strong>Anticipate</strong> — monitor forecasts ahead of time.</li>
+        <li>Stay in close collaboration with the LOC and Volleyball World — safety first.</li>
+        <li>Keep a constant flow of information to CEV, referees, teams and spectators (Slack / Live Chat / announcer).</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- AWARDING -->
+  <section class="panel" id="panel-awarding">
+    <div class="panel-head">
+      <h2>Awarding Ceremony Checklist</h2>
+      <p>Section 4 of the Handbook — materials, personnel, rehearsal and running order.</p>
+    </div>
+    <div class="progress-wrap">
+      <span class="progress-label" id="prog-awarding-label">0 / 0 done</span>
+      <div class="progress-bar"><div class="progress-fill" id="prog-awarding-fill"></div></div>
+      <button class="reset-btn" data-reset="awarding">Reset</button>
+    </div>
+    <div id="awarding-phases"></div>
+  </section>
+
+  <!-- DATA & TECH -->
+  <section class="panel" id="panel-data">
+    <div class="panel-head">
+      <h2>Data Collection &amp; Match Technology</h2>
+      <p>Section 8 of the Handbook — VIS, CEV WCM, Match State Platform, E-scoresheet, Click&amp;Scout Media and Live Chat.</p>
+    </div>
+    <div class="card info">
+      <h3>The chain</h3>
+      <p><strong>VIS → CEV WCM → Match State Platform (Genius Sports) → E-scoresheet + Click&amp;Scout Media</strong>. All Beach competitions are primarily managed in and through the VIS. All matches should be scouted with both data-collection tools simultaneously.</p>
+    </div>
+    <div class="card">
+      <h3>VIS</h3>
+      <ul>
+        <li>Update match info (time, teams, referees, etc.) as soon as possible — sync to MSP can take up to 30 minutes.</li>
+        <li>Avoid changing the tournament match template — it requires manual rework. If unavoidable, report via Live Chat immediately, mentioning the competition gender.</li>
+        <li>After Preliminary Inquiry matches are added, inform CEV and Genius Sports via Live Chat.</li>
+        <li>Enter a match result manually only if E-scoresheet did not finalise or sync — report on Live Chat with the detailed match score.</li>
+        <li>For a no-start / injury forfeit: enter the score at the moment of the injury (for correct rally-point ratio); for a genuine no-start use 0–0, 0–0 and override the automatic 21–0, 21–0.</li>
+        <li>Matches must be closed in VIS within 30 seconds of the end of the match.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>E-scoresheet</h3>
+      <ul>
+        <li>Windows 10/11 laptops only (Android/MacBook not supported).</li>
+        <li>Wired LAN connection from start until the match is finalised (Wi-Fi only for underage completions).</li>
+        <li>Minimum internet speed 10 Mb/s upload &amp; download.</li>
+        <li>Update to the latest version a day before the tournament starts.</li>
+        <li>Open every match with its unique match key; open and finalise on-site at the court, within 5 minutes of the match ending.</li>
+        <li>Devices need sufficient power (charger or a fully charged swap). The LED box cannot be connected to the scoring device.</li>
+        <li>Results and the scoresheet return to VIS within up to 15 minutes after the match is finalised.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Click &amp; Scout Media</h3>
+      <ul>
+        <li>Windows 8.1+ (or MacBook) — meet the minimum requirements.</li>
+        <li>Minimum 10 Mb/s connection (LAN or Wi-Fi).</li>
+        <li>Update to the latest version a day before the tournament and check "New Trial Match" opens without issue.</li>
+      </ul>
+    </div>
+    <div class="card warn">
+      <h3>Live Chat (Genius Sports Helpdesk)</h3>
+      <ul>
+        <li>Create an account and inform <code>data@cev.eu</code> before the competition.</li>
+        <li>Available from 2 days before to 1 day after the competition dates.</li>
+        <li>Be precise: state the application name, match/teams and time, and attach screenshots for every issue.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Sportradar scouts (new for 2026)</h3>
+      <p>Where CEV confirms Sportradar scouts will attend, the LOC must provide: free access to the venue, one seat per match court with good visibility and power supply, and Wi-Fi with a minimum 20 Mb/s upload/download at the data-collection position on every court. Scout details are shared with the organiser roughly one week before the tournament, with the Supervisor in copy.</p>
+    </div>
+  </section>
+
+  <!-- FINES -->
+  <section class="panel" id="panel-fines">
+    <div class="panel-head">
+      <h2>Fines, Sanctions &amp; Protests</h2>
+      <p>Section 9 of the Handbook — Competition Operations reference tables.</p>
+    </div>
+    <div class="card">
+      <h3>Free zone</h3>
+      <p>Per FIVB Rules of the Game. In Futures and Age Group tournaments, side-court size can be reduced due to natural/physical obstructions — a minimum of 3 m free zone (instead of 5 m) is acceptable for side courts.</p>
+    </div>
+    <div class="card">
+      <h3>Team / athlete withdrawal fee</h3>
+      <p>After 4:00 PM Luxembourg time, 3 days before the start of the Preliminary Inquiry:</p>
+      <div class="table-scroll"><table class="ref">
+        <tr><th>CEV Competition</th><th>Withdrawal fee</th></tr>
+        <tr><td>CEV Age Group BV European Championships – Qualification Tournament</td><td>€100</td></tr>
+        <tr><td>CEV Age Group BV European Championships – Main Draw</td><td>€200</td></tr>
+        <tr><td>CEV EuroBeachVolley</td><td>€1,000</td></tr>
+        <tr><td>Futures – Qualification Tournament</td><td>$100</td></tr>
+        <tr><td>Futures – Main Draw</td><td>$200</td></tr>
+      </table></div>
+      <p style="margin-top:8px;">For Volleyball World Futures in Europe: after 16:00 CET the Friday before tournament week, teams may submit BVB/03 (withdrawal) or BVB/04 (athlete change) forms to withdraw/change composition — a monetary fine still applies: <strong>USD 200/athlete</strong> (Main Draw) or <strong>USD 100/athlete</strong> (Qualification).</p>
+    </div>
+    <div class="card">
+      <h3>Protest fee</h3>
+      <p>A deposit of €300 is required for any protest raised in a CEV competition. If the protest is rejected (on the merits or on form), the fee below applies. On a side court, the amounts are halved; for repeat protests by the same team, each subsequent fee doubles.</p>
+      <div class="table-scroll"><table class="ref">
+        <tr><th>CEV Competition</th><th>Protest fee</th></tr>
+        <tr><td>CEV EuroBeachVolley / European Championship</td><td>€500</td></tr>
+        <tr><td>CEV Beach Volleyball Nations Cup Final</td><td>€500</td></tr>
+        <tr><td>Other CEV competitions</td><td>€250</td></tr>
+      </table></div>
+      <p style="margin-top:8px;">For Futures: progressive fee — USD 500 first time at a tournament, minimum USD 1,000 second time (doubling after), or USD 1,000 / min. USD 2,500 if on Centre Court, when the Protest Protocol is judged "Rejected" by the FIVB Referee Coach/Technical Delegate.</p>
+      <p><strong>Action:</strong> always tell the player a protest costs money, show the amount, then ask if they still want to proceed.</p>
+    </div>
+    <div class="card">
+      <h3>Breach of CEV Beach Volleyball Regulations — sanction ranges</h3>
+      <div class="table-scroll"><table class="ref">
+        <tr><th>Category</th><th>Min</th><th>Max</th></tr>
+        <tr><td>Failure to provide a CEV form / match data / document</td><td>€350</td><td>€3,000</td></tr>
+        <tr><td>Failure to provide accurate information</td><td>€3,500</td><td>€25,000</td></tr>
+        <tr><td>Failure to appoint a person</td><td>€500</td><td>€1,500</td></tr>
+        <tr><td>Failure to fulfil a duty / attend a meeting</td><td>€350</td><td>€5,000</td></tr>
+        <tr><td>Court/venue layout, sand, equipment, match technology</td><td>€700</td><td>€25,000</td></tr>
+        <tr><td>Media (pictures, video clips, production/broadcasting)</td><td>€700</td><td>€100,000</td></tr>
+        <tr><td>Uniform / clothing / accommodation / transport / security / lighting</td><td>€350</td><td>€25,000</td></tr>
+        <tr><td>Organiser Agreement provisions</td><td>€500</td><td>€100,000</td></tr>
+      </table></div>
+      <p style="margin-top:8px;"><strong>Action sequence:</strong> issue a provisional warning first — announce the fine that will follow if not corrected by a set time. If corrected, no fine. If not, proceed with the sanction, record it in the report, and contact the CEV office immediately for significant fines.</p>
+    </div>
+    <div class="card">
+      <h3>Offences on court — equipment / personnel abuse</h3>
+      <div class="table-scroll"><table class="ref">
+        <tr><th>Offence</th><th>Simple, no delay</th><th>Match delay / equipment lost</th><th>On Centre Court</th></tr>
+        <tr><td>Balls, players' area, uniforms</td><td>€100 (if replaced)</td><td>€250 (if replaced with delay)</td><td>€500</td></tr>
+        <tr><td>Net system, lines, referee stand, panels</td><td>€100</td><td>€500</td><td>€2,500</td></tr>
+      </table></div>
+      <div class="table-scroll" style="margin-top:8px;"><table class="ref">
+        <tr><th>Verbal/non-verbal abuse leading to</th><th>Side court</th><th>Centre court</th></tr>
+        <tr><td>Penalty</td><td>€250</td><td>€500</td></tr>
+        <tr><td>Expulsion</td><td>€500</td><td>€2,500</td></tr>
+        <tr><td>Disqualification</td><td>€2,500</td><td>€10,000</td></tr>
+      </table></div>
+      <p style="margin-top:8px;">Any equipment abuse doubles in scale if it happens in a TV match (FIVB &amp; CEV).</p>
+    </div>
+  </section>
+
+  <!-- CASE BOOK -->
+  <section class="panel" id="panel-casebook">
+    <div class="panel-head">
+      <h2>Case Book — Situations on Site</h2>
+      <p>Section 5 of the Handbook — quick answers for recurring situations.</p>
+    </div>
+    <div id="casebook-list"></div>
+  </section>
+
+  <!-- LINKS -->
+  <section class="panel" id="panel-links">
+    <div class="panel-head">
+      <h2>Key Links &amp; Tools</h2>
+      <p>Section 7 of the Handbook — the reference platforms every Supervisor should have access to before travelling.</p>
+    </div>
+    <div class="links-grid" id="linksGrid"></div>
+  </section>
+
+  <footer class="foot">
+    Built from the CEV Beach Volleyball Supervisors Handbook (2026 Edition) and the CEV Supervisors Webinar, 24 March 2026. Always confirm the latest version of Regulations, Guidelines and Official Communications at <a href="https://inside.cev.eu/documents/beach-volleyball-documents/" target="_blank" rel="noopener">inside.cev.eu</a>.
+  </footer>
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   DATA
+--------------------------------------------------------------- */
+const timelinePhases = [
+  {
+    title:"Before receiving an official assignment",
+    meta:"Ongoing readiness",
+    items:[
+      "Check and update your availability on the CEV Database (cevadmin.cev.eu).",
+      "Attend Supervisor seminars and/or refreshing courses when requested.",
+    ]
+  },
+  {
+    title:"After receiving an official assignment",
+    meta:"As soon as appointed",
+    items:[
+      "Provide your up-to-date M-7 Health Certificate for Officials form.",
+      "Read the CEV Supervisor Handbook.",
+      "Download and update the VIS app on your computer.",
+      "Ask the CEV Beach Volleyball Department for the previous year's Supervisor report, if available (same organiser).",
+      "Ask the CEV Beach Volleyball Department for the Event's Masterplan to check its status.",
+      "Read the Inspection Visit report, if applicable.",
+      "Check international travel arrangements with the CEV Office (review and accept options sent by CEV/LOC).",
+      "Check the arrivals of referees related to the Referee Clinic, court check and practical match.",
+      "Log in to the CEV Officials Platform and review the forms available for your assignment.",
+      "Start completing the checklist form on the CEV Officials Platform — available 60 days prior to the event.",
+      "Install Slack on your mobile — the means of communication with CEV Head Office during competition.",
+      "Ensure you have an account on the Genius Sports support platform (create one if needed).",
+      "Attend any online meetings organised by the CEV Beach Volleyball Department with the key LOC members.",
+    ]
+  },
+  {
+    title:"Upon arrival to the host city",
+    meta:"Day of arrival",
+    items:[
+      "Check execution of airport pick-ups, if planned.",
+      "Check the official hotel is in line with appropriate CEV standards.",
+      "Inspect the courts and general venue — take pictures/videos and upload them to the CEV Officials platform (photo/video page).",
+      "Discuss with the organiser any actions needed to improve the venue and meet standards, as soon as possible.",
+      "Check the quality and depth of the sand; confirm the organiser has access to a rotavator.",
+      "Schedule a meeting with LOC key staff (Tournament Director, Competition Director, Operational Manager, etc.) on arrival day or the following morning.",
+      "Schedule a general meeting with all members of the Organisational Chart to confirm the daily work plan, per the Technical Checklist.",
+      "Ensure working user credentials for the Volleyball Information System (VIS) and Click &amp; Scout Media.",
+      "Confirm E-scoresheet match keys are available once matches are scheduled and synchronised with CEV WCM.",
+      "If Sportradar scouts are confirmed: ensure the LOC provides free venue access, one seating position per court with power, and Wi-Fi with a minimum of 20 Mb/s upload &amp; download at each data-collection position.",
+      "With the LOC Technical Manager, confirm the correct VIS template for earned points and prize money, calculate seeding points on the day of the Preliminary Inquiry, load the match schedule template, set tournament status/starting time and add referees.",
+      "Once matches are published, check they appear correctly in E-scoresheet and Click &amp; Scout.",
+      "Check that medals (3 per team, coach included) and/or trophies have arrived.",
+      "Ensure match balls have arrived and are inflated per FIVB Official Beach Volleyball Rules.",
+      "Ensure the Technical Manager account and any related accounts are created on the Genius Sports support platform — inform data@cev.eu once created.",
+      "Ensure a high-speed, stable internet connection (min. 10 Mb/s up/down) for E-scoresheet (LAN) and Click &amp; Scout Media (LAN or Wi-Fi) on each court.",
+      "Finalise the venue homologation form through the CEV Supervisor Platform (BV-13 for Zonal events) no later than 2 hours before the first Preliminary Inquiry.",
+      "Make sure the court inspection checklist is completed before homologation, following feedback from the referees' inspection.",
+      "Check that local referees are listed in the FIVB VIS (event page) and approved by the ERC.",
+      "Conduct the Preliminary Inquiry(ies) at the announced time, through the official competition documents (Practical Info/Event Regulations); collect outstanding documents/information from athletes, including phone/mail contact details.",
+      "Any TUE document must be presented at the Preliminary Inquiry: deposited in a sealed envelope, unsealed only in case of doping control.",
+    ]
+  },
+  {
+    title:"During the event",
+    meta:"Daily, on site",
+    items:[
+      "Conduct a daily meeting with key staff and stakeholders to keep the event running smoothly and to address issues promptly.",
+      "Check and update daily the necessary forms on the CEV Officials platform.",
+      "Upload the VIS sign-in sheet to the CEV Supervisors platform; send the paper prototypes to CEV by mail within the post-event report.",
+      "Begin filling out the Supervisor's report from day one, finishing it (at latest) upon completion of the awarding ceremony.",
+      "If a tournament is stopped or cancelled: inform via Slack and Live Chat, explaining the reason and updating on when it is planned to resume.",
+      "Update match information (time, teams, referees, etc.) in VIS as soon as possible — automatic synchronisation can take up to 30 minutes.",
+      "Remember E-scoresheet sends results/scoresheet back to VIS within up to 15 minutes of a finalised match; report any issue on Live Chat.",
+      "Enter a result manually in VIS only if a match was not finalised via E-scoresheet or is not syncing — report the case on Live Chat with the detailed score.",
+      "Coordinate broadcasting matters with the on-site TV Coordinator or the CEV TV &amp; Digital department.",
+      "Coordinate with the local Press Director / CEV Media Delegate (if appointed) and the local/CEV Photographer to ensure timely delivery of expected footage.",
+    ]
+  },
+  {
+    title:"After the event",
+    meta:"Wrap-up",
+    items:[
+      "Ensure the VIS status is set to Finished, and world ranking points/prize money distribution is updated.",
+      "Organise a meeting at the end of the tournament with the local organiser, the National Federation Delegate and any CEV officials/staff on site, to discuss the event report.",
+      "Make sure all necessary information (reports, scoresheets, sign-in sheets, production/uniform samples, media/press coverage) has been sent to CEV.",
+    ]
+  },
+];
+
+const eventCategories = {
+  "futures": {
+    label:"VW Beach Pro Tour Futures in Europe",
+    refs:[
+      "Organiser Agreement — sent by e-mail to the assigned Technical Delegate",
+      "FIVB Beach Volleyball Sports Operations Manual — all competition-related parameters (entries, seeding, country quotas, etc.)",
+      "VW Beach Pro Tour Futures Event Rider — LOC overview of requirements",
+      "VW Beach Pro Tour Venue Branding Guidelines — logos, layouts, promotional material",
+    ],
+    phases:[
+      { title:"Before the event", items:[
+        "Follow the Master Plan and timelines.",
+        "CEV Database: review and confirm your personal information and bank details.",
+        "Event Regulations: review the final draft before circulation; any update will be copied to you.",
+        "Check the CEV website for your event and the information presented — report to the CEV Office if you spot any issues.",
+        "Confirmed Lists: check the lists released 28 days before the start of each event, circulated by CEV via e-mail to all National Federations, the appointed CEV Supervisor(s), LOC and FIVB.",
+        "Branding Productions: check the CEV Cloud Upload Area for the event, to have an overview of all approved material — compare with printed material on site.",
+        "Supervisors Platform: review and confirm access, review the Platform Handbook.",
+        "CEV tools: ensure access with your personal devices to all CEV-used platforms (Slack, VIS, etc.).",
+        "Collaboration with the LOC: confirm who and when to meet upon arrival.",
+      ]},
+      { title:"Upon arrival", items:[
+        "Login credentials to FIVB VIS and Click &amp; Scout Media are sent by CEV via e-mail, at the latest on the day of the Supervisor's arrival.",
+        "For any assistance with E-scoresheet, Click &amp; Scout Media and data synchronisation, follow the steps in the Handbook's Data Collection section.",
+        "Follow daily the Digital Operations actions checklist shared by the office.",
+        "LOC Staff: ensure the staff presented in the BVB-05 form is confirmed, organise meetings.",
+        "Online forms: start using the Supervisors platform.",
+        "During the Preliminary Inquiry: follow up on missing information for participating athletes and request pending documents if needed — BVB-10 form (Health Certificate), 2026 Beach Volleyball Player Participation Agreement, FIVB Anti-Doping education programme \"Play Clean\", and the FIVB \"Prevention of Competition Manipulation\" e-course.",
+      ]},
+      { title:"While on site", items:[
+        "Prize money: check the payment process as mentioned in the respective Event Regulations and instruct the players accordingly during the Preliminary Inquiry.",
+        "TV Streaming Production: review arrangements in advance — a Slack channel is provided by CEV for any assistance.",
+        "Organise the awarding ceremony rehearsal.",
+        "Post-event reporting — review arrangements in advance: original Technical Delegate Report with signature, scoresheets and sign-in sheets, sample of production material (leaflet, brochure), sample of produced uniforms, media report + press articles.",
+      ]},
+    ]
+  },
+  "agegroup": {
+    label:"CEV Age Group European Championships",
+    refs:[
+      "CEV Beach Volleyball Regulations &amp; CEV Beach Volleyball Guidelines",
+      "Organiser Agreement — sent by e-mail to the assigned CEV Supervisor",
+      "CEV Age Group Beach Volleyball European Championships Events Handbook",
+      "Asana Project Management — task follow-up for assigned CEV Officials and Organisers",
+      "Branding Guidelines and Coaching Guidelines",
+    ],
+    phases:[
+      { title:"Before the event", items:[
+        "Follow the Master Plan and timelines.",
+        "Carefully review the Online Project Management Tool (Asana) shared by the CEV Beach Volleyball department.",
+        "CEV Database: review and confirm your personal information and bank details.",
+        "Asana Project Management: regularly review and follow up assigned tasks.",
+        "Event Practical Info: review the final draft before circulation; any update will be copied to you.",
+        "Official Communications: review the document and Confirmed Lists.",
+        "Check the CEV website for your event and the information presented — report to the CEV Office if you spot any issues.",
+        "Branding Productions: check the CEV Cloud Upload Area — compare with printed material on site.",
+        "Supervisors Platform: review and confirm access, review the Platform Handbook.",
+        "CEV tools: ensure access with your personal devices to all CEV-used platforms (Asana, Slack, VIS, etc.).",
+        "Collaboration with the LOC: confirm who and when to meet upon arrival.",
+      ]},
+      { title:"Upon arrival", items:[
+        "LOC Staff: ensure the staff presented in the BV-OC form is confirmed, organise meetings.",
+        "Review with the organiser the requested accreditation forms BV-05 &amp; BV-06 for the competition, through the CEV Cloud.",
+        "Review the Travel Schedule form BV-04 through the CEV Cloud, to arrange local transport of the team delegations.",
+        "Inspect and confirm accommodation facilities and restaurants for all involved groups.",
+        "Login credentials to FIVB VIS and Click &amp; Scout Media are sent by CEV, at the latest on the day of the Supervisor's arrival.",
+        "For any assistance with E-scoresheet, Click &amp; Scout Media and data synchronisation, follow the steps in the Handbook's Data Collection section.",
+        "Follow daily the Digital Operations actions checklist shared by the office.",
+        "Check the payment of per diem for assigned CEV officials and neutral officials.",
+      ]},
+      { title:"Preliminary Inquiry &amp; Technical Meeting", items:[
+        "Plan properly the Preliminary Inquiry in National Federation slots.",
+        "Ensure the procedure for handing out the MIKASA balls to participating NFs.",
+        "During the PI: review and confirm athletes' and coaches' uniforms; check the age of participating athletes carefully; follow up on missing information and request pending documents if needed.",
+        "Ensure enough time between the Preliminary Inquiry and the Technical Meeting to perform the draw.",
+        "Communicate clearly the event conditions and the Coaching Guidelines.",
+      ]},
+      { title:"While on site", items:[
+        "TV/Streaming production: review arrangements in advance (mandatory for Semi-finals and Final) — Slack channel provided by CEV for any assistance.",
+        "Organise the Awarding Ceremony rehearsal, per the protocol in the CEV Beach Volleyball Guidelines.",
+        "Post-event reporting: finalise your reports and assist the LOC in preparing theirs — original Supervisor's Report with signature, scoresheets and sign-in sheets, sample of production material, sample of produced uniforms, media report + press articles.",
+      ]},
+    ]
+  },
+  "nationscup": {
+    label:"Beach Volley Nations Cup (Preliminary Phase)",
+    refs:[
+      "CEV Beach Volleyball Regulations &amp; CEV Beach Volleyball Guidelines",
+      "CEV BV Nations Cup Official Communications",
+      "Organiser Agreement — sent by e-mail to the assigned CEV Supervisor",
+      "Beach Volley Nations Cup Venue Branding Guidelines",
+    ],
+    phases:[
+      { title:"Before the event", items:[
+        "Follow the Master Plan and timelines.",
+        "CEV Database: review and confirm your personal information and bank details.",
+        "Practical Info: review the final draft before circulation; any update will be copied to you.",
+        "Check the CEV website for your event and the information presented — report to the CEV Office if you spot any issues.",
+        "Branding Productions: check the CEV Cloud Upload Area — compare with printed material on site.",
+        "Supervisors Platform: review and confirm access, review the Platform Handbook.",
+        "CEV tools: ensure access with your personal devices to all CEV-used platforms (Slack, VIS, etc.).",
+        "Collaboration with the LOC: confirm who and when to meet upon arrival.",
+      ]},
+      { title:"Upon arrival", items:[
+        "LOC Staff: ensure the staff presented in the BV-OC form is confirmed, organise meetings.",
+        "Review with the organiser the requested accreditation forms BV-05 &amp; BV-06, through the CEV Cloud.",
+        "Review the Travel Schedule form BV-04 through the CEV Cloud, to arrange local transport of the team delegations.",
+        "Login credentials to FIVB VIS and Click &amp; Scout Media are sent by CEV, at the latest on the day of the Supervisor's arrival.",
+        "For any assistance with E-scoresheet, Click &amp; Scout Media and data synchronisation, follow the steps in the Handbook's Data Collection section.",
+        "Follow daily the Digital Operations actions checklist shared by the office.",
+      ]},
+      { title:"While on site", items:[
+        "Plan properly the Preliminary Inquiry in National Federation slots.",
+        "During the PI: review and confirm athletes' and coaches' uniforms, check the age of participating athletes carefully, and check if any pending dots/documents remain beside athletes' names.",
+        "TV/Streaming production: review arrangements in advance (mandatory for Semi-finals and Final) — Slack channel provided by CEV for any assistance.",
+        "Post-event reporting: finalise your reports and assist the LOC — original Supervisor's Report with signature, scoresheets and sign-in sheets, sample of production material, sample of produced uniforms, media report + press articles.",
+      ]},
+    ]
+  },
+  "flagship": {
+    label:"EuroBeachVolley &amp; CEV Nations Cup Final",
+    refs:[
+      "CEV Beach Volleyball Regulations &amp; CEV Beach Volleyball Guidelines",
+      "Official Communications for the respective event",
+      "Branding Guidelines — CEV Cloud",
+    ],
+    phases:[
+      { title:"Flagship event build-up", items:[
+        "Remember EuroBeachVolley and the Nations Cup Final are considered the flagship CEV Beach Volleyball events — the assigned Supervisor is involved in the event build-up from the early stage of the competition, in collaboration with the respective CEV Head Office departments (Beach Volleyball, Events, TV &amp; Digital).",
+        "Carefully review the Online Project Management Tool (Asana) shared by the CEV Beach Volleyball department.",
+        "Collaborate closely with the Head Office and other CEV assigned officials throughout the event build-up.",
+        "Participate in regular meetings with the CEV Head Office and the LOC.",
+      ]},
+      { title:"Standard event checklist also applies", items:[
+        "Follow all steps of the Universal Supervisor Timeline (Before/After assignment, Upon arrival, During, After the event) in the first tab of this checklist.",
+        "TV production for both events is mandatory: high-standard TV production via satellite from the Quarter-final phase; streaming via internet with 1 camera, shared via video-sharing, pre-Quarterfinal.",
+        "Awarding ceremony participation is compulsory for the 1st, 2nd and 3rd place teams — athletes may be fined by CEV for arriving late or leaving the host city without written authorisation from CEV.",
+      ]},
+    ]
+  },
+  "europeancup": {
+    label:"Beach Volley European Cup (Clubs)",
+    refs:[
+      "CEV Beach Volleyball Regulations &amp; CEV Beach Volleyball Guidelines",
+      "Terms &amp; Conditions / Bidding documents — Events | InsideCEV | Bidding",
+    ],
+    phases:[
+      { title:"Deadlines &amp; format for 2026", items:[
+        "Homologation forms for the National and Zonal Beach Volleyball clubs' competition must be submitted by 30 April 2026 (Events | InsideCEV | Documents).",
+        "Preliminary Phases are played on 26–27 September and/or 3–4 October 2026.",
+        "Applications to host a Preliminary Phase tournament must be submitted by 21 August 2026 (Events | InsideCEV | Bidding).",
+        "The Final Phase is played in November–December 2026.",
+        "Applications to host the Final must be submitted by 1 May 2026 (Events | InsideCEV | Bidding).",
+        "Competition format: Club vs Club, with each club participating with 2 teams.",
+        "Remember the Final Phase gives the organising National Federation or Club the automatic qualification.",
+      ]},
+      { title:"On-site duties", items:[
+        "Follow the Universal Supervisor Timeline (Before/After assignment, Upon arrival, During, After the event) in the first tab of this checklist.",
+        "Confirm the CEV-assigned Supervisor is featured on the CEV Supervisors list as required for club competitions.",
+        "Ensure results are entered into the VIS.",
+      ]},
+    ]
+  },
+  "zonal": {
+    label:"Zonal Tour &amp; Age Group First-Round Qualifiers",
+    refs:[
+      "Terms &amp; Conditions document — Events | InsideCEV | Bidding",
+      "BV-13 form for venue homologation (Zonal events)",
+    ],
+    phases:[
+      { title:"Zonal Beach Volleyball Tour events", items:[
+        "Remember each Zonal Association has the right to organise homologated Beach Volleyball Zonal Tour events, spread across the season (typically May–November).",
+        "Confirm the event meets the requirements defined in the Terms &amp; Conditions document.",
+        "Homologation of the event is controlled by CEV.",
+        "Confirm the Zonal Association has assigned a Supervisor featured on the CEV Supervisors list — this is the Zonal Association's responsibility.",
+        "Ensure results are entered into the VIS, as these events allocate FIVB World Ranking Points.",
+        "Use the BV-13 venue homologation form (instead of the standard Supervisor Platform form used for other categories) for Zonal events.",
+      ]},
+      { title:"Zonal U18 &amp; U20 First-round Qualifiers", items:[
+        "Confirm the Zonal Association has the obligation to organise the qualifier if more than 40% of affiliated National Federations are registered.",
+        "Confirm the event meets the requirements defined in the Terms &amp; Conditions document.",
+        "Verify the event is completed at least 45 days before the respective Final (by 12 August for U18, by 29 July for U20).",
+        "Confirm the Zonal Association has assigned a Supervisor featured on the CEV Supervisors list.",
+        "Ensure results are entered into the VIS.",
+      ]},
+    ]
+  },
+};
+
+const caseBook = [
+  {q:"The event master plan is not being updated by the local organiser", a:"Contact the LOC and ask them to update it and send it to both the CEV Supervisor and the CEV Beach Volleyball Department."},
+  {q:"The CEV Supervisor did not receive the flight ticket options from CEV Office/LOC within the timeline", a:"Contact the CEV Office or the LOC, with CEV Office in copy, and remind them about the need for travel arrangements."},
+  {q:"Travel arrangements for referees and other auxiliary staff have not been organised", a:"Contact the organiser with the CEV Office in copy to remind them about the travel arrangements."},
+  {q:"Depth and/or quality of sand is low", a:"Bring more and better-quality sand. Shift and rake the sand to level the courts as much as possible. Always inform the CEV Office."},
+  {q:"A sudden storm with lightning occurs during the event", a:"Count the seconds between the lightning and the thunder. More than 30 seconds — safe to play. Less than 30 seconds — better to seek shelter."},
+  {q:"An injury happens off the court", a:"The player should bear the costs of treatment and hospitalisation if needed, following the procedure in the CEV Regulations &amp; Guidelines. For CEV events, check the CEV Beach Volleyball Regulations and inform about the CEV IMSA complementary insurance."},
+  {q:"The National Federation Delegate refuses to join meetings", a:"Proceed with your tasks and inform the CEV Office accordingly."},
+  {q:"The tournament match template changes in VIS", a:"Report the template change as soon as possible via Live Chat, mentioning the competition gender."},
+  {q:"A team doesn't want to play and forfeits the match", a:"Forfeits can only be recorded as a no-show and are subject to a money fine or expelling the team from the tournament. The forfeit for the match should be completed through E-scoresheet to get the match status and result into both systems."},
+];
+
+const linkList = [
+  {t:"CEV Database", d:"Update availability, personal info and bank details.", u:"https://cevadmin.cev.eu/"},
+  {t:"CEV Supervisors Platform", d:"Forms, checklists, homologation and reports.", u:"https://cevofficials.cev.eu"},
+  {t:"CEV Cloud", d:"Organiser documents and uploaded branding elements.", u:"https://cloud.cev.eu"},
+  {t:"Asana", d:"Online project management for CEV-assigned officials.", u:"https://asana.com/download"},
+  {t:"FIVB VIS Web Manager", d:"Competition management — the master data source.", u:"https://app.fivb.com/"},
+  {t:"Genius Sports Helpdesk", d:"E-scoresheet &amp; Click &amp; Scout support articles, and Live Chat.", u:"https://helpdesk.geniussports.com/"},
+  {t:"Slack", d:"Direct communication with CEV Staff and other officials on site during competition.", u:"https://slack.com/downloads"},
+  {t:"Inside CEV — Documents", d:"Regulations, Guidelines and Official Communications.", u:"https://inside.cev.eu/documents/beach-volleyball-documents/"},
+];
+
+/* ---------------------------------------------------------------
+   STATE (in-memory only — resets on page reload)
+--------------------------------------------------------------- */
+const state = { timeline:{}, event:{}, awarding:{} };
+
+/* ---------------------------------------------------------------
+   RENDER HELPERS
+--------------------------------------------------------------- */
+function el(tag, cls, html){
+  const e = document.createElement(tag);
+  if(cls) e.className = cls;
+  if(html !== undefined) e.innerHTML = html;
+  return e;
+}
+
+function makePhaseBlock(container, phase, idx, stateKey){
+  const wrap = el('div','phase'+(idx===0?' open':''));
+  const head = el('div','phase-head');
+  head.innerHTML = `<div class="htxt"><span class="phase-num">${idx+1}</span><span class="phase-title">${phase.title}</span></div><div style="display:flex;align-items:center;gap:8px;"><span class="phase-meta">${phase.meta?phase.meta:phase.items.length+' items'}</span><span class="chev">▾</span></div>`;
+  const body = el('div','phase-body');
+  const ul = el('ul','checklist');
+  phase.items.forEach((txt, i)=>{
+    const id = `${stateKey}-${idx}-${i}`;
+    const li = el('li');
+    li.innerHTML = `<input type="checkbox" id="${id}"><label for="${id}">${txt}</label>`;
+    const cb = li.querySelector('input');
+    cb.addEventListener('change', ()=>{
+      state[stateKey][id] = cb.checked;
+      li.classList.toggle('checked', cb.checked);
+      updateProgress(stateKey);
+    });
+    ul.appendChild(li);
+  });
+  body.appendChild(ul);
+  wrap.appendChild(head);
+  wrap.appendChild(body);
+  head.addEventListener('click', ()=> wrap.classList.toggle('open'));
+  container.appendChild(wrap);
+}
+
+function countTotal(stateKey, phases){
+  let total = 0;
+  phases.forEach(p=> total += p.items.length);
+  return total;
+}
+
+function updateProgress(stateKey){
+  const labelEl = document.getElementById(`prog-${stateKey}-label`);
+  const fillEl = document.getElementById(`prog-${stateKey}-fill`);
+  if(!labelEl || !fillEl) return;
+  const entries = Object.values(state[stateKey]);
+  const done = entries.filter(Boolean).length;
+  const total = entries.length;
+  labelEl.textContent = `${done} / ${total} done`;
+  fillEl.style.width = total ? `${Math.round(done/total*100)}%` : '0%';
+}
+
+function initTimeline(){
+  const container = document.getElementById('timeline-phases');
+  container.innerHTML = '';
+  state.timeline = {};
+  timelinePhases.forEach((phase, idx)=> makePhaseBlock(container, phase, idx, 'timeline'));
+  timelinePhases.forEach((phase, idx)=>{
+    phase.items.forEach((txt,i)=>{ state.timeline[`timeline-${idx}-${i}`] = false; });
+  });
+  updateProgress('timeline');
+}
+
+function initAwarding(){
+  const container = document.getElementById('awarding-phases');
+  container.innerHTML = '';
+  state.awarding = {};
+  const awardingPhases = [
+    { title:"Requirements — material", items:[
+      "Three podiums: 1st place (1.50m × 0.60m × 0.70m high), 2nd (1.50m × 0.60m × 0.55m), 3rd (1.50m × 0.60m × 0.40m). Dimensions may change for categories with more athletes/coach on the podium.",
+      "Three removable poles (min. 8 m high, or mobile hangers) and national flags for the winners — a LED/video screen can also be used. All European NF flags are available in the CEV Cloud.",
+      "Set of medals for the winners (3 per team) — supplied by CEV.",
+      "An awards table to display medals and prizes.",
+      "Awards/trophies provided by the LOC and presented by the dignitaries.",
+      "National anthem of the winning team ready — all national anthems are available in the CEV Cloud.",
+      "A set of clean athletes' tank tops for the winners, preferably the same colour used during the final matches.",
+      "Rope and poles to cordon off the photographers' area.",
+      "Optional: one awarding backdrop.",
+      "Optional: two red carpets.",
+    ]},
+    { title:"Requirements — personnel", items:[
+      "Master of Ceremony with a perfect command of English and the local language.",
+      "Announcer with a perfect command of English and the local language.",
+      "Hosts.",
+      "Chief of Protocol to coordinate dignitaries.",
+      "Court Manager and court staff to remove sport equipment and set the awarding material.",
+      "Security staff ensuring media people stay in their designated area.",
+      "One person responsible for directing the winning teams to the holding area and providing them with the new tops.",
+      "The CEV mascot, if available.",
+      "Entertainment staff during the set-up of the awards ceremony material.",
+      "Officials, staff and volunteers lined up around the competition area.",
+    ]},
+    { title:"Rehearsal", items:[
+      "Hold a full rehearsal the day preceding the awarding ceremony, with all personnel involved.",
+      "Ensure CEV Delegate, CEV Staff on site, CEV TV Coordinator and the HTVB Director are part of the rehearsal.",
+      "Prepare all anthem options in advance.",
+      "Rehearse the hoisting of the flags at least one day before the ceremony.",
+    ]},
+    { title:"Before the final match", items:[
+      "Master of Ceremony checks that all necessary material is ready.",
+      "Court Manager ensures the personnel dismantles the sport equipment and sets up the awarding ceremony material.",
+      "CEV Supervisor checks the clean tank tops/tops for the athletes of the three teams.",
+      "Court Manager checks that the masts (or mobile hangers) are in the right position and work properly.",
+      "PR Director distributes the updated schedule with the list of dignitaries presenting the awards.",
+    ]},
+    { title:"After the final match", items:[
+      "Immediately after the Gold Medal Match final whistle, the announcer asks spectators to remain seated and announces the Awards and Closing Ceremony.",
+      "Court personnel dismantle and remove poles, net, referee's chair and umbrellas in the timeout areas.",
+      "Position the red carpets and the three podiums facing the VIP tribune.",
+      "Position the table on which medals, trophies and awards are displayed; set up the three poles if not already in place.",
+      "Arrange ropes to define the photographers' area; lower the ropes of the masts (or mobile hangers) to fix the flags.",
+      "Security staff allow media into the designated area.",
+      "Court personnel fix the flags of the first three countries: 1st place centre (highest mast), 2nd to the right, 3rd to the left of the winners' podium.",
+      "Hosts make their entrance; the three winning teams march in according to their podium position order; dignitaries march in and stop on the red carpet.",
+      "Athletes must wear clean tank tops/tops with no accessories or uniform items other than those authorised for competition, except their own country flag.",
+    ]},
+    { title:"Start of the ceremony", items:[
+      "Master of Ceremonies checks that all personnel, athletes, dignitaries and materials are in place.",
+      "If everything is ready, authorise the start of the ceremony.",
+      "Throughout the presentation, the Chief of Protocol remains on the red carpet with the other VIPs to verify the right people are performing their duties.",
+      "The Assistant Chief of Protocol near the awards table checks that the right cups/trophies, medals and awards are presented.",
+      "If coaches take part: confirm during the Preliminary Inquiry and/or Technical Meeting whether their attendance is required; check if medals exist for coaches; inform coaches of dress code and procedure. Coaches stand with the team behind the podium, step up together with the players, receive medals together with the players, and are included in official photographs.",
+    ]},
+  ];
+  awardingPhases.forEach((phase, idx)=> makePhaseBlock(container, phase, idx, 'awarding'));
+  awardingPhases.forEach((phase, idx)=>{
+    phase.items.forEach((txt,i)=>{ state.awarding[`awarding-${idx}-${i}`] = false; });
+  });
+  updateProgress('awarding');
+}
+
+function renderEventSelect(){
+  const sel = document.getElementById('eventSelect');
+  Object.keys(eventCategories).forEach(key=>{
+    const opt = el('option');
+    opt.value = key;
+    opt.textContent = eventCategories[key].label.replace(/&amp;/g,'&');
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', ()=> renderEventChecklist(sel.value));
+}
+
+function renderEventChecklist(key){
+  const cat = eventCategories[key];
+  const container = document.getElementById('event-phases');
+  container.innerHTML = '';
+  state.event = {};
+
+  const refCard = el('div','card info');
+  refCard.innerHTML = `<h3>Main references for this category</h3><ul>${cat.refs.map(r=>`<li>${r}</li>`).join('')}</ul>`;
+  container.appendChild(refCard);
+
+  cat.phases.forEach((phase, idx)=> makePhaseBlock(container, phase, idx, 'event'));
+  cat.phases.forEach((phase, idx)=>{
+    phase.items.forEach((txt,i)=>{ state.event[`event-${idx}-${i}`] = false; });
+  });
+  updateProgress('event');
+}
+
+function renderCasebook(){
+  const container = document.getElementById('casebook-list');
+  caseBook.forEach(c=>{
+    const d = el('details','case');
+    d.innerHTML = `<summary>${c.q}</summary><div class="abody">${c.a}</div>`;
+    container.appendChild(d);
+  });
+}
+
+function renderLinks(){
+  const grid = document.getElementById('linksGrid');
+  linkList.forEach(l=>{
+    const c = el('div','link-card');
+    c.innerHTML = `<div class="lk-title">${l.t}</div><div class="lk-desc">${l.d}</div><a href="${l.u}" target="_blank" rel="noopener"><code>${l.u.replace('https://','')}</code></a>`;
+    grid.appendChild(c);
+  });
+}
+
+/* ---------------------------------------------------------------
+   TABS
+--------------------------------------------------------------- */
+const tabsDef = [
+  {id:'timeline', label:'Timeline'},
+  {id:'events', label:'Event Checklists'},
+  {id:'weather', label:'Weather & Safety'},
+  {id:'awarding', label:'Awarding Ceremony'},
+  {id:'data', label:'Data & Tech'},
+  {id:'fines', label:'Fines & Protests'},
+  {id:'casebook', label:'Case Book'},
+  {id:'links', label:'Key Links'},
+];
+
+function renderTabs(){
+  const nav = document.getElementById('tabs');
+  tabsDef.forEach((t, i)=>{
+    const btn = el('button', i===0 ? 'active':'', t.label);
+    btn.dataset.target = t.id;
+    btn.addEventListener('click', ()=> switchTab(t.id));
+    nav.appendChild(btn);
+  });
+}
+
+function switchTab(id){
+  document.querySelectorAll('nav.tabs button').forEach(b=> b.classList.toggle('active', b.dataset.target===id));
+  document.querySelectorAll('section.panel').forEach(p=> p.classList.toggle('active', p.id === 'panel-'+id));
+}
+
+/* ---------------------------------------------------------------
+   RESET BUTTONS
+--------------------------------------------------------------- */
+function wireResets(){
+  document.querySelectorAll('[data-reset]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const key = btn.dataset.reset;
+      document.querySelectorAll(`#panel-${key==='timeline'?'timeline':key} input[type=checkbox]`).forEach(cb=>{
+        cb.checked = false;
+        cb.closest('li').classList.remove('checked');
+        state[key][cb.id] = false;
+      });
+      updateProgress(key);
+    });
+  });
+  document.getElementById('resetEventBtn').addEventListener('click', ()=>{
+    document.querySelectorAll('#event-phases input[type=checkbox]').forEach(cb=>{
+      cb.checked = false;
+      cb.closest('li').classList.remove('checked');
+      state.event[cb.id] = false;
+    });
+    updateProgress('event');
+  });
+}
+
+/* ---------------------------------------------------------------
+   INIT
+--------------------------------------------------------------- */
+renderTabs();
+initTimeline();
+renderEventSelect();
+renderEventChecklist(Object.keys(eventCategories)[0]);
+initAwarding();
+renderCasebook();
+renderLinks();
+wireResets();
+</script>
+</body>
+</html>
