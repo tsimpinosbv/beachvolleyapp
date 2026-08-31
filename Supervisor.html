@@ -208,6 +208,37 @@
   @media (max-width:520px){
     .progress-wrap{flex-wrap:wrap;}
   }
+
+  /* SYNC ACROSS DEVICES */
+  .sync-bar{margin-top:16px;}
+  .sync-btn{
+    border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);color:#fff;
+    font-size:12.5px;font-weight:700;padding:8px 13px;border-radius:9px;cursor:pointer;
+  }
+  .sync-btn:hover{background:rgba(255,255,255,.16);}
+  .sync-panel{
+    margin-top:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+    border-radius:12px;padding:12px 14px;max-width:640px;
+  }
+  .sync-panel p{margin:0 0 8px;font-size:12.5px;color:#dbe1f5;}
+  .sync-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .sync-row input{
+    flex:1;min-width:180px;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.25);
+    background:rgba(255,255,255,.95);color:var(--ink);font-size:12.5px;font-family:monospace;
+  }
+  .sync-row button{
+    border:none;background:var(--gold);color:#2b1c00;font-weight:800;font-size:12.5px;
+    padding:8px 14px;border-radius:8px;cursor:pointer;
+  }
+  .sync-row button:hover{filter:brightness(1.05);}
+  .sync-note{margin-top:6px;font-size:11.5px;color:#a9b4de;min-height:14px;}
+  .sync-toast{
+    max-width:980px;margin:14px auto 0;padding:10px 14px;border-radius:10px;
+    background:#e3f6ef;border:1px solid #9fd9c3;color:#0d5c40;font-size:13px;font-weight:600;
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+  }
+  .sync-toast[hidden]{display:none;}
+  .sync-toast button{border:none;background:transparent;color:#0d5c40;font-size:16px;cursor:pointer;font-weight:700;line-height:1;}
 </style>
 </head>
 <body>
@@ -216,8 +247,23 @@
     <p class="eyebrow">CEV Beach Volleyball · Officials Toolkit</p>
     <h1 class="title">Supervisor &amp; Technical Delegate Checklist</h1>
     <p class="subtitle">Step-by-step checklists for CEV Beach Volleyball events and Volleyball World Beach Pro Tour Futures, built from the CEV BV Supervisors Handbook (2026 Edition) and the CEV Supervisors Webinar 2026.</p>
+    <div class="sync-bar">
+      <button id="syncBtn" class="sync-btn" type="button">🔗 Sync progress to another device</button>
+      <div class="sync-panel" id="syncPanel" hidden>
+        <p>Copy this link and open it on your other device (or browser) to load your current progress there. It's a one-time snapshot — opening it will overwrite the checklist progress already saved on that device.</p>
+        <div class="sync-row">
+          <input type="text" id="syncLink" readonly onclick="this.select()">
+          <button id="copySyncBtn" type="button">Copy link</button>
+        </div>
+        <p class="sync-note" id="syncNote"></p>
+      </div>
+    </div>
   </div>
 </header>
+<div class="sync-toast" id="syncToast" hidden>
+  <span id="syncToastText"></span>
+  <button id="syncToastClose" type="button" aria-label="Dismiss">&times;</button>
+</div>
 
 <div class="app">
   <nav class="tabs" id="tabs"></nav>
@@ -747,9 +793,108 @@ const linkList = [
 ];
 
 /* ---------------------------------------------------------------
-   STATE (in-memory only — resets on page reload)
+   STATE + PERSISTENCE (checked items are saved to localStorage,
+   so they stay checked between visits until you hit Reset)
 --------------------------------------------------------------- */
 const state = { timeline:{}, event:{}, awarding:{} };
+
+// 'event' storage key changes with the selected event category,
+// so progress in one category never bleeds into another.
+const storageKeyFor = { timeline:'timeline', awarding:'awarding', event:'event' };
+const STORAGE_PREFIX = 'cevSupervisorChecklist_v1_';
+
+function loadSaved(key){
+  try{
+    const raw = localStorage.getItem(STORAGE_PREFIX + key);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+function persistSaved(key, obj){
+  try{ localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(obj)); }
+  catch(e){ /* storage unavailable — checklist still works, just won't persist */ }
+}
+function clearSaved(key){
+  try{ localStorage.removeItem(STORAGE_PREFIX + key); }catch(e){}
+}
+
+/* ---------------------------------------------------------------
+   SYNC ACROSS DEVICES
+   Packs everything currently saved (timeline, awarding, every event
+   category) into one code carried in the URL hash (#sync=...). Opening
+   that link on another device/browser applies it to that device's
+   localStorage. It's a manual, one-time snapshot — not live sync.
+--------------------------------------------------------------- */
+function buildSyncPayload(){
+  const payload = { timeline: loadSaved('timeline'), awarding: loadSaved('awarding'), event: {} };
+  Object.keys(eventCategories).forEach(k=>{ payload.event[k] = loadSaved('event_' + k); });
+  return payload;
+}
+function encodePayload(payload){
+  return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+}
+function decodePayload(code){
+  return JSON.parse(decodeURIComponent(escape(atob(code))));
+}
+function applySyncPayload(payload){
+  if(payload.timeline) persistSaved('timeline', payload.timeline);
+  if(payload.awarding) persistSaved('awarding', payload.awarding);
+  if(payload.event){
+    Object.keys(payload.event).forEach(k=> persistSaved('event_' + k, payload.event[k]));
+  }
+}
+
+function showSyncToast(text){
+  const toast = document.getElementById('syncToast');
+  document.getElementById('syncToastText').textContent = text;
+  toast.hidden = false;
+}
+
+function applyIncomingSyncFromURL(){
+  if(location.hash.indexOf('#sync=') !== 0) return false;
+  try{
+    const payload = decodePayload(location.hash.slice(6));
+    applySyncPayload(payload);
+    history.replaceState(null, '', location.pathname + location.search);
+    return true;
+  }catch(e){
+    history.replaceState(null, '', location.pathname + location.search);
+    return false;
+  }
+}
+
+function wireSync(){
+  const btn = document.getElementById('syncBtn');
+  const panel = document.getElementById('syncPanel');
+  const linkInput = document.getElementById('syncLink');
+  const copyBtn = document.getElementById('copySyncBtn');
+  const note = document.getElementById('syncNote');
+
+  btn.addEventListener('click', ()=>{
+    panel.hidden = !panel.hidden;
+    if(!panel.hidden){
+      const code = encodePayload(buildSyncPayload());
+      linkInput.value = location.origin + location.pathname + '#sync=' + code;
+      note.textContent = '';
+      linkInput.select();
+    }
+  });
+
+  copyBtn.addEventListener('click', async ()=>{
+    linkInput.select();
+    let copied = false;
+    try{
+      await navigator.clipboard.writeText(linkInput.value);
+      copied = true;
+    }catch(e){
+      try{ copied = document.execCommand('copy'); }catch(e2){ copied = false; }
+    }
+    note.textContent = copied ? 'Copied — paste it into your other device\'s browser.' : 'Could not copy automatically — select the text above and copy it manually.';
+  });
+
+  document.getElementById('syncToastClose').addEventListener('click', ()=>{
+    document.getElementById('syncToast').hidden = true;
+  });
+}
 
 /* ---------------------------------------------------------------
    RENDER HELPERS
@@ -769,13 +914,16 @@ function makePhaseBlock(container, phase, idx, stateKey){
   const ul = el('ul','checklist');
   phase.items.forEach((txt, i)=>{
     const id = `${stateKey}-${idx}-${i}`;
+    const checkedNow = !!state[stateKey][id];
     const li = el('li');
-    li.innerHTML = `<input type="checkbox" id="${id}"><label for="${id}">${txt}</label>`;
+    if(checkedNow) li.classList.add('checked');
+    li.innerHTML = `<input type="checkbox" id="${id}"${checkedNow?' checked':''}><label for="${id}">${txt}</label>`;
     const cb = li.querySelector('input');
     cb.addEventListener('change', ()=>{
       state[stateKey][id] = cb.checked;
       li.classList.toggle('checked', cb.checked);
       updateProgress(stateKey);
+      persistSaved(storageKeyFor[stateKey], state[stateKey]);
     });
     ul.appendChild(li);
   });
@@ -806,17 +954,19 @@ function updateProgress(stateKey){
 function initTimeline(){
   const container = document.getElementById('timeline-phases');
   container.innerHTML = '';
+  const saved = loadSaved(storageKeyFor.timeline);
   state.timeline = {};
-  timelinePhases.forEach((phase, idx)=> makePhaseBlock(container, phase, idx, 'timeline'));
   timelinePhases.forEach((phase, idx)=>{
-    phase.items.forEach((txt,i)=>{ state.timeline[`timeline-${idx}-${i}`] = false; });
+    phase.items.forEach((txt,i)=>{ state.timeline[`timeline-${idx}-${i}`] = !!saved[`timeline-${idx}-${i}`]; });
   });
+  timelinePhases.forEach((phase, idx)=> makePhaseBlock(container, phase, idx, 'timeline'));
   updateProgress('timeline');
 }
 
 function initAwarding(){
   const container = document.getElementById('awarding-phases');
   container.innerHTML = '';
+  const savedAwarding = loadSaved(storageKeyFor.awarding);
   state.awarding = {};
   const awardingPhases = [
     { title:"Requirements — material", items:[
@@ -875,10 +1025,10 @@ function initAwarding(){
       "If coaches take part: confirm during the Preliminary Inquiry and/or Technical Meeting whether their attendance is required; check if medals exist for coaches; inform coaches of dress code and procedure. Coaches stand with the team behind the podium, step up together with the players, receive medals together with the players, and are included in official photographs.",
     ]},
   ];
-  awardingPhases.forEach((phase, idx)=> makePhaseBlock(container, phase, idx, 'awarding'));
   awardingPhases.forEach((phase, idx)=>{
-    phase.items.forEach((txt,i)=>{ state.awarding[`awarding-${idx}-${i}`] = false; });
+    phase.items.forEach((txt,i)=>{ state.awarding[`awarding-${idx}-${i}`] = !!savedAwarding[`awarding-${idx}-${i}`]; });
   });
+  awardingPhases.forEach((phase, idx)=> makePhaseBlock(container, phase, idx, 'awarding'));
   updateProgress('awarding');
 }
 
@@ -897,16 +1047,18 @@ function renderEventChecklist(key){
   const cat = eventCategories[key];
   const container = document.getElementById('event-phases');
   container.innerHTML = '';
+  storageKeyFor.event = 'event_' + key;
+  const saved = loadSaved(storageKeyFor.event);
   state.event = {};
+  cat.phases.forEach((phase, idx)=>{
+    phase.items.forEach((txt,i)=>{ state.event[`event-${idx}-${i}`] = !!saved[`event-${idx}-${i}`]; });
+  });
 
   const refCard = el('div','card info');
   refCard.innerHTML = `<h3>Main references for this category</h3><ul>${cat.refs.map(r=>`<li>${r}</li>`).join('')}</ul>`;
   container.appendChild(refCard);
 
   cat.phases.forEach((phase, idx)=> makePhaseBlock(container, phase, idx, 'event'));
-  cat.phases.forEach((phase, idx)=>{
-    phase.items.forEach((txt,i)=>{ state.event[`event-${idx}-${i}`] = false; });
-  });
   updateProgress('event');
 }
 
@@ -969,6 +1121,7 @@ function wireResets(){
         cb.closest('li').classList.remove('checked');
         state[key][cb.id] = false;
       });
+      clearSaved(storageKeyFor[key]);
       updateProgress(key);
     });
   });
@@ -978,6 +1131,7 @@ function wireResets(){
       cb.closest('li').classList.remove('checked');
       state.event[cb.id] = false;
     });
+    clearSaved(storageKeyFor.event);
     updateProgress('event');
   });
 }
@@ -985,6 +1139,7 @@ function wireResets(){
 /* ---------------------------------------------------------------
    INIT
 --------------------------------------------------------------- */
+const syncedFromLink = applyIncomingSyncFromURL();
 renderTabs();
 initTimeline();
 renderEventSelect();
@@ -993,6 +1148,8 @@ initAwarding();
 renderCasebook();
 renderLinks();
 wireResets();
+wireSync();
+if(syncedFromLink) showSyncToast('Progress synced from your other device — this device\'s checklist now matches the link you opened.');
 </script>
 </body>
 </html>
