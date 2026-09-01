@@ -61,6 +61,18 @@
     max-width:700px;
     position:relative;
     z-index:1;
+    padding-right:170px;
+  }
+
+  .header-logo{
+    position:absolute;
+    top:8px;
+    right:8px;
+    width:150px;
+    height:150px;
+    object-fit:contain;
+    z-index:2;
+    filter:drop-shadow(0 14px 28px rgba(3,26,61,.28));
   }
 
   .eyebrow{
@@ -179,6 +191,15 @@
 
   /* ---- Mobile friendliness ---- */
   @media (max-width: 640px){
+    .header-logo{
+      position:absolute;
+      top:6px;
+      right:6px;
+      display:block;
+      width:82px;
+      height:82px;
+      margin:0;
+    }
     body{ padding-bottom:0; }
     .wrap{ padding:0 18px; }
     header{ padding:32px 18px 56px; }
@@ -219,9 +240,8 @@
 
 <header>
   <div class="wrap">
-    
+    <img class="header-logo" src="icons/logo.png" alt="Beach Volleyball Supervisor Tools logo">
     <h2>Εργαλεία Διοργάνωσης Beach Volleyball</h2>
-    
   </div>
 </header>
 
