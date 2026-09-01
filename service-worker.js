@@ -1,6 +1,6 @@
 // Beach Volleyball Supervisor Tools — service worker
 // Bump CACHE_VERSION any time app-shell files change, so clients pick up the update.
-const CACHE_VERSION = 'bv-tools-v3';
+const CACHE_VERSION = 'bv-tools-v4';
 const SHELL_CACHE = CACHE_VERSION + '-shell';
 const DATA_CACHE = CACHE_VERSION + '-data';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
@@ -76,8 +76,10 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(DATA_CACHE).then((c) => c.put(cleanKey, copy));
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(DATA_CACHE).then((c) => c.put(cleanKey, copy));
+          }
           return res;
         })
         .catch(() => caches.match(cleanKey))
@@ -91,8 +93,12 @@ self.addEventListener('fetch', (event) => {
       caches.match(req).then((cached) => {
         if (cached) return cached;
         return fetch(req).then((res) => {
-          const copy = res.clone();
-          caches.open(RUNTIME_CACHE).then((c) => c.put(req, copy));
+          // Only cache genuinely successful responses — caching a 404/error
+          // here would otherwise "stick" forever for cache-first assets.
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(RUNTIME_CACHE).then((c) => c.put(req, copy));
+          }
           return res;
         });
       })
@@ -105,8 +111,10 @@ self.addEventListener('fetch', (event) => {
     caches.match(req).then((cached) => {
       const network = fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(RUNTIME_CACHE).then((c) => c.put(req, copy));
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(RUNTIME_CACHE).then((c) => c.put(req, copy));
+          }
           return res;
         })
         .catch(() => cached);
