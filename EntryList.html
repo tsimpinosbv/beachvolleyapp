@@ -523,7 +523,17 @@ function flagHtml(m, dup){
   if(m.status === 'fuzzy') return `<span class="flag fuzzy" title="Αντιστοιχίστηκε με: ${esc(m.p.name)}">≈</span>`;
   return '';
 }
+// Η σειρά των ομάδων (seeding) για χρήση από το Πρόγραμμα Αγώνων: «ΕΠΩΝΥΜΟ / ΕΠΩΝΥΜΟ».
+function publishSeeded(){
+  try{
+    const sur = (m, raw) => String(m.p ? m.p.name : raw).trim().split(/\s+/)[0];
+    const out = { tName: document.getElementById('tName').value.trim(), savedAt: Date.now() };
+    ['MEN','WOMEN'].forEach(g => { out[g] = computed(g).rows.map(r => sur(r.m1, r.t.n1) + ' / ' + sur(r.m2, r.t.n2)); });
+    localStorage.setItem('entryListSeeded_v1', JSON.stringify(out));
+  }catch(e){}
+}
 function render(){
+  publishSeeded();
   ['MEN','WOMEN'].forEach(g => document.getElementById('cnt'+g).textContent = TEAMS[g].length ? '(' + TEAMS[g].length + ')' : '');
   document.getElementById('bestNWrap').style.display = document.getElementById('method').value === 'best' ? '' : 'none';
   const { rows, st, direct } = computed(tab);
