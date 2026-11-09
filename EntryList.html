@@ -160,7 +160,7 @@
       <button class="btn primary" type="button" onclick="addManual()">+ Ομάδα</button>
     </div>
     <datalist id="names"></datalist>
-    <p class="hint">Το Excel δηλώσεων μπορεί να έχει φύλλα MEN και WOMEN (ή ένα φύλλο για την καρτέλα που βλέπεις), με τα δύο ονόματα κάθε ομάδας σε δύο στήλες ή σε μία στήλη χωρισμένα με «/».</p>
+    <p class="hint">Διαβάζει την εξαγωγή δηλώσεων της ομοσπονδίας (στήλες ΕΠΙΘΕΤΟ, ΟΝΟΜΑ, ΦΥΛΟ, ΕΠΙΘΕΤΟ/ΟΝΟΜΑ ΣΥΜΠΑΙΚΤΗ): χωρίζει άνδρες/γυναίκες, ενώνει τις διπλές δηλώσεις των συμπαικτών και βάζει σειρά με την ημερομηνία αίτησης. Δέχεται και απλό Excel με φύλλα MEN/WOMEN και δύο ονόματα ανά γραμμή. Email, ΑΜΚΑ και τηλέφωνα δεν διαβάζονται ούτε αποθηκεύονται.</p>
   </div>
 
   <div class="warns" id="warns"></div>
@@ -211,6 +211,25 @@ function buildIndex(g){
   INDEX[g] = { byKey, byTok, bySurname };
 }
 
+// Φωνητικό κλειδί: φέρνει ελληνικά και greeklish στην ίδια μορφή
+// (π.χ. «ΠΑΠΑΔΗΜΗΤΡΙΟΥ ΘΕΟΔΩΡΟΣ» και «PAPADIMITRIOU THEODOROS» → «papadimitriu teodoros»).
+const GR1 = {α:'a',β:'v',γ:'g',δ:'d',ε:'e',ζ:'z',η:'i',θ:'t',ι:'i',κ:'k',λ:'l',μ:'m',ν:'n',ξ:'x',ο:'o',π:'p',ρ:'r',σ:'s',ς:'s',τ:'t',υ:'i',φ:'f',χ:'h',ψ:'ps',ω:'o'};
+function phon(s){
+  let x = String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  x = x.replace(/ου/g,'u').replace(/αι/g,'e').replace(/ει|οι|υι/g,'i').replace(/αυ/g,'av').replace(/ευ/g,'ev')
+       .replace(/μπ/g,'b').replace(/ντ/g,'d').replace(/γκ|γγ/g,'g').replace(/[α-ως]/g, c => GR1[c] || c);
+  x = x.replace(/th/g,'t').replace(/ch|kh/g,'h').replace(/ph/g,'f').replace(/ou/g,'u').replace(/ai/g,'e')
+       .replace(/ei|oi/g,'i').replace(/y/g,'i').replace(/w/g,'o').replace(/ks/g,'x').replace(/mp/g,'b')
+       .replace(/nt/g,'d').replace(/gk|gg|ng/g,'g').replace(/c/g,'k').replace(/v/g,'b');
+  return x.replace(/[^a-z]+/g,' ').replace(/(.)\1+/g,'$1').trim();
+}
+function ratio(a,b){ if(!a||!b) return 0; return 1 - lev(a,b) / Math.max(a.length,b.length); }
+function firstScore(a,b){ // σύγκριση μικρών ονομάτων, επιτρέπει «κολλημένα» διπλά ονόματα
+  if(!a||!b) return 0; if(a===b) return 1;
+  if(Math.min(a.length,b.length) >= 3 && (a.startsWith(b) || b.startsWith(a))) return 0.9;
+  return ratio(a,b);
+}
+
 // Επιστρέφει {p, status:'exact'|'fuzzy'|'none'}
 const matchCache = new Map();
 function matchName(g, raw){
@@ -221,21 +240,38 @@ function matchName(g, raw){
     const ex = ix.byKey.get(k) || ix.byTok.get(tokenKey(raw));
     if(ex) res = { p:ex, status:'exact' };
     else {
-      const toks = k.split(' ');
-      // Μόνο επώνυμο και μοναδικός αθλητής με αυτό το επώνυμο
-      if(toks.length === 1 && ix.bySurname.has(toks[0]) && ix.bySurname.get(toks[0]).length === 1){
-        res = { p: ix.bySurname.get(toks[0])[0], status:'fuzzy' };
-      } else {
-        let best=null, bestR=0;
-        for(const p of RANK[g]){
-          const pk = nameKey(p.name);
-          const r = 1 - lev(k, pk) / Math.max(k.length, pk.length);
-          const rt = 1 - lev(tokenKey(raw), tokenKey(p.name)) / Math.max(k.length, pk.length);
-          const rr = Math.max(r, rt);
-          if(rr > bestR){ bestR = rr; best = p; }
+      const rt = phon(raw).split(' ').filter(Boolean);
+      const rawJoined = rt.join('');
+      let best = null, bestS = 0, bestExact = false, surOnly = [];
+      for(const p of RANK[g]){
+        if(!p._ph) p._ph = phon(p.name).split(' ').filter(Boolean);
+        const pt = p._ph; if(!pt.length) continue;
+        // ίδιο επώνυμο (σε οποιαδήποτε θέση, και με κολλημένο όνομα) ;
+        const sur = pt[0];
+        const surIdx = rt.findIndex(t => t === sur || (t.length > sur.length + 2 && (t.endsWith(sur) || t.startsWith(sur))));
+        let score = 0, exact = false;
+        if(surIdx !== -1){
+          const restR = rt.filter((_,i) => i !== surIdx).map(t => t === rt[surIdx] ? t : t);
+          const restP = pt.slice(1);
+          if(!restR.length){ surOnly.push(p); continue; }
+          // το κολλημένο κομμάτι (π.χ. evangelossideris) κρατά και το όνομα
+          const fr = restR.join(''), fp = restP.join('');
+          const fs = restP.length ? Math.max(firstScore(fr, fp), ...restR.map(r => Math.max(...restP.map(q => firstScore(r,q))))) : 0.5;
+          score = 0.5 + 0.5 * fs;
+          exact = fs === 1 && rt.length === pt.length;
+          if(rt[surIdx] !== sur){ // επώνυμο κολλημένο με όνομα
+            const extra = rt[surIdx].startsWith(sur) ? rt[surIdx].slice(sur.length) : rt[surIdx].slice(0, -sur.length);
+            score = Math.max(score, 0.5 + 0.5 * Math.max(...restP.map(q => firstScore(extra,q)), 0));
+            exact = false;
+          }
+        } else {
+          score = Math.max(ratio(rawJoined, pt.join('')), ratio(rt.slice().sort().join(' '), pt.slice().sort().join(' '))) * 0.95;
         }
-        if(best && bestR >= 0.8) res = { p:best, status:'fuzzy' };
+        if(score > bestS){ bestS = score; best = p; bestExact = exact; }
       }
+      if(best && bestS >= 0.86) res = { p:best, status: bestExact ? 'exact' : 'fuzzy' };
+      else if(surOnly.length === 1) res = { p:surOnly[0], status:'fuzzy' };
+      else if(best && bestS >= 0.8) res = { p:best, status:'fuzzy' };
     }
   }
   matchCache.set(ck, res); return res;
@@ -334,38 +370,105 @@ function sheetGender(name){
   return null;
 }
 function addTeams(g, pairs){
-  const have = new Set(TEAMS[g].map(t => tokenKey(t.n1) + '|' + tokenKey(t.n2)));
+  const have = new Set(TEAMS[g].map(t => teamKey(g, t.n1, t.n2)));
   let added = 0;
   pairs.forEach(([a,b]) => {
-    const key = tokenKey(a) + '|' + tokenKey(b), rev = tokenKey(b) + '|' + tokenKey(a);
-    if(have.has(key) || have.has(rev)) return;
+    const key = teamKey(g, a, b);
+    if(have.has(key)) return;
     have.add(key);
     TEAMS[g].push({ id: nextId++, n1: a, n2: b, order: TEAMS[g].length });
     added++;
   });
   return added;
 }
+// Ταυτότητα αθλητή για εντοπισμό διπλών δηλώσεων (π.χ. και οι δύο συμπαίκτες δήλωσαν την ομάδα)
+function identity(g, raw){
+  const m = matchName(g, raw);
+  return m.p ? 'P:' + m.p.name : 'R:' + phon(raw).split(' ').sort().join(' ');
+}
+function teamKey(g, a, b){ return [identity(g,a), identity(g,b)].sort().join('|'); }
+
+// Αναγνωρίζει στήλες από τις επικεφαλίδες (π.χ. εξαγωγή δηλώσεων ΕΟΠΕ:
+// ΕΠΙΘΕΤΟ, ΟΝΟΜΑ, ΦΥΛΟ, ΕΠΙΘΕΤΟ ΣΥΜΠΑΙΚΤΗ, ΟΝΟΜΑ ΣΥΜΠΑΙΚΤΗ, ΚΑΤΑΣΤΑΣΗ, ΗΜΕΡΟΜΗΝΙΑ ΑΙΤΗΣΗΣ).
+// Στοιχεία όπως email, ΑΜΚΑ, τηλέφωνο ΔΕΝ διαβάζονται.
+function detectColumns(rows){
+  for(let r = 0; r < Math.min(rows.length, 12); r++){
+    const h = (rows[r] || []).map(v => String(v||'').toLocaleUpperCase('el-GR').normalize('NFD').replace(/[̀-ͯ]/g,'').trim());
+    const c = {};
+    h.forEach((t, i) => {
+      if(!t) return;
+      const partner = /ΣΥΜΠΑΙΚΤ|PARTNER/.test(t);
+      if(/ΟΝΟΜΑΤΕΠΩΝΥΜ|FULL ?NAME/.test(t)) c[partner ? 'full2' : 'full1'] ??= i;
+      else if(/ΕΠΙΘΕΤ|ΕΠΩΝΥΜ|SURNAME|LAST ?NAME/.test(t)) c[partner ? 'sur2' : 'sur1'] ??= i;
+      else if(/^ΟΝΟΜΑ|FIRST ?NAME|^NAME/.test(t)) c[partner ? 'first2' : 'first1'] ??= i;
+      else if(/(ΑΘΛΗΤΗΣ|ΑΘΛΗΤΡΙΑ|PLAYER)\s*1/.test(t)) c.full1 ??= i;
+      else if(/(ΑΘΛΗΤΗΣ|ΑΘΛΗΤΡΙΑ|PLAYER)\s*2/.test(t)) c.full2 ??= i;
+      else if(/^ΦΥΛΟ|GENDER|^SEX/.test(t)) c.gender ??= i;
+      else if(/ΚΑΤΑΣΤΑΣ|STATUS/.test(t)) c.status ??= i;
+      else if(/ΗΜΕΡΟΜΗΝΙΑ ΑΙΤΗΣ|ΗΜΕΡΟΜΗΝΙΑ ΔΗΛΩΣ|SUBMITTED|TIMESTAMP/.test(t)) c.date = i;
+      else if(/ΗΜΕΡΟΜΗΝΙΑ|DATE/.test(t)) c.date ??= i;
+    });
+    const has1 = c.full1 !== undefined || c.sur1 !== undefined;
+    const has2 = c.full2 !== undefined || c.sur2 !== undefined;
+    if(has1 && has2) return { row: r, c };
+  }
+  return null;
+}
+function cellStr(v){ return v == null ? '' : String(v).trim(); }
+function genderOf(v){
+  const t = cellStr(v).toLocaleUpperCase('el-GR').normalize('NFD').replace(/[̀-ͯ]/g,'');
+  if(/ΓΥΝ|ΘΗΛ|WOMAN|WOMEN|FEMALE|^F$|^Γ$/.test(t)) return 'WOMEN';
+  if(/ΑΝΔΡ|ΑΡΡ|^MAN|^MEN|MALE|^M$|^Α$/.test(t)) return 'MEN';
+  return null;
+}
+function parseStructured(rows, det, defaultG){
+  const c = det.c, out = [];
+  let skipped = 0;
+  for(let r = det.row + 1; r < rows.length; r++){
+    const row = rows[r] || [];
+    const n1 = c.full1 !== undefined ? cellStr(row[c.full1]) : (cellStr(row[c.sur1]) + ' ' + cellStr(row[c.first1])).trim();
+    const n2 = c.full2 !== undefined ? cellStr(row[c.full2]) : (cellStr(row[c.sur2]) + ' ' + cellStr(row[c.first2])).trim();
+    if(!n1 && !n2) continue;
+    if(c.status !== undefined && /ΑΠΟΡΡ|ΑΚΥΡ|ΑΚΥΡΩ|REJECT|CANCEL|WITHDR/i.test(cellStr(row[c.status]))){ skipped++; continue; }
+    if(!n1 || !n2){ skipped++; continue; }
+    const g = (c.gender !== undefined && genderOf(row[c.gender])) || defaultG;
+    let when = c.date !== undefined ? row[c.date] : null;
+    when = when instanceof Date ? when.getTime() : (when ? Date.parse(String(when).replace(' ','T')) : NaN);
+    out.push({ g, a: n1, b: n2, when: isNaN(when) ? Infinity : when, idx: r });
+  }
+  return { list: out, skipped };
+}
 function onRegPicked(ev){
   const f = ev.target.files && ev.target.files[0]; if(!f) return;
   const rd = new FileReader();
   rd.onload = e => {
     try{
-      const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' });
-      const byG = { MEN: [], WOMEN: [] };
-      wb.SheetNames.forEach(sn => {
-        const g = sheetGender(sn) || (wb.SheetNames.length === 1 ? tab : null);
-        if(!g) return;
-        XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, defval:'' }).forEach(row => { const t = rowToTeam(row); if(t) byG[g].push(t); });
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array', cellDates:true });
+      let entries = [], skipped = 0;
+      wb.SheetNames.forEach((sn, si) => {
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, defval:'', raw:true });
+        const sg = sheetGender(sn) || (wb.SheetNames.length === 1 || si === 0 ? tab : null);
+        const det = detectColumns(rows);
+        if(det){
+          const res = parseStructured(rows, det, sg || tab);
+          entries = entries.concat(res.list); skipped += res.skipped;
+        } else if(sg){
+          rows.forEach((row, ri) => { const t = rowToTeam(row); if(t) entries.push({ g: sg, a: t[0], b: t[1], when: Infinity, idx: ri }); });
+        }
       });
-      if(!byG.MEN.length && !byG.WOMEN.length){
-        // Κανένα φύλλο με όνομα φύλου: πάρε το πρώτο φύλλο για την τρέχουσα καρτέλα
-        XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1, defval:'' }).forEach(row => { const t = rowToTeam(row); if(t) byG[tab].push(t); });
-      }
-      const nm = addTeams('MEN', byG.MEN), nw = addTeams('WOMEN', byG.WOMEN);
+      // σειρά δήλωσης = ημερομηνία αίτησης (η πρώτη δήλωση της ομάδας μετράει)
+      entries.sort((x, y) => (x.when - y.when) || (x.idx - y.idx));
+      const before = { MEN: TEAMS.MEN.length, WOMEN: TEAMS.WOMEN.length };
+      const nm = addTeams('MEN', entries.filter(x => x.g === 'MEN').map(x => [x.a, x.b]));
+      const nw = addTeams('WOMEN', entries.filter(x => x.g === 'WOMEN').map(x => [x.a, x.b]));
+      const merged = entries.length - nm - nw;
       if(!nm && nw) switchTab('WOMEN'); else if(nm && !nw) switchTab('MEN');
       saveState(); render();
-      toast(`Προστέθηκαν ${nm} ομάδες ανδρών και ${nw} γυναικών`);
-    }catch(err){ toast('Το αρχείο δηλώσεων δεν διαβάστηκε'); }
+      let msg = `${entries.length} δηλώσεις → ${nm} ομάδες ανδρών, ${nw} γυναικών`;
+      if(merged > 0) msg += ` · ${merged} διπλές δηλώσεις ενώθηκαν`;
+      if(skipped > 0) msg += ` · ${skipped} παραλείφθηκαν (απορρίφθηκαν/ελλιπείς)`;
+      toast(msg, 5000);
+    }catch(err){ console.error(err); toast('Το αρχείο δηλώσεων δεν διαβάστηκε'); }
   };
   rd.readAsArrayBuffer(f); ev.target.value = '';
 }
@@ -491,7 +594,7 @@ function switchTab(g){
   fillUpTo(); fillDatalist(); render();
 }
 function onSettings(){ saveState(); render(); }
-function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600); }
+function toast(msg, ms){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms || 2600); }
 
 // ---------- Αποθήκευση πρόχειρου ----------
 function saveState(){
