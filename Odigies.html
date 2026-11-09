@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Οδηγίες — BV Tools</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d3a5c">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BV Tools">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Αυτή η σελίδα παράγεται από το ΟΔΗΓΙΕΣ-ΕΓΚΑΤΑΣΤΑΣΗΣ.md. Άλλαξε πρώτα εκείνο το αρχείο. -->
+<style>
+  :root{
+    --blue-900:#0d3a5c; --blue-800:#155a8a; --sky:#eaf4fb; --sky-light:#f8fcfe;
+    --ink:#0f2438; --ink-soft:rgba(15,36,56,0.74); --line:#d6e6f2; --accent:#0f6fac;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:linear-gradient(180deg,#fff 0%,var(--sky-light) 60%,var(--sky) 100%); color:var(--ink);
+       font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:15.5px; line-height:1.6;}
+  header{background:linear-gradient(135deg,var(--blue-900) 0%,var(--blue-800) 100%); color:#fff; border-radius:0 0 20px 20px; padding:22px 16px 26px;}
+  .hwrap,.wrap{max-width:760px; margin:0 auto;}
+  .back{display:inline-flex; align-items:center; gap:6px; color:#fff; text-decoration:none; font-weight:700; font-size:13.5px;
+        background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28); padding:7px 12px; border-radius:8px;}
+  .back svg{width:14px;height:14px;}
+  h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(28px,7vw,38px); line-height:1.08; margin:16px 0 6px; letter-spacing:-0.01em;}
+  header p{margin:0; color:rgba(255,255,255,0.8); font-size:14px;}
+  .wrap{padding:0 16px 60px;}
+  .toc{background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin:18px 0 6px; display:grid; gap:2px;}
+  .toc b{font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:4px;}
+  .toc a{color:var(--accent); text-decoration:none; font-weight:600; font-size:14.5px; padding:4px 0;}
+  .content h2{font-family:'Space Grotesk',sans-serif; font-size:21px; line-height:1.2; margin:30px 0 10px; color:var(--blue-900); scroll-margin-top:12px;
+              padding-top:18px; border-top:1px solid var(--line);}
+  .content p{margin:10px 0;}
+  .content ol,.content ul{padding-left:22px; margin:8px 0;}
+  .content li{margin:5px 0;}
+  .content strong{color:var(--blue-900);}
+  .content code{font-family:'IBM Plex Mono',monospace; font-size:.88em; background:#fff; border:1px solid var(--line); border-radius:5px; padding:1px 5px; word-break:break-word;}
+  .content a{color:var(--accent); word-break:break-word;}
+  .content blockquote{margin:12px 0; padding:10px 14px; background:#fff7e8; border-left:4px solid #f0a020; border-radius:8px;}
+  .content blockquote p{margin:0;}
+  .tbl{overflow-x:auto; margin:12px 0; border:1px solid var(--line); border-radius:12px; background:#fff;}
+  table{border-collapse:collapse; width:100%; font-size:14px;}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top;}
+  th{background:var(--sky); font-weight:700; color:var(--blue-900);}
+  tr:last-child td{border-bottom:none;}
+  .top{position:fixed; right:16px; bottom:18px; width:42px; height:42px; border-radius:50%; background:var(--blue-900); color:#fff;
+       display:flex; align-items:center; justify-content:center; text-decoration:none; box-shadow:0 6px 16px rgba(13,58,92,0.3);}
+  .top svg{width:18px;height:18px;}
+  footer{text-align:center; color:var(--ink-soft); font-size:12.5px; padding-top:30px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <a class="back" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+      Αρχική
+    </a>
+    <h1>Οδηγίες</h1>
+    <p>Εγκατάσταση της εφαρμογής, ανέβασμα αρχείων και αλλαγές στο GitHub, βήμα-βήμα.</p>
+  </div>
+</header>
+<div class="wrap">
+  <nav class="toc"><b>Περιεχόμενα</b>
+<a href="#s1">1. Εγκατάσταση της εφαρμογής</a>
+<a href="#s2">2. Πριν κάνεις αλλαγές στο GitHub</a>
+<a href="#s3">3. Ενημέρωση βαθμολογίας (Ranking.xlsx)</a>
+<a href="#s4">4. Προσθήκη αρχείων στα «Αρχεία Τουρνουά» και «Διεθνείς Διοργανώσεις»</a>
+<a href="#s5">5. Αλλαγή σελίδας της εφαρμογής</a>
+<a href="#s6">6. Διαγραφή ή μετονομασία αρχείου</a>
+<a href="#s7">7. Έλεγχος ότι η αλλαγή βγήκε online</a>
+<a href="#s8">8. Αλλαγές μέσω Claude και συχνά προβλήματα</a>
+  </nav>
+  <div class="content">
+<p>Οδηγίες για την εγκατάσταση της εφαρμογής και για κάθε αλλαγή στα αρχεία της.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Τι</th>
+<th>Πού</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Repository (τα αρχεία)</td>
+<td><a href="https://github.com/tsimpinosbv/beachvolleyapp" target="_blank" rel="noopener">github.com/tsimpinosbv/beachvolleyapp</a></td>
+</tr>
+<tr>
+<td>Η εφαρμογή (online)</td>
+<td><a href="https://tsimpinosbv.github.io/beachvolleyapp/" target="_blank" rel="noopener">tsimpinosbv.github.io/beachvolleyapp/</a></td>
+</tr>
+<tr>
+<td>Πρόοδος δημοσίευσης</td>
+<td>Καρτέλα <strong>Actions</strong> στο repository</td>
+</tr>
+</tbody>
+</table></div>
+<p>Κάθε αλλαγή γίνεται στο GitHub και εμφανίζεται μόνη της στην εφαρμογή σε 1–2 λεπτά.</p>
+
+<h2 id="s1">1. Εγκατάσταση της εφαρμογής</h2>
+<p>Το BV Tools εγκαθίσταται ως <strong>ξεχωριστή εφαρμογή</strong>, ανεξάρτητη από το Check Mate Suite.</p>
+<p><strong>Android (Chrome)</strong></p>
+<ol>
+<li>Άνοιξε το <a href="https://tsimpinosbv.github.io/beachvolleyapp/" target="_blank" rel="noopener">tsimpinosbv.github.io/beachvolleyapp/</a> σε <strong>Chrome</strong>.</li>
+<li>Πάτα το κουμπί <strong>«Εγκατάσταση εφαρμογής»</strong> στο μπλε πάνω μέρος της αρχικής σελίδας.<ul>
+<li>Αν δεν εμφανίζεται: μενού ⋮ πάνω δεξιά → <strong>«Εγκατάσταση εφαρμογής»</strong> / <strong>«Προσθήκη στην αρχική οθόνη»</strong>.</li>
+</ul>
+</li>
+<li>Επιβεβαίωσε. Εμφανίζεται εικονίδιο <strong>«BV Tools»</strong> στην αρχική οθόνη και ανοίγει σαν κανονική εφαρμογή.</li>
+</ol>
+<p><strong>iPhone / iPad (Safari)</strong></p>
+<ol>
+<li>Άνοιξε τη διεύθυνση σε <strong>Safari</strong>.</li>
+<li>Πάτα <strong>Κοινοποίηση</strong> (□↑) → <strong>«Προσθήκη στην οθόνη Αφετηρίας»</strong> → <strong>Προσθήκη</strong>.</li>
+</ol>
+<p><strong>Υπολογιστής (Chrome / Edge)</strong></p>
+<p>Πάτα <strong>«Εγκατάσταση εφαρμογής»</strong> στην αρχική σελίδα ή το εικονίδιο εγκατάστασης στη γραμμή διευθύνσεων.</p>
+<blockquote>
+<p>Αν είχες εγκαταστήσει παλιότερη έκδοση πριν από τις 9/11/2026, απεγκατάστησέ την και εγκατάστησέ την ξανά
+με τα παραπάνω βήματα, ώστε να εμφανίζεται ως ξεχωριστή εφαρμογή.</p>
+</blockquote>
+
+<h2 id="s2">2. Πριν κάνεις αλλαγές στο GitHub</h2>
+<ul>
+<li>Να είσαι συνδεδεμένος στο GitHub με τον λογαριασμό <strong>tsimpinosbv</strong>.</li>
+<li>Στο κινητό άνοιξε το GitHub στον <strong>browser</strong>, όχι στην εφαρμογή GitHub: η εφαρμογή δεν ανεβάζει αρχεία.</li>
+</ul>
+<p>Δύο κανόνες που γλιτώνουν τα περισσότερα λάθη:</p>
+<ol>
+<li><strong>Το όνομα του αρχείου πρέπει να είναι ακριβώς ίδιο</strong> με αυτό που αντικαθιστάς, με τα ίδια κεφαλαία/πεζά.
+   Το <code>ranking.xlsx</code> δεν είναι το ίδιο με το <code>Ranking.xlsx</code>.</li>
+<li><strong>Το αρχείο πρέπει να μπει στον σωστό φάκελο.</strong> Πριν πατήσεις «Upload files», άνοιξε πρώτα τον φάκελο όπου πρέπει να πάει.</li>
+</ol>
+
+<h2 id="s3">3. Ενημέρωση βαθμολογίας (Ranking.xlsx)</h2>
+<p>Ανεβάζεις το νέο <code>Ranking.xlsx</code> στη ρίζα του repository και αντικαθιστά το παλιό. Βαθμολογία και έπαθλα
+ενημερώνονται μαζί, από τα φύλλα <strong>MEN</strong>, <strong>WOMEN</strong>, <strong>MEN PRIZES</strong> και <strong>WOMEN PRIZES</strong>.</p>
+<p><strong>Από υπολογιστή</strong></p>
+<ol>
+<li>Στο Excel, αποθήκευσε το αρχείο ως <strong>Ranking.xlsx</strong> (ακριβώς έτσι). Κράτα τα ονόματα των φύλλων όπως είναι.</li>
+<li>Άνοιξε το repository. Μείνε στην κεντρική σελίδα, όχι μέσα σε φάκελο.</li>
+<li>Πάτα <strong>Add file</strong> → <strong>Upload files</strong>.</li>
+<li>Σύρε το <code>Ranking.xlsx</code> μέσα στο πλαίσιο, ή πάτα <strong>choose your files</strong> και διάλεξέ το.</li>
+<li>Κάτω, στο <strong>Commit changes</strong>, γράψε μια σύντομη περιγραφή, π.χ. «Βαθμολογία μετά το Athens Finals».</li>
+<li>Πάτα το πράσινο <strong>Commit changes</strong>.</li>
+</ol>
+<p><strong>Από κινητό</strong></p>
+<ol>
+<li>Άνοιξε το repository σε Chrome ή Safari.</li>
+<li>Πάτα το <strong>+</strong> ή το <strong>…</strong> πάνω από τη λίστα αρχείων → <strong>Upload files</strong>.
+   Αν δεν φαίνεται, άνοιξε το μενού του browser → <strong>Έκδοση για υπολογιστές</strong> (Desktop site).</li>
+<li>Πάτα <strong>choose your files</strong> και διάλεξε το <code>Ranking.xlsx</code> από τα Αρχεία/Λήψεις του κινητού.</li>
+<li>Γράψε περιγραφή και πάτα <strong>Commit changes</strong>.</li>
+</ol>
+<p><strong>Γρήγορη δοκιμή χωρίς ανέβασμα:</strong> στη σελίδα Βαθμολογίας, το κουμπί <strong>Αρχείο</strong> φορτώνει ένα xlsx μόνο στη
+δική σου συσκευή (δουλεύει και χωρίς σύνδεση). Δεν το βλέπουν οι άλλοι. Μένει ενεργό μέχρι να πατήσεις
+<strong>Ανανέωση</strong> ή <strong>Επαναφορά online δεδομένων</strong>.</p>
+<p>Αν μετά το ανέβασμα εμφανιστεί το πορτοκαλί μήνυμα για ονόματα που δεν ταιριάζουν, διόρθωσε τη γραφή τους
+στο Excel ώστε να είναι ίδια στα φύλλα πόντων και επάθλων, και ανέβασέ το ξανά.</p>
+
+<h2 id="s4">4. Προσθήκη αρχείων στα «Αρχεία Τουρνουά» και «Διεθνείς Διοργανώσεις»</h2>
+<p>Τα αρχεία σε αυτούς τους φακέλους εμφανίζονται μόνα τους στην εφαρμογή. Δεν αλλάζεις καμία σελίδα.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Κάρτα στην εφαρμογή</th>
+<th>Φάκελος στο GitHub</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Αρχεία Τουρνουά</td>
+<td><code>files</code></td>
+</tr>
+<tr>
+<td>Διεθνείς Διοργανώσεις</td>
+<td><code>International</code></td>
+</tr>
+</tbody>
+</table></div>
+<ol>
+<li>Άνοιξε το repository.</li>
+<li>Πάτα τον φάκελο, π.χ. <strong>files</strong>. Βεβαιώσου ότι πάνω γράφει <code>beachvolleyapp / files /</code>.</li>
+<li>Πάτα <strong>Add file</strong> → <strong>Upload files</strong>.</li>
+<li>Σύρε μέσα ένα ή περισσότερα αρχεία (xls, xlsx, xlsm, pdf, doc, docx).</li>
+<li>
+<p>Γράψε περιγραφή, π.χ. «Νέο ταμπλό 16 ομάδων», και πάτα <strong>Commit changes</strong>.</p>
+</li>
+<li>
+<p>Το όνομα του αρχείου είναι αυτό που βλέπουν όλοι στη λίστα. Δώσε καθαρό όνομα πριν το ανεβάσεις.</p>
+</li>
+<li>Για νέα έκδοση ενός αρχείου, ανέβασέ το με <strong>ακριβώς το ίδιο όνομα</strong>: αντικαθιστά το παλιό.
+  Με άλλο όνομα θα υπάρχουν και τα δύο.</li>
+<li>Το GitHub δέχεται αρχεία έως 25 MB μέσω browser.</li>
+</ol>
+
+<h2 id="s5">5. Αλλαγή σελίδας της εφαρμογής</h2>
+<p><strong>Αντικατάσταση ολόκληρου αρχείου</strong> (π.χ. νέο <code>Ranking.html</code> που σου έστειλε το Claude)</p>
+<ol>
+<li>Άνοιξε το repository, στον φάκελο όπου βρίσκεται το αρχείο. Οι σελίδες (<code>index.html</code>, <code>Ranking.html</code>,
+   <code>Prices.html</code> κ.λπ.) είναι στη ρίζα.</li>
+<li><strong>Add file</strong> → <strong>Upload files</strong>.</li>
+<li>Σύρε μέσα το νέο αρχείο, με ακριβώς το ίδιο όνομα.</li>
+<li>Περιγραφή → <strong>Commit changes</strong>.</li>
+</ol>
+<p><strong>Μικρή αλλαγή κειμένου απευθείας στο GitHub</strong> (π.χ. ένας τίτλος ή μια λέξη)</p>
+<ol>
+<li>Πάτα το αρχείο στη λίστα, π.χ. <code>index.html</code>.</li>
+<li>Πάτα το μολύβι ✏️ (<strong>Edit this file</strong>) πάνω δεξιά.</li>
+<li>Βρες το κείμενο με <strong>Ctrl+F</strong> (Mac: <strong>Cmd+F</strong>) και άλλαξέ το. Άλλαξε μόνο το κείμενο ανάμεσα στα <code>&gt;</code> και <code>&lt;</code>,
+   όχι τον κώδικα γύρω του.</li>
+<li>Πάτα <strong>Commit changes…</strong> → γράψε περιγραφή → <strong>Commit changes</strong>.</li>
+</ol>
+<p><strong>Αν αλλάξεις εικόνα ή εικονίδιο</strong> (φάκελος <code>icons/</code>), άνοιξε και το <code>service-worker.js</code> με το μολύβι και
+ανέβασε κατά ένα τον αριθμό στη γραμμή <code>const CACHE_VERSION = 'bv-tools-v8';</code> (π.χ. σε <code>v9</code>). Αλλιώς οι
+εγκατεστημένες εφαρμογές κρατούν την παλιά εικόνα. Για σελίδες HTML και το <code>Ranking.xlsx</code> δεν χρειάζεται.</p>
+
+<h2 id="s6">6. Διαγραφή ή μετονομασία αρχείου</h2>
+<p><strong>Διαγραφή</strong></p>
+<ol>
+<li>Πάτα το αρχείο στη λίστα.</li>
+<li>Πάτα το <strong>…</strong> πάνω δεξιά → <strong>Delete file</strong>.</li>
+<li><strong>Commit changes…</strong> → <strong>Commit changes</strong>.</li>
+</ol>
+<p>Μη διαγράφεις <code>index.html</code>, <code>manifest.json</code>, <code>service-worker.js</code>, <code>offline.html</code> ή τον φάκελο <code>icons/</code>:
+χωρίς αυτά η εφαρμογή σταματά να εγκαθίσταται ή να ανοίγει.</p>
+<p><strong>Μετονομασία</strong></p>
+<ol>
+<li>Πάτα το αρχείο → μολύβι ✏️ (<strong>Edit this file</strong>).</li>
+<li>Πάνω, στο πλαίσιο με το όνομα, άλλαξε το όνομα.</li>
+<li><strong>Commit changes…</strong> → <strong>Commit changes</strong>.</li>
+</ol>
+<p>Για αρχεία Excel/PDF το μολύβι δεν εμφανίζεται. Κατέβασέ το, μετονόμασέ το στον υπολογιστή, ανέβασέ το με
+το νέο όνομα και διάγραψε το παλιό.</p>
+<p><strong>Αναίρεση λάθους:</strong> στο repository πάτα <strong>Commits</strong> (το ρολόι πάνω από τη λίστα αρχείων) για να δεις όλες
+τις αλλαγές. Κάθε παλιά έκδοση αρχείου μένει εκεί. Αν κάτι χαλάσει, πες στο Claude «φέρε πίσω την
+προηγούμενη έκδοση του X».</p>
+
+<h2 id="s7">7. Έλεγχος ότι η αλλαγή βγήκε online</h2>
+<ol>
+<li>Στο repository πάτα την καρτέλα <strong>Actions</strong>. Η πρώτη εργασία «pages build and deployment» δείχνει κίτρινο
+   κύκλο όσο τρέχει και πράσινο ✓ όταν τελειώσει. Κόκκινο ✗ σημαίνει σφάλμα: πες το στο Claude.</li>
+<li>Άνοιξε την εφαρμογή και κάνε ανανέωση της σελίδας.</li>
+<li>Για τη βαθμολογία, πάτα <strong>Ανανέωση</strong> μέσα στη σελίδα Βαθμολογίας. Η ημερομηνία «Ενημερώθηκε» πρέπει να αλλάξει.</li>
+</ol>
+<p><strong>Στο κινητό με εγκατεστημένη την εφαρμογή:</strong> άνοιξέ την με σύνδεση στο internet, κλείσε την εντελώς και
+άνοιξέ την ξανά. Η δεύτερη φορά δείχνει τη νέα έκδοση.</p>
+<p>Αν βλέπεις ακόμα «Τοπικό αρχείο» στη Βαθμολογία, πάτα <strong>Επαναφορά online δεδομένων</strong>: είναι ενεργό ένα
+xlsx που είχες φορτώσει με το κουμπί Αρχείο.</p>
+
+<h2 id="s8">8. Αλλαγές μέσω Claude και συχνά προβλήματα</h2>
+<p>Για αλλαγές στη λειτουργία ή στην εμφάνιση της εφαρμογής, ζήτα τις από το Claude στο project <strong>BV Tools</strong>.
+Το Claude έχει πρόσβαση εγγραφής στο repository, οπότε κάνει τις αλλαγές και τις ανεβάζει μόνο του.
+Εσύ ελέγχεις μόνο το αποτέλεσμα (ενότητα 7).</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Πρόβλημα</th>
+<th>Λύση</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Δεν βλέπω το «Add file»</td>
+<td>Δεν είσαι συνδεδεμένος ως tsimpinosbv, ή στο κινητό χρειάζεται «Έκδοση για υπολογιστές»</td>
+</tr>
+<tr>
+<td>Ανέβηκε δεύτερο αρχείο αντί να αντικαταστήσει το παλιό</td>
+<td>Το όνομα διέφερε (κεφαλαία, κενό, κατάληξη). Διάγραψε το ένα</td>
+</tr>
+<tr>
+<td>Το αρχείο μπήκε σε λάθος φάκελο</td>
+<td>Διάγραψέ το και ανέβασέ το ξανά μέσα από τον σωστό φάκελο</td>
+</tr>
+<tr>
+<td>Η βαθμολογία δεν άλλαξε</td>
+<td>Περίμενε το πράσινο ✓ στο Actions, μετά πάτα «Ανανέωση» στη σελίδα</td>
+</tr>
+<tr>
+<td>Η Βαθμολογία δείχνει σφάλμα ανάγνωσης</td>
+<td>Το αρχείο πρέπει να λέγεται <code>Ranking.xlsx</code> με φύλλα MEN, WOMEN, MEN PRIZES, WOMEN PRIZES</td>
+</tr>
+<tr>
+<td>Το Upload λέει ότι το αρχείο είναι πολύ μεγάλο</td>
+<td>Όριο 25 MB. Συμπίεσε το PDF ή ζήτα βοήθεια από το Claude</td>
+</tr>
+</tbody>
+</table></div>
+  </div>
+  <footer>© Γιάννης Τσιμπινός · <a href="mailto:tsimpinosbv@gmail.com">tsimpinosbv@gmail.com</a></footer>
+</div>
+<a class="top" href="#" aria-label="Επάνω">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+</a>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
