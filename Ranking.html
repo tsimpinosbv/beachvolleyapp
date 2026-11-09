@@ -167,6 +167,18 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .row .pname{display:block;}
   .spotlight .total-num.eur{font-size:clamp(30px,9vw,40px); white-space:nowrap;}
   .spotlight .total-row{flex-wrap:wrap;}
+  /* SEASON STATS (Έπαθλα) */
+  .season-stats{display:none; grid-template-columns:repeat(3,1fr); gap:8px; margin:14px 20px 0;}
+  .season-stats.show{display:grid;}
+  .stat{background:var(--paper); border:1px solid var(--sand-deep); border-radius:12px; padding:10px 10px 9px;}
+  .stat .v{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px; color:var(--navy-deep); white-space:nowrap; font-variant-numeric:tabular-nums;}
+  .stat .l{font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin-top:2px; line-height:1.3;}
+  /* NAME MISMATCH WARNING */
+  .name-warn{display:none; margin:14px 20px 0; background:rgba(232,98,44,0.08); border:1px solid rgba(232,98,44,0.35); border-radius:12px; padding:11px 14px; font-size:12.5px; line-height:1.5;}
+  .name-warn.show{display:block;}
+  .name-warn b{color:var(--neg);}
+  .name-warn ul{margin:6px 0 0; padding-left:18px;}
+  .name-warn button{background:none; border:none; color:var(--navy-light); font-weight:700; font-size:12px; padding:0; margin-top:6px; cursor:pointer; text-decoration:underline; font-family:inherit;}
   .row .sub2{display:block; font-size:11.5px; color:var(--muted); font-weight:600; margin-top:1px;}
 
   /* SEARCH */
@@ -314,6 +326,9 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <button class="breakdown-toggle" onclick="toggleBreakdown()">Ανάλυση ανά τουρνουά ▾</button>
       <div class="breakdown" id="breakdownBox"></div>
     </div>
+
+    <div class="season-stats" id="seasonStats"></div>
+    <div class="name-warn" id="nameWarn"></div>
 
     <div class="list-header">
       <span id="listTitle">Πλήρης Κατάταξη — Άνδρες</span>
@@ -581,6 +596,50 @@ function parseSheet(wb, sheetName){
 }
 
 // ---------- Βοηθητικά ----------
+// Κατάταξη με ισοβαθμίες: ίδιο σύνολο = ίδια θέση (π.χ. 1, 2, 3, 3, 5).
+function rankOf(list, p){
+  if(!p) return 0;
+  let r = 1;
+  for(const x of list){ if(x.total > p.total) r++; }
+  return r;
+}
+function isTied(list, p){
+  return !!p && list.some(x => x !== p && x.total === p.total);
+}
+
+function renderSeasonStats(){
+  const box = document.getElementById('seasonStats');
+  const list = prizeList();
+  if(currentMetric !== 'eur' || !list.length){ box.classList.remove('show'); return; }
+  const total = list.reduce((a,p) => a + p.total, 0);
+  const tourns = new Set();
+  list.forEach(p => p.b.forEach(t => tourns.add(t.t)));
+  const avg = total / list.length;
+  box.innerHTML =
+    `<div class="stat"><div class="v">${fmtEur(Math.round(total))}</div><div class="l">Σύνολο επάθλων</div></div>` +
+    `<div class="stat"><div class="v">${list.length}</div><div class="l">Αθλητές με έπαθλο</div></div>` +
+    `<div class="stat"><div class="v">${fmtEur(Math.round(avg))}</div><div class="l">Μέσος όρος ανά αθλητή</div></div>`;
+  box.classList.add('show');
+}
+
+// Ονόματα που υπάρχουν στα φύλλα επάθλων αλλά όχι στα φύλλα πόντων
+// (συνήθως διαφορετική γραφή του ίδιου ονόματος).
+let nameWarnDismissed = false;
+function checkNameMismatches(){
+  const box = document.getElementById('nameWarn');
+  if(nameWarnDismissed){ box.classList.remove('show'); return; }
+  const items = [];
+  [['MEN','Άνδρες'],['WOMEN','Γυναίκες']].forEach(([g,label]) => {
+    const keys = new Set((DATA[g]||[]).map(p => nameKey(p.name)));
+    (DATA[g + '_PRIZES']||[]).forEach(p => { if(!keys.has(nameKey(p.name))) items.push(`${label}: ${p.name}`); });
+  });
+  if(!items.length){ box.classList.remove('show'); return; }
+  box.innerHTML = `<b>⚠ ${items.length} ονόματα στα φύλλα επάθλων δεν βρέθηκαν στα φύλλα πόντων.</b> ` +
+    `Πιθανώς γράφονται διαφορετικά στο Ranking.xlsx — διόρθωσέ τα ώστε να ταιριάζουν:` +
+    `<ul>${items.map(t => `<li>${t}</li>`).join('')}</ul>` +
+    `<button type="button" onclick="nameWarnDismissed=true; checkNameMismatches();">Απόκρυψη</button>`;
+  box.classList.add('show');
+}
 function hasPrizes(){
   return (DATA.MEN_PRIZES||[]).length + (DATA.WOMEN_PRIZES||[]).length > 0;
 }
@@ -664,13 +723,13 @@ function onSearch(){
 function showSpotlight(p){
   const pts = findIn(pointsList(), p.name);
   const eur = findIn(prizeList(), p.name);
-  const ptsRank = pts ? pointsList().indexOf(pts) + 1 : 0;
-  const eurRank = eur ? prizeList().indexOf(eur) + 1 : 0;
+  const ptsRank = rankOf(pointsList(), pts);
+  const eurRank = rankOf(prizeList(), eur);
   const isEur = currentMetric === 'eur';
 
   const mainRank = isEur ? eurRank : ptsRank;
   document.getElementById('spotRank').textContent = mainRank
-    ? '#' + mainRank + (isEur ? ' ΣΤΑ ΕΠΑΘΛΑ' : ' ΣΤΗΝ ΚΑΤΑΤΑΞΗ')
+    ? '#' + mainRank + (isEur ? ' ΣΤΑ ΕΠΑΘΛΑ' : ' ΣΤΗΝ ΚΑΤΑΤΑΞΗ') + (isTied(isEur ? prizeList() : pointsList(), isEur ? eur : pts) ? ' · ΙΣΟΒΑΘΜΙΑ' : '')
     : (isEur ? 'ΧΩΡΙΣ ΕΠΑΘΛΑ' : 'ΧΩΡΙΣ ΠΟΝΤΟΥΣ');
   document.getElementById('spotName').textContent = p.name;
   document.getElementById('spotTotal').classList.toggle('eur', isEur);
@@ -722,6 +781,8 @@ function renderList(q){
   document.getElementById('metricSwitch').style.display = hasPrizes() ? 'flex' : 'none';
   if(!hasPrizes() && currentMetric === 'eur'){ currentMetric = 'pts'; updateListTitle(); }
 
+  renderSeasonStats();
+  checkNameMismatches();
   const players = activeList();
   const other = currentMetric==='eur' ? pointsList() : prizeList();
   const nq = nameKey(q||'');
@@ -738,7 +799,7 @@ function renderList(q){
   emptyMsg.style.display = 'none';
 
   listBox.innerHTML = filtered.map(p => {
-    const rank = players.indexOf(p) + 1;
+    const rank = rankOf(players, p);
     const name = nq ? highlightMatch(p.name, q) : p.name;
     const cls = p.total < 0 ? 'ppts neg' : 'ppts';
     const o = hasPrizes() ? findIn(other, p.name) : null;
