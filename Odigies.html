@@ -54,14 +54,12 @@
   .top svg{width:18px;height:18px;}
   footer{text-align:center; color:var(--ink-soft); font-size:12.5px; padding-top:30px;}
 </style>
+<link rel="stylesheet" href="ui.css">
 </head>
 <body>
+<nav class="bv-topbar" aria-label="Πλοήγηση"><a class="bv-home" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Αρχική</a><a class="bv-brand" href="index.html"><img src="icons/logo.png" alt="">Supervisor Tools</a></nav>
 <header>
   <div class="hwrap">
-    <a class="back" href="index.html">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
-      Αρχική
-    </a>
     <h1>Οδηγίες</h1>
     <p>Εγκατάσταση της εφαρμογής, ανέβασμα αρχείων και αλλαγές στο GitHub, βήμα-βήμα.</p>
   </div>
@@ -272,7 +270,7 @@
 <li>Πάτα <strong>Commit changes…</strong> → γράψε περιγραφή → <strong>Commit changes</strong>.</li>
 </ol>
 <p><strong>Αν αλλάξεις εικόνα ή εικονίδιο</strong> (φάκελος <code>icons/</code>), άνοιξε και το <code>service-worker.js</code> με το μολύβι και
-ανέβασε κατά ένα τον αριθμό στη γραμμή <code>const CACHE_VERSION = 'bv-tools-v12';</code> (π.χ. σε <code>v13</code>). Αλλιώς οι
+ανέβασε κατά ένα τον αριθμό στη γραμμή <code>const CACHE_VERSION = 'bv-tools-v13';</code> (π.χ. σε <code>v14</code>). Αλλιώς οι
 εγκατεστημένες εφαρμογές κρατούν την παλιά εικόνα. Για σελίδες HTML και το <code>Ranking.xlsx</code> δεν χρειάζεται.</p>
 
 <h2 id="s8">8. Διαγραφή ή μετονομασία αρχείου</h2>

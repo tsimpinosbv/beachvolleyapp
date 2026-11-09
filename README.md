@@ -59,6 +59,7 @@
 ├── Schedules.html                # Πρόγραμμα Αγώνων
 ├── PoolDraw.html                 # Κλήρωση Ομίλων (CEV)
 ├── PointSystem.xlsx              # Πίνακες βαθμολογίας (διαβάζονται από το PointSystem.html)
+├── ui.css                        # Κοινό στυλ και μπάρα «← Αρχική» για όλα τα εργαλεία
 ├── gh-publish.js                 # Δημοσίευση αρχείων στο GitHub από την εφαρμογή
 ├── EntryList.html                # Αρχική Λίστα (Entry List)
 ├── vendor/xlsx.full.min.js       # SheetJS (κοινή βιβλιοθήκη Excel)

@@ -1,0 +1,40 @@
+/* BV Supervisor Tools — κοινό στυλ για όλα τα εργαλεία.
+   Φορτώνεται ΜΕΤΑ το στυλ κάθε σελίδας, ώστε οι τιμές εδώ να υπερισχύουν. */
+
+:root{
+  --bv-navy:#0b3150;
+  --bv-navy-2:#155a8a;
+  --bv-accent:#1f7fc4;
+
+  /* Πιο έντονο «γκρι» κείμενο: διαβάζεται καλύτερα στον ήλιο. */
+  --ink-soft:rgba(15,36,56,0.84);
+  --ink-faint:rgba(15,36,56,0.68);
+  --muted:rgba(15,50,82,0.80);
+}
+
+/* ---------- Κοινή μπάρα πάνω σε κάθε εργαλείο ---------- */
+.bv-topbar{
+  position:sticky; top:0; z-index:60;
+  display:flex; align-items:center; gap:10px;
+  padding:8px 14px; padding-top:calc(8px + env(safe-area-inset-top, 0px));
+  background:var(--bv-navy); color:#fff;
+  box-shadow:0 2px 12px rgba(4,20,36,0.25);
+  font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+.bv-topbar a{color:#fff; text-decoration:none;}
+.bv-home{
+  display:inline-flex; align-items:center; gap:6px;
+  min-height:40px; padding:0 13px 0 10px; border-radius:10px;
+  background:rgba(255,255,255,0.13); border:1px solid rgba(255,255,255,0.24);
+  font-weight:700; font-size:14.5px; line-height:1;
+}
+.bv-home:active{background:rgba(255,255,255,0.24);}
+.bv-home svg{width:17px; height:17px; flex:none;}
+.bv-brand{
+  margin-left:auto; display:flex; align-items:center; gap:9px;
+  font-family:'Space Grotesk','IBM Plex Sans',sans-serif; font-weight:700; font-size:15px; letter-spacing:0.01em;
+  white-space:nowrap;
+}
+.bv-brand img{width:32px; height:32px; border-radius:50%; background:#fff; display:block;}
+
+@media print{ .bv-topbar{display:none !important;} }
