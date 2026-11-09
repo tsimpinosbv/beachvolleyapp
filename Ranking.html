@@ -520,6 +520,7 @@ async function loadData(isManualRefresh){
 
     applyWorkbook(wb);
     clearOverride();
+    PENDING_UPLOAD = null; showPublishBar(); // μετά την ανανέωση φεύγει το πλαίσιο δημοσίευσης
     setStatusDot('online');
     showSourceNote(null);
     document.getElementById('statusText').textContent = 'Πανελλήνιο Πρωτάθλημα Beach Volleyball';
@@ -700,12 +701,10 @@ async function publishToGitHub(){
     if(res.status === 401){ clearGhToken(); btn.disabled = false; setPublishMsg(''); publishAfterToken = true; openGhModal('Το κλειδί δεν είναι πλέον έγκυρο (ίσως έληξε). Φτιάξε νέο.'); return; }
     if(res.status === 403 || res.status === 404){ throw new Error('perm'); }
     if(!res.ok){ throw new Error('write-' + res.status); }
-    const out = await res.json();
     PENDING_UPLOAD.published = true;
     document.getElementById('pbTitle').textContent = '✓ Δημοσιεύτηκε στο GitHub';
     document.getElementById('pbSub').textContent = 'Όλοι θα βλέπουν τη νέα βαθμολογία σε περίπου 1–2 λεπτά (πατώντας «Ανανέωση»).';
-    const link = out && out.commit && out.commit.html_url ? out.commit.html_url : ('https://github.com/' + GH_OWNER + '/' + GH_REPO + '/commits/' + GH_BRANCH);
-    setPublishMsg('<a href="https://github.com/' + GH_OWNER + '/' + GH_REPO + '/actions" target="_blank" rel="noopener">Πρόοδος δημοσίευσης</a> · <a href="' + link + '" target="_blank" rel="noopener">Η αλλαγή στο GitHub</a>');
+    setPublishMsg('');
     btn.style.display = 'none';
   }catch(e){
     btn.disabled = false;
