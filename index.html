@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Beach Volley — Γιάννης Τσιμπινός</title>
+<title>BV Supervisor Tools — Γιάννης Τσιμπινός</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d3a5c">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="BV Tools">
+<meta name="apple-mobile-web-app-title" content="Supervisor Tools">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -252,7 +252,7 @@
 
 <header>
   <div class="wrap">
-    <img class="header-logo" src="icons/logo.png" alt="Beach Volleyball Supervisor Tools logo">
+    <img class="header-logo" src="icons/logo.png" alt="BV Supervisor Tools logo">
     <h2>Εργαλεία Διοργάνωσης Beach Volleyball</h2>
     <button class="install-btn" id="installBtn" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>
@@ -398,7 +398,7 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <script>
-// Εγκατάσταση του BV Tools ως ξεχωριστή εφαρμογή (ανεξάρτητη από το Check Mate Suite).
+// Εγκατάσταση του BV Supervisor Tools ως ξεχωριστή εφαρμογή (ανεξάρτητη από το Check Mate Suite).
 (function(){
   var btn = document.getElementById('installBtn');
   var hint = document.getElementById('installHint');
@@ -415,7 +415,7 @@ if ('serviceWorker' in navigator) {
   });
   window.addEventListener('appinstalled', function(){
     btn.classList.remove('show');
-    hint.textContent = 'Η εφαρμογή εγκαταστάθηκε — θα τη βρεις στην αρχική οθόνη ως «BV Tools».';
+    hint.textContent = 'Η εφαρμογή εγκαταστάθηκε — θα τη βρεις στην αρχική οθόνη ως «Supervisor Tools».';
     hint.classList.add('show');
   });
   // iPhone/iPad: το Safari δεν έχει κουμπί εγκατάστασης, δείχνουμε οδηγία.

@@ -101,4 +101,4 @@
 
 ---
 
-© Γιάννης Τσιμπινός. Beach Volleyball Supervisor Tools.
+© Γιάννης Τσιμπινός. BV Supervisor Tools.
