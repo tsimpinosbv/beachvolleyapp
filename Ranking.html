@@ -148,6 +148,27 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   }
   .tab.active{background:var(--orange); color:#fff; border-color:var(--orange);}
 
+  /* METRIC SWITCH (Πόντοι / Έπαθλα) */
+  .metric-switch{display:flex; margin:10px 20px 0; background:var(--paper); border:1.5px solid var(--sand-deep); border-radius:10px; padding:3px;}
+  .metric-btn{
+    flex:1; border:none; background:transparent; color:var(--muted);
+    font-family:inherit; font-weight:700; font-size:13px; padding:8px 0; border-radius:7px; cursor:pointer;
+  }
+  .metric-btn.active{background:var(--navy-deep); color:#fff;}
+
+  /* EARNINGS in spotlight */
+  .spotlight .second-row{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:13px; font-weight:700;}
+  .spotlight .chip{background:rgba(255,255,255,0.18); padding:5px 10px; border-radius:8px;}
+  .breakdown-head{display:flex; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; opacity:.75; padding:0 0 4px;}
+  .breakdown-row, .breakdown-head{gap:8px;}
+  .breakdown-row span:first-child, .breakdown-head span:first-child{flex:1; min-width:0;}
+  .breakdown-row .c, .breakdown-head .c{width:76px; text-align:right; flex:none;}
+  .breakdown-row.total{border-top:1px solid rgba(255,255,255,0.35); margin-top:4px; padding-top:7px; font-weight:800;}
+  .row .pname{display:block;}
+  .spotlight .total-num.eur{font-size:clamp(30px,9vw,40px); white-space:nowrap;}
+  .spotlight .total-row{flex-wrap:wrap;}
+  .row .sub2{display:block; font-size:11.5px; color:var(--muted); font-weight:600; margin-top:1px;}
+
   /* SEARCH */
   .search-zone{padding:16px 20px 4px;}
   .search-box{
@@ -187,7 +208,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   }
   .breakdown{margin-top:10px; display:none; border-top:1.5px dashed rgba(255,255,255,0.35); padding-top:10px;}
   .breakdown.show{display:block;}
-  .breakdown-row{display:flex; justify-content:space-between; font-size:13px; padding:4px 0; font-weight:600;}
+  .breakdown-row{display:flex; justify-content:space-between; font-size:13px; padding:4px 0; font-weight:600; font-variant-numeric:tabular-nums;}
   .breakdown-row span:first-child{opacity:.85;}
 
   /* LIST */
@@ -247,7 +268,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <p class="eyebrow"><span class="status-dot" id="statusDot"></span><span id="statusText">Πανελλήνιο Πρωτάθλημα Beach Volleyball</span></p>
     <span class="source-note" id="sourceNote" style="display:none;"></span>
     <h1>Ατομική Βαθμολογία Αθλητή</h1>
-    <p class="sub">Πληκτρολόγησε επίθετο για να δεις το ΣΥΝΟΛΟ πόντων του Αθλητή</p>
+    <p class="sub">Πληκτρολόγησε επίθετο για να δεις το ΣΥΝΟΛΟ πόντων και τα έπαθλα του Αθλητή</p>
     <div class="refresh-row">
       <span class="last-updated" id="lastUpdated"></span>
       <span style="display:flex; gap:8px;">
@@ -269,6 +290,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <button class="tab active" id="tabMen" onclick="switchTab('MEN')">ΑΝΔΡΕΣ</button>
       <button class="tab" id="tabWomen" onclick="switchTab('WOMEN')">ΓΥΝΑΙΚΕΣ</button>
     </div>
+    <div class="metric-switch" id="metricSwitch">
+      <button class="metric-btn active" id="metricPts" onclick="switchMetric('pts')">🏆 Πόντοι</button>
+      <button class="metric-btn" id="metricEur" onclick="switchMetric('eur')">€ Έπαθλα</button>
+    </div>
 
     <div class="search-zone">
       <div class="search-box">
@@ -283,8 +308,9 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <p class="name" id="spotName"></p>
       <div class="total-row">
         <span class="total-num" id="spotTotal"></span>
-        <span class="total-label">πόντοι ΣΥΝΟΛΟ</span>
+        <span class="total-label" id="spotTotalLabel">πόντοι ΣΥΝΟΛΟ</span>
       </div>
+      <div class="second-row" id="spotSecond"></div>
       <button class="breakdown-toggle" onclick="toggleBreakdown()">Ανάλυση ανά τουρνουά ▾</button>
       <div class="breakdown" id="breakdownBox"></div>
     </div>
@@ -296,7 +322,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <div class="list" id="listBox"></div>
     <div class="empty" id="emptyMsg" style="display:none;">Δεν βρέθηκε παίκτης με αυτό το όνομα</div>
 
-    <p class="footer-note">Τα δεδομένα διαβάζονται απευθείας από το Ranking.xlsx.<br>ΣΥΝΟΛΟ = άθροισμα πόντων από όλα τα τουρνουά.</p>
+    <p class="footer-note">Τα δεδομένα διαβάζονται απευθείας από το Ranking.xlsx (φύλλα MEN/WOMEN και MEN PRIZES/WOMEN PRIZES).<br>ΣΥΝΟΛΟ = άθροισμα πόντων / επάθλων από όλα τα τουρνουά.</p>
   </div>
 
   <div class="state-box" id="loadingBox">
@@ -317,11 +343,12 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 const EXCEL_FILENAME = 'Ranking.xlsx';
 // =======================================================================================
 
-let DATA = { MEN: [], WOMEN: [] };
+let DATA = { MEN: [], WOMEN: [], MEN_PRIZES: [], WOMEN_PRIZES: [] };
 let currentTab = 'MEN';
+let currentMetric = 'pts'; // 'pts' = Πόντοι, 'eur' = Έπαθλα
 let expandedBreakdown = false;
 
-const CACHE_KEY = 'rankingCache_v1';
+const CACHE_KEY = 'rankingCache_v2'; // v2: περιέχει και τα έπαθλα
 const OVERRIDE_KEY = 'rankingManualOverride_v1';
 
 // Αποθηκεύει τα τελευταία δεδομένα που διαβάστηκαν με επιτυχία, ώστε η σελίδα
@@ -383,6 +410,8 @@ function revertToOnline(){
 function applyWorkbook(wb){
   DATA.MEN = parseSheet(wb, 'MEN');
   DATA.WOMEN = parseSheet(wb, 'WOMEN');
+  DATA.MEN_PRIZES = parseSheet(wb, 'MEN PRIZES');
+  DATA.WOMEN_PRIZES = parseSheet(wb, 'WOMEN PRIZES');
   saveCache();
 }
 
@@ -551,15 +580,57 @@ function parseSheet(wb, sheetName){
   return players;
 }
 
+// ---------- Βοηθητικά ----------
+function hasPrizes(){
+  return (DATA.MEN_PRIZES||[]).length + (DATA.WOMEN_PRIZES||[]).length > 0;
+}
+function pointsList(){ return DATA[currentTab] || []; }
+function prizeList(){ return DATA[currentTab + '_PRIZES'] || []; }
+function activeList(){ return currentMetric === 'eur' ? prizeList() : pointsList(); }
+
+// Κλειδί σύγκρισης ονομάτων ανάμεσα στα φύλλα πόντων και επάθλων:
+// αγνοεί τόνους/διαλυτικά, διπλά κενά και λατινικούς χαρακτήρες που μοιάζουν
+// με ελληνικούς (π.χ. λατινικό "M" αντί για ελληνικό "Μ").
+const LATIN_TO_GREEK = {A:'Α',B:'Β',E:'Ε',H:'Η',I:'Ι',K:'Κ',M:'Μ',N:'Ν',O:'Ο',P:'Ρ',T:'Τ',X:'Χ',Y:'Υ',Z:'Ζ'};
+function nameKey(s){
+  return normalize(String(s||'')).replace(/[ABEHIKMNOPTXYZ]/g, ch => LATIN_TO_GREEK[ch]).replace(/\s+/g,' ').trim();
+}
+function findIn(list, name){
+  const k = nameKey(name);
+  return list.find(x => nameKey(x.name) === k) || null;
+}
+
+const EUR_FMT0 = new Intl.NumberFormat('el-GR', { minimumFractionDigits:0, maximumFractionDigits:0 });
+const EUR_FMT2 = new Intl.NumberFormat('el-GR', { minimumFractionDigits:2, maximumFractionDigits:2 });
+function fmtEur(v){
+  const n = Number(v) || 0;
+  return (Number.isInteger(n) ? EUR_FMT0.format(n) : EUR_FMT2.format(n)) + ' €';
+}
+function fmtVal(v, metric){ return metric === 'eur' ? fmtEur(v) : String(v); }
+
 function switchTab(tab){
   currentTab = tab;
   document.body.classList.toggle('women-theme', tab==='WOMEN');
   document.getElementById('tabMen').classList.toggle('active', tab==='MEN');
   document.getElementById('tabWomen').classList.toggle('active', tab==='WOMEN');
-  document.getElementById('listTitle').textContent = 'Πλήρης Κατάταξη — ' + (tab==='MEN' ? 'Άνδρες' : 'Γυναίκες');
+  updateListTitle();
   document.getElementById('searchInput').value = '';
   clearSearch();
   renderList('');
+}
+
+function switchMetric(m){
+  currentMetric = m;
+  document.getElementById('metricPts').classList.toggle('active', m==='pts');
+  document.getElementById('metricEur').classList.toggle('active', m==='eur');
+  updateListTitle();
+  onSearch(); // ξαναζωγραφίζει λίστα + spotlight με το νέο μέτρο
+}
+
+function updateListTitle(){
+  const g = currentTab==='MEN' ? 'Άνδρες' : 'Γυναίκες';
+  document.getElementById('listTitle').textContent =
+    (currentMetric==='eur' ? 'Κατάταξη Επάθλων — ' : 'Πλήρης Κατάταξη — ') + g;
 }
 
 function normalize(s){
@@ -577,9 +648,12 @@ function onSearch(){
     document.getElementById('spotlight').classList.remove('show');
     return;
   }
-  const nq = normalize(q);
-  const players = DATA[currentTab];
-  const match = players.find(p => normalize(p.name).includes(nq));
+  const nq = nameKey(q);
+  // Ψάχνουμε πρώτα στη λίστα που βλέπει ο χρήστης, μετά στην άλλη
+  // (π.χ. αθλητής με πόντους αλλά χωρίς έπαθλα).
+  const lists = currentMetric==='eur' ? [prizeList(), pointsList()] : [pointsList(), prizeList()];
+  let match = null;
+  for(const l of lists){ match = l.find(p => nameKey(p.name).includes(nq)); if(match) break; }
   if(match){
     showSpotlight(match);
   } else {
@@ -588,12 +662,44 @@ function onSearch(){
 }
 
 function showSpotlight(p){
-  const rank = DATA[currentTab].findIndex(x => x.name === p.name) + 1;
-  document.getElementById('spotRank').textContent = '#' + rank + ' ΣΤΗΝ ΚΑΤΑΤΑΞΗ';
+  const pts = findIn(pointsList(), p.name);
+  const eur = findIn(prizeList(), p.name);
+  const ptsRank = pts ? pointsList().indexOf(pts) + 1 : 0;
+  const eurRank = eur ? prizeList().indexOf(eur) + 1 : 0;
+  const isEur = currentMetric === 'eur';
+
+  const mainRank = isEur ? eurRank : ptsRank;
+  document.getElementById('spotRank').textContent = mainRank
+    ? '#' + mainRank + (isEur ? ' ΣΤΑ ΕΠΑΘΛΑ' : ' ΣΤΗΝ ΚΑΤΑΤΑΞΗ')
+    : (isEur ? 'ΧΩΡΙΣ ΕΠΑΘΛΑ' : 'ΧΩΡΙΣ ΠΟΝΤΟΥΣ');
   document.getElementById('spotName').textContent = p.name;
-  document.getElementById('spotTotal').textContent = p.total;
+  document.getElementById('spotTotal').classList.toggle('eur', isEur);
+  document.getElementById('spotTotal').textContent = isEur ? fmtEur(eur ? eur.total : 0) : (pts ? pts.total : 0);
+  document.getElementById('spotTotalLabel').textContent = isEur ? 'έπαθλα ΣΥΝΟΛΟ' : 'πόντοι ΣΥΝΟΛΟ';
+
+  // Δευτερεύουσα γραμμή: το «άλλο» μέτρο
+  const second = [];
+  if(hasPrizes()){
+    if(isEur){
+      second.push(pts ? `🏆 ${pts.total} πόντοι · #${ptsRank}` : '🏆 χωρίς πόντους');
+    } else {
+      second.push(eur ? `💶 ${fmtEur(eur.total)} · #${eurRank} στα έπαθλα` : '💶 χωρίς έπαθλα');
+    }
+    if(eur && eur.b.length) second.push(`${eur.b.length} τουρνουά με έπαθλο`);
+  }
+  document.getElementById('spotSecond').innerHTML = second.map(t => `<span class="chip">${t}</span>`).join('');
+
+  // Ανάλυση: ένωση τουρνουά από πόντους & έπαθλα, με τη σειρά που εμφανίζονται στο Excel
+  const order = [];
+  const ptsBy = {}, eurBy = {};
+  (pts ? pts.b : []).forEach(t => { ptsBy[t.t] = t.p; if(!order.includes(t.t)) order.push(t.t); });
+  (eur ? eur.b : []).forEach(t => { eurBy[t.t] = t.p; if(!order.includes(t.t)) order.push(t.t); });
   const bd = document.getElementById('breakdownBox');
-  bd.innerHTML = p.b.map(t => `<div class="breakdown-row"><span>${t.t}</span><span>${t.p}</span></div>`).join('');
+  const showEur = hasPrizes();
+  let html = `<div class="breakdown-head"><span>Τουρνουά</span><span class="c">Πόντοι</span>${showEur ? '<span class="c">Έπαθλο</span>' : ''}</div>`;
+  html += order.map(t => `<div class="breakdown-row"><span>${t}</span><span class="c">${ptsBy[t] !== undefined ? ptsBy[t] : '–'}</span>${showEur ? `<span class="c">${eurBy[t] !== undefined ? fmtEur(eurBy[t]) : '–'}</span>` : ''}</div>`).join('');
+  html += `<div class="breakdown-row total"><span>ΣΥΝΟΛΟ</span><span class="c">${pts ? pts.total : 0}</span>${showEur ? `<span class="c">${fmtEur(eur ? eur.total : 0)}</span>` : ''}</div>`;
+  bd.innerHTML = html;
   bd.classList.remove('show');
   expandedBreakdown = false;
   document.getElementById('spotlight').classList.add('show');
@@ -612,9 +718,14 @@ function clearSearch(){
 }
 
 function renderList(q){
-  const players = DATA[currentTab];
-  const nq = normalize(q||'');
-  const filtered = nq ? players.filter(p => normalize(p.name).includes(nq)) : players;
+  // Αν το Excel δεν έχει φύλλα επάθλων, κρύβουμε τον διακόπτη.
+  document.getElementById('metricSwitch').style.display = hasPrizes() ? 'flex' : 'none';
+  if(!hasPrizes() && currentMetric === 'eur'){ currentMetric = 'pts'; updateListTitle(); }
+
+  const players = activeList();
+  const other = currentMetric==='eur' ? pointsList() : prizeList();
+  const nq = nameKey(q||'');
+  const filtered = nq ? players.filter(p => nameKey(p.name).includes(nq)) : players;
   const listBox = document.getElementById('listBox');
   const emptyMsg = document.getElementById('emptyMsg');
   document.getElementById('listCount').textContent = filtered.length + ' παίκτες';
@@ -630,10 +741,15 @@ function renderList(q){
     const rank = players.indexOf(p) + 1;
     const name = nq ? highlightMatch(p.name, q) : p.name;
     const cls = p.total < 0 ? 'ppts neg' : 'ppts';
+    const o = hasPrizes() ? findIn(other, p.name) : null;
+    const sub = !hasPrizes() ? '' :
+      currentMetric==='eur'
+        ? `<span class="sub2">${o ? o.total + ' πόντοι' : 'χωρίς πόντους'}</span>`
+        : (o ? `<span class="sub2">${fmtEur(o.total)}</span>` : '');
     return `<div class="row" onclick="document.getElementById('searchInput').value='${p.name.replace(/'/g,"\\'")}'; onSearch(); window.scrollTo({top:0,behavior:'smooth'});">
       <span class="pos">${rank}</span>
-      <span class="info"><span class="pname">${name}</span></span>
-      <span class="${cls}">${p.total}</span>
+      <span class="info"><span class="pname">${name}</span>${sub}</span>
+      <span class="${cls}">${fmtVal(p.total, currentMetric)}</span>
     </div>`;
   }).join('');
 }
