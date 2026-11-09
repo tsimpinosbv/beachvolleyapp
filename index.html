@@ -234,6 +234,18 @@
   @media (hover: none) and (pointer: coarse){
     .card{ padding:22px; }
   }
+
+  /* INSTALL BUTTON */
+  .install-btn{
+    display:none; align-items:center; gap:8px; margin-top:18px;
+    background:#fff; color:var(--blue-900); border:none; border-radius:10px;
+    font-family:inherit; font-weight:700; font-size:14.5px; padding:11px 16px; cursor:pointer;
+    box-shadow:0 6px 16px rgba(0,0,0,0.18);
+  }
+  .install-btn.show{display:inline-flex;}
+  .install-btn svg{width:17px; height:17px;}
+  .install-hint{display:none; margin-top:14px; font-size:13.5px; line-height:1.5; color:rgba(255,255,255,0.88); max-width:520px;}
+  .install-hint.show{display:block;}
 </style>
 </head>
 <body>
@@ -242,6 +254,11 @@
   <div class="wrap">
     <img class="header-logo" src="icons/logo.png" alt="Beach Volleyball Supervisor Tools logo">
     <h2>Εργαλεία Διοργάνωσης Beach Volleyball</h2>
+    <button class="install-btn" id="installBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>
+      Εγκατάσταση εφαρμογής
+    </button>
+    <p class="install-hint" id="installHint"></p>
   </div>
 </header>
 
@@ -358,6 +375,36 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js').catch(function(){});
   });
 }
+</script>
+<script>
+// Εγκατάσταση του BV Tools ως ξεχωριστή εφαρμογή (ανεξάρτητη από το Check Mate Suite).
+(function(){
+  var btn = document.getElementById('installBtn');
+  var hint = document.getElementById('installHint');
+  var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (standalone) return; // ήδη ανοιχτή ως εγκατεστημένη εφαρμογή
+  var deferred = null;
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault(); deferred = e; btn.classList.add('show');
+  });
+  btn.addEventListener('click', function(){
+    if (!deferred) return;
+    deferred.prompt();
+    deferred.userChoice.finally(function(){ deferred = null; btn.classList.remove('show'); });
+  });
+  window.addEventListener('appinstalled', function(){
+    btn.classList.remove('show');
+    hint.textContent = 'Η εφαρμογή εγκαταστάθηκε — θα τη βρεις στην αρχική οθόνη ως «BV Tools».';
+    hint.classList.add('show');
+  });
+  // iPhone/iPad: το Safari δεν έχει κουμπί εγκατάστασης, δείχνουμε οδηγία.
+  var ua = navigator.userAgent;
+  var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (isIOS) {
+    hint.textContent = 'Για εγκατάσταση σε iPhone/iPad: πάτα Κοινοποίηση (□↑) → «Προσθήκη στην οθόνη Αφετηρίας».';
+    hint.classList.add('show');
+  }
+})();
 </script>
 </body>
 </html>

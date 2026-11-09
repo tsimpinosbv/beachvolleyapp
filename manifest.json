@@ -2,7 +2,7 @@
   "name": "Beach Volleyball Supervisor Tools",
   "short_name": "BV Tools",
   "description": "Εργαλεία διοργάνωσης Beach Volleyball: βαθμολογία, υπολογισμός βαθμών, επάθλων και πρόγραμμα αγώνων.",
-  "id": "/",
+  "id": "/beachvolleyapp/",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
