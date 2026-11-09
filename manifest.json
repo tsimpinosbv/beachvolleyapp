@@ -54,6 +54,17 @@
       ]
     },
     {
+      "name": "Αρχική Λίστα (Entry List)",
+      "short_name": "Entry List",
+      "url": "./EntryList.html",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
       "name": "Υπολογισμός Βαθμών",
       "short_name": "Βαθμοί",
       "url": "./PointSystem.html",

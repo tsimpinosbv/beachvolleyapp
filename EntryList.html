@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Αρχική Λίστα — BV Tools</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d3a5c">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BV Tools">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="vendor/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --navy:#0d4979; --navy-deep:#0a3454; --navy-light:#1c6baa;
+    --accent:#1f4e79; --accent-light:#8fc1ea;
+    --sand:#fbf6e4; --sand-deep:#f2e2a6; --paper:#fff;
+    --ink:#0f3252; --muted:rgba(15,50,82,0.66);
+    --warn:#E8622C; --ok:#2e8b57; --q:#8a6d00;
+  }
+  body.women-theme{ --navy:#a3175e; --navy-deep:#7a1046; --navy-light:#c93f83; --accent:#a3175e; --accent-light:#f3aecd; }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--sand); color:var(--ink); font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; min-height:100vh;}
+  .wrap{max-width:760px; margin:0 auto; padding:0 0 70px;}
+  button,input,select,textarea{font-family:inherit;}
+
+  .hero{padding:18px 16px 22px; background:linear-gradient(180deg,var(--navy-light) 0%,var(--navy) 55%,var(--navy-deep) 100%); color:#fff; border-radius:0 0 22px 22px;}
+  .back{display:inline-flex; align-items:center; gap:6px; color:#fff; text-decoration:none; font-weight:700; font-size:13px;
+        background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28); padding:7px 12px; border-radius:8px;}
+  .back svg{width:14px;height:14px;}
+  h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(26px,7vw,34px); line-height:1.05; margin:14px 0 6px;}
+  .hero p{margin:0; color:rgba(255,255,255,0.8); font-size:13.5px;}
+  .src{margin-top:10px; font-size:11.5px; color:rgba(255,255,255,0.75); display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .src button{background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28); color:#fff; border-radius:7px; font-size:11.5px; font-weight:700; padding:5px 9px; cursor:pointer;}
+
+  .tabs{display:flex; gap:8px; padding:16px 16px 0;}
+  .tab{flex:1; padding:11px 0; border-radius:10px; border:1.5px solid var(--sand-deep); background:var(--paper); color:var(--navy-deep); font-weight:700; font-size:14px; cursor:pointer;}
+  .tab.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+  .tab small{font-weight:600; opacity:.8;}
+
+  .panel{margin:14px 16px 0; background:var(--paper); border:1px solid var(--sand-deep); border-radius:14px; padding:14px;}
+  .panel h2{font-family:'Space Grotesk',sans-serif; font-size:15px; margin:0 0 10px; color:var(--navy-deep); display:flex; justify-content:space-between; align-items:center;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  label.f{display:flex; flex-direction:column; gap:4px; font-size:11.5px; font-weight:700; color:var(--muted); letter-spacing:.03em;}
+  label.f input,label.f select{font-size:14.5px; font-weight:600; color:var(--ink); border:1.5px solid var(--sand-deep); border-radius:9px; padding:9px 10px; background:#fff; min-width:0;}
+  .hint{font-size:12px; color:var(--muted); margin:8px 0 0; line-height:1.45;}
+
+  .btns{display:flex; flex-wrap:wrap; gap:8px;}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:1.5px solid var(--accent); background:#fff; color:var(--accent); font-weight:700; font-size:13.5px; padding:9px 13px; border-radius:9px; cursor:pointer;}
+  .btn.primary{background:var(--accent); color:#fff;}
+  .btn.ghost{border-color:var(--sand-deep); color:var(--muted);}
+  .btn svg{width:15px; height:15px;}
+  textarea{width:100%; min-height:110px; border:1.5px solid var(--sand-deep); border-radius:9px; padding:9px 10px; font-size:14px; resize:vertical; margin-top:10px;}
+  .paste-box{display:none;} .paste-box.show{display:block;}
+
+  .add-row{display:grid; grid-template-columns:1fr 1fr auto; gap:8px; margin-top:12px;}
+  .add-row input{font-size:14px; border:1.5px solid var(--sand-deep); border-radius:9px; padding:9px 10px; min-width:0; font-weight:600;}
+
+  .warns{margin:14px 16px 0; display:none; background:rgba(232,98,44,0.08); border:1px solid rgba(232,98,44,0.35); border-radius:12px; padding:10px 14px; font-size:12.5px; line-height:1.5;}
+  .warns.show{display:block;}
+  .warns b{color:var(--warn);}
+  .warns ul{margin:4px 0 0; padding-left:18px;}
+
+  .list-head{display:flex; justify-content:space-between; align-items:center; padding:18px 20px 8px; color:var(--muted); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.07em;}
+  .team{display:grid; grid-template-columns:34px 1fr auto; gap:10px; align-items:center; margin:0 16px 7px; background:var(--paper); border:1px solid var(--sand-deep); border-radius:12px; padding:10px 10px 10px 8px;}
+  .team.q{background:#fffdf4;}
+  .seed{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; color:var(--muted); text-align:center; line-height:1.1;}
+  .seed small{display:block; font-size:9.5px; font-weight:700; letter-spacing:.04em;}
+  .players{display:flex; flex-direction:column; gap:5px; min-width:0;}
+  .pl{display:flex; align-items:center; gap:6px; min-width:0;}
+  .pl input{flex:1; min-width:0; border:1px solid transparent; background:transparent; border-radius:7px; padding:4px 6px; font-size:14px; font-weight:700; color:var(--ink);}
+  .pl input:focus{border-color:var(--sand-deep); background:#fff; outline:none;}
+  .pl .pts{font-size:12.5px; font-weight:700; color:var(--muted); font-variant-numeric:tabular-nums; flex:none;}
+  .pl .flag{font-size:10.5px; font-weight:800; padding:2px 6px; border-radius:6px; flex:none;}
+  .flag.none{background:rgba(232,98,44,0.12); color:var(--warn);}
+  .flag.fuzzy{background:rgba(138,109,0,0.12); color:var(--q);}
+  .flag.dup{background:var(--warn); color:#fff;}
+  .right{display:flex; flex-direction:column; align-items:flex-end; gap:5px;}
+  .total{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:18px; color:var(--accent); font-variant-numeric:tabular-nums;}
+  .tag{font-size:10.5px; font-weight:800; letter-spacing:.05em; padding:2px 7px; border-radius:6px;}
+  .tag.md{background:rgba(46,139,87,0.13); color:var(--ok);}
+  .tag.q{background:rgba(138,109,0,0.13); color:var(--q);}
+  .tag.tie{background:var(--sand); color:var(--muted);}
+  .acts{display:flex; gap:4px;}
+  .icon-btn{border:none; background:var(--sand); color:var(--muted); width:28px; height:26px; border-radius:7px; cursor:pointer; font-size:13px; font-weight:700;}
+  .cut{margin:4px 16px 10px; text-align:center; font-size:11px; font-weight:800; letter-spacing:.08em; color:var(--q); border-top:2px dashed rgba(138,109,0,0.4); padding-top:6px;}
+  .empty{text-align:center; padding:34px 20px; color:var(--muted); font-size:14px;}
+  .export{position:sticky; bottom:0; padding:12px 16px; background:linear-gradient(180deg,rgba(251,246,228,0) 0%,var(--sand) 35%); display:flex; gap:8px;}
+  .export .btn{flex:1; justify-content:center; padding:13px; font-size:14.5px;}
+  .toast{position:fixed; left:50%; bottom:84px; transform:translateX(-50%); background:var(--navy-deep); color:#fff; padding:10px 16px; border-radius:10px; font-size:13.5px; font-weight:600; display:none; z-index:10; max-width:90vw; text-align:center;}
+  .toast.show{display:block;}
+  @media (max-width:420px){ .grid2{grid-template-columns:1fr;} .add-row{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <a class="back" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Αρχική</a>
+    <h1>Αρχική Λίστα (Entry List)</h1>
+    <p>Βάλε τις δηλώσεις συμμετοχής· οι βαθμοί και η σειρά βγαίνουν αυτόματα από τη βαθμολογία. Εξαγωγή σε Excel.</p>
+    <div class="src"><span id="srcText">Φόρτωση βαθμολογίας…</span>
+      <button type="button" onclick="document.getElementById('rankPicker').click()">Άλλο Ranking.xlsx</button></div>
+    <input type="file" id="rankPicker" accept=".xlsx,.xlsm,.xls" style="display:none" onchange="onRankPicked(event)">
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabMEN" onclick="switchTab('MEN')">ΑΝΔΡΕΣ <small id="cntMEN"></small></button>
+    <button class="tab" id="tabWOMEN" onclick="switchTab('WOMEN')">ΓΥΝΑΙΚΕΣ <small id="cntWOMEN"></small></button>
+  </div>
+
+  <div class="panel">
+    <h2>Τουρνουά</h2>
+    <div class="grid2">
+      <label class="f">Όνομα τουρνουά<input id="tName" placeholder="π.χ. ATHENS FINALS" oninput="saveState()"></label>
+      <label class="f">Ημερομηνίες<input id="tDates" placeholder="π.χ. 24-26 JULY" oninput="saveState()"></label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Υπολογισμός βαθμών ομάδας</h2>
+    <div class="grid2">
+      <label class="f">Μέθοδος
+        <select id="method" onchange="onSettings()">
+          <option value="total">Σύνολο σεζόν (ΣΥΝΟΛΟ)</option>
+          <option value="best">Καλύτερα Ν αποτελέσματα</option>
+        </select>
+      </label>
+      <label class="f" id="bestNWrap">Ν (καλύτερα αποτελέσματα)<input id="bestN" type="number" min="1" max="30" value="3" oninput="onSettings()"></label>
+      <label class="f" style="grid-column:1/-1">Βαθμοί μέχρι και το τουρνουά
+        <select id="upTo" onchange="onSettings()"></select>
+      </label>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <label class="f">Θέσεις κύριου ταμπλό (0 = χωρίς χωρισμό)<input id="mdSize" type="number" min="0" max="64" value="0" oninput="onSettings()"></label>
+      <label class="f">Wild cards στο κύριο ταμπλό<input id="wcCount" type="number" min="0" max="16" value="0" oninput="onSettings()"></label>
+    </div>
+    <p class="hint">Οι κανόνες seeding δεν έχουν οριστικοποιηθεί: διάλεξε μέθοδο εδώ. Ισοβαθμίες κρατούν τη σειρά δήλωσης· άλλαξέ την με τα βελάκια.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Δηλώσεις συμμετοχής</h2>
+    <div class="btns">
+      <button class="btn primary" type="button" onclick="document.getElementById('regPicker').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 21V9"/><path d="M7 14l5-5 5 5"/><path d="M4 3h16"/></svg>Εισαγωγή Excel δηλώσεων</button>
+      <button class="btn" type="button" onclick="togglePaste()">Επικόλληση λίστας</button>
+      <button class="btn ghost" type="button" onclick="downloadTemplate()">Πρότυπο δηλώσεων</button>
+    </div>
+    <input type="file" id="regPicker" accept=".xlsx,.xlsm,.xls,.csv" style="display:none" onchange="onRegPicked(event)">
+    <div class="paste-box" id="pasteBox">
+      <textarea id="pasteText" placeholder="Μία ομάδα ανά γραμμή, π.χ.&#10;Ιωαννίδης Παναγιώτης / Παπαδημητρίου Θεόδωρος&#10;Ντάλλας - Χατζηνικολάου"></textarea>
+      <div class="btns" style="margin-top:8px"><button class="btn primary" type="button" onclick="addPasted()">Προσθήκη ομάδων</button></div>
+    </div>
+    <div class="add-row">
+      <input id="addP1" list="names" placeholder="Αθλητής 1" autocomplete="off">
+      <input id="addP2" list="names" placeholder="Αθλητής 2" autocomplete="off" onkeydown="if(event.key==='Enter')addManual()">
+      <button class="btn primary" type="button" onclick="addManual()">+ Ομάδα</button>
+    </div>
+    <datalist id="names"></datalist>
+    <p class="hint">Το Excel δηλώσεων μπορεί να έχει φύλλα MEN και WOMEN (ή ένα φύλλο για την καρτέλα που βλέπεις), με τα δύο ονόματα κάθε ομάδας σε δύο στήλες ή σε μία στήλη χωρισμένα με «/».</p>
+  </div>
+
+  <div class="warns" id="warns"></div>
+
+  <div class="list-head"><span id="listTitle">Αρχική Λίστα — Άνδρες</span><span id="listCount"></span></div>
+  <div id="list"></div>
+
+  <div class="export">
+    <button class="btn ghost" type="button" onclick="clearList()">Καθαρισμός</button>
+    <button class="btn primary" type="button" onclick="exportXlsx()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>Λήψη Excel</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ================= ΔΕΔΟΜΕΝΑ =================
+const RANKING_FILE = 'Ranking.xlsx';
+const STATE_KEY = 'entryListDraft_v1';
+let RANK = { MEN: [], WOMEN: [], tournaments: { MEN: [], WOMEN: [] }, year: '' };
+let INDEX = { MEN: null, WOMEN: null };
+let tab = 'MEN';
+let TEAMS = { MEN: [], WOMEN: [] }; // {id, n1, n2, order}
+let nextId = 1;
+
+// ---------- Ονόματα: σύγκριση χωρίς τόνους/κενά/λατινικά lookalikes ----------
+const LATIN_TO_GREEK = {A:'Α',B:'Β',E:'Ε',H:'Η',I:'Ι',K:'Κ',M:'Μ',N:'Ν',O:'Ο',P:'Ρ',T:'Τ',X:'Χ',Y:'Υ',Z:'Ζ'};
+function nameKey(s){
+  return String(s||'').toLocaleUpperCase('el-GR').normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[ABEHIKMNOPTXYZ]/g, c => LATIN_TO_GREEK[c]).replace(/[.\-–_,]+/g,' ').replace(/\s+/g,' ').trim();
+}
+function tokenKey(s){ return nameKey(s).split(' ').sort().join(' '); }
+function lev(a,b){
+  const m=a.length,n=b.length; if(!m) return n; if(!n) return m;
+  let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){ const cur=[i]; for(let j=1;j<=n;j++){ cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1)); } prev=cur; }
+  return prev[n];
+}
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function buildIndex(g){
+  const byKey = new Map(), byTok = new Map(), bySurname = new Map();
+  RANK[g].forEach(p => {
+    byKey.set(nameKey(p.name), p); byTok.set(tokenKey(p.name), p);
+    const sur = nameKey(p.name).split(' ')[0];
+    if(!bySurname.has(sur)) bySurname.set(sur, []); bySurname.get(sur).push(p);
+  });
+  INDEX[g] = { byKey, byTok, bySurname };
+}
+
+// Επιστρέφει {p, status:'exact'|'fuzzy'|'none'}
+const matchCache = new Map();
+function matchName(g, raw){
+  const k = nameKey(raw); if(!k) return { p:null, status:'empty' };
+  const ck = g+'|'+k; if(matchCache.has(ck)) return matchCache.get(ck);
+  const ix = INDEX[g]; let res = { p:null, status:'none' };
+  if(ix){
+    const ex = ix.byKey.get(k) || ix.byTok.get(tokenKey(raw));
+    if(ex) res = { p:ex, status:'exact' };
+    else {
+      const toks = k.split(' ');
+      // Μόνο επώνυμο και μοναδικός αθλητής με αυτό το επώνυμο
+      if(toks.length === 1 && ix.bySurname.has(toks[0]) && ix.bySurname.get(toks[0]).length === 1){
+        res = { p: ix.bySurname.get(toks[0])[0], status:'fuzzy' };
+      } else {
+        let best=null, bestR=0;
+        for(const p of RANK[g]){
+          const pk = nameKey(p.name);
+          const r = 1 - lev(k, pk) / Math.max(k.length, pk.length);
+          const rt = 1 - lev(tokenKey(raw), tokenKey(p.name)) / Math.max(k.length, pk.length);
+          const rr = Math.max(r, rt);
+          if(rr > bestR){ bestR = rr; best = p; }
+        }
+        if(best && bestR >= 0.8) res = { p:best, status:'fuzzy' };
+      }
+    }
+  }
+  matchCache.set(ck, res); return res;
+}
+
+// ---------- Βαθμοί αθλητή με την επιλεγμένη μέθοδο ----------
+function settings(){
+  return {
+    method: document.getElementById('method').value,
+    n: Math.max(1, parseInt(document.getElementById('bestN').value,10) || 1),
+    upTo: parseInt(document.getElementById('upTo').value,10),
+    md: Math.max(0, parseInt(document.getElementById('mdSize').value,10) || 0),
+    wc: Math.max(0, parseInt(document.getElementById('wcCount').value,10) || 0)
+  };
+}
+function playerPoints(g, p, st){
+  if(!p) return 0;
+  const tours = RANK.tournaments[g];
+  const limit = isNaN(st.upTo) ? tours.length - 1 : st.upTo;
+  const vals = [];
+  p.cols.forEach((v, ci) => { if(ci <= limit && v !== null) vals.push(v); });
+  if(st.method === 'best'){ vals.sort((a,b) => b-a); return vals.slice(0, st.n).reduce((a,b)=>a+b,0); }
+  if(limit >= tours.length - 1) return p.total; // σύνολο όπως στο Excel
+  return vals.reduce((a,b)=>a+b,0);
+}
+
+// ---------- Ανάγνωση Ranking.xlsx ----------
+function parseRankSheet(wb, sheet){
+  const ws = wb.Sheets[sheet]; if(!ws) return { players:[], tours:[] };
+  const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+  const head = rows[1] || [];
+  let totalCol = -1;
+  for(let c=2;c<head.length;c++){ if(String(head[c]).trim().toUpperCase().startsWith('ΣΥΝΟΛ')){ totalCol=c; break; } }
+  if(totalCol === -1) return { players:[], tours:[] };
+  const tours = []; for(let c=2;c<totalCol;c++) tours.push(String(head[c]).split(' (')[0].trim());
+  const players = [];
+  for(let r=3;r<rows.length;r++){
+    const row = rows[r]||[]; const name = String(row[1]||'').trim(); const t = Number(row[totalCol]);
+    if(!name || row[totalCol]==='' || isNaN(t)) continue;
+    const cols = []; for(let c=2;c<totalCol;c++){ const v=row[c]; cols.push(v!=='' && v!=null && !isNaN(Number(v)) ? Number(v) : null); }
+    players.push({ name, total:t, cols });
+  }
+  return { players, tours };
+}
+function applyRanking(wb, label){
+  ['MEN','WOMEN'].forEach(g => { const r = parseRankSheet(wb, g); RANK[g] = r.players; RANK.tournaments[g] = r.tours; buildIndex(g); });
+  const title = (wb.Sheets.MEN && wb.Sheets.MEN.A1 && String(wb.Sheets.MEN.A1.v)) || '';
+  const y = title.match(/20\d\d/); RANK.year = y ? y[0] : String(new Date().getFullYear());
+  matchCache.clear();
+  document.getElementById('srcText').textContent = label + ' · ' + RANK.MEN.length + ' άνδρες, ' + RANK.WOMEN.length + ' γυναίκες';
+  fillUpTo(); fillDatalist(); render();
+}
+async function loadRanking(){
+  try{
+    const r = await fetch(RANKING_FILE + '?t=' + Date.now()); if(!r.ok) throw new Error('http');
+    const wb = XLSX.read(new Uint8Array(await r.arrayBuffer()), { type:'array' });
+    applyRanking(wb, 'Βαθμολογία: ' + RANKING_FILE + ' (online)');
+  }catch(e){
+    document.getElementById('srcText').textContent = 'Δεν βρέθηκε η βαθμολογία — επίλεξε το Ranking.xlsx';
+    render();
+  }
+}
+function onRankPicked(ev){
+  const f = ev.target.files && ev.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = e => { try{ applyRanking(XLSX.read(new Uint8Array(e.target.result), { type:'array' }), 'Βαθμολογία: ' + f.name); toast('Φορτώθηκε η βαθμολογία από ' + f.name); }catch(err){ toast('Το αρχείο δεν διαβάστηκε'); } };
+  rd.readAsArrayBuffer(f); ev.target.value = '';
+}
+function fillUpTo(){
+  const sel = document.getElementById('upTo'); const prev = sel.value;
+  const tours = RANK.tournaments[tab].length ? RANK.tournaments[tab] : RANK.tournaments.MEN;
+  sel.innerHTML = tours.map((t,i) => `<option value="${i}">${esc(t)}${i===tours.length-1?' (όλα)':''}</option>`).join('');
+  sel.value = (prev !== '' && Number(prev) < tours.length) ? prev : String(tours.length - 1);
+}
+function fillDatalist(){
+  document.getElementById('names').innerHTML = RANK[tab].map(p => `<option value="${esc(p.name)}">`).join('');
+}
+
+// ---------- Εισαγωγή δηλώσεων ----------
+const HEADER_WORDS = /ΑΘΛΗΤ|ΟΝΟΜ|ΕΠΩΝΥΜ|PLAYER|NAME|ΟΜΑΔ|TEAM|ΣΥΝΟΛ|ΒΑΘΜ|ENTRY|ΠΑΝΕΛΛΗΝ|ΤΗΛΕΦ|EMAIL|ΣΧΟΛ/;
+function splitPair(s){
+  const parts = String(s).split(/\s*(?:\/|\t|\s[-–]\s|,|\+|&|\|)\s*/).map(x=>x.trim()).filter(Boolean);
+  return parts.length >= 2 ? [parts[0], parts[1]] : null;
+}
+function rowToTeam(row){
+  const txt = row.map(v => typeof v === 'string' ? v.trim() : '').filter(v => v.length >= 3 && /\p{L}/u.test(v));
+  if(!txt.length) return null;
+  if(txt.every(v => HEADER_WORDS.test(nameKey(v)))) return null; // επικεφαλίδες / τίτλος
+  if(txt.length >= 2) return [txt[0], txt[1]];
+  return splitPair(txt[0]);
+}
+function sheetGender(name){
+  const k = String(name||'').toLocaleUpperCase('el-GR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(/WOMEN|WOMAN|FEMALE|GIRL|ΓΥΝ|ΑΘΛΗΤΡΙ|ΘΗΛ|ΚΟΡΙΤΣ/.test(k)) return 'WOMEN';
+  if(/MEN|MAN|MALE|BOY|ΑΝΔΡ|ΑΡΡ|ΑΓΟΡ/.test(k)) return 'MEN';
+  return null;
+}
+function addTeams(g, pairs){
+  const have = new Set(TEAMS[g].map(t => tokenKey(t.n1) + '|' + tokenKey(t.n2)));
+  let added = 0;
+  pairs.forEach(([a,b]) => {
+    const key = tokenKey(a) + '|' + tokenKey(b), rev = tokenKey(b) + '|' + tokenKey(a);
+    if(have.has(key) || have.has(rev)) return;
+    have.add(key);
+    TEAMS[g].push({ id: nextId++, n1: a, n2: b, order: TEAMS[g].length });
+    added++;
+  });
+  return added;
+}
+function onRegPicked(ev){
+  const f = ev.target.files && ev.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = e => {
+    try{
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' });
+      const byG = { MEN: [], WOMEN: [] };
+      wb.SheetNames.forEach(sn => {
+        const g = sheetGender(sn) || (wb.SheetNames.length === 1 ? tab : null);
+        if(!g) return;
+        XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, defval:'' }).forEach(row => { const t = rowToTeam(row); if(t) byG[g].push(t); });
+      });
+      if(!byG.MEN.length && !byG.WOMEN.length){
+        // Κανένα φύλλο με όνομα φύλου: πάρε το πρώτο φύλλο για την τρέχουσα καρτέλα
+        XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1, defval:'' }).forEach(row => { const t = rowToTeam(row); if(t) byG[tab].push(t); });
+      }
+      const nm = addTeams('MEN', byG.MEN), nw = addTeams('WOMEN', byG.WOMEN);
+      if(!nm && nw) switchTab('WOMEN'); else if(nm && !nw) switchTab('MEN');
+      saveState(); render();
+      toast(`Προστέθηκαν ${nm} ομάδες ανδρών και ${nw} γυναικών`);
+    }catch(err){ toast('Το αρχείο δηλώσεων δεν διαβάστηκε'); }
+  };
+  rd.readAsArrayBuffer(f); ev.target.value = '';
+}
+function togglePaste(){ document.getElementById('pasteBox').classList.toggle('show'); }
+function addPasted(){
+  const lines = document.getElementById('pasteText').value.split(/\r?\n/);
+  const pairs = lines.map(l => splitPair(l.replace(/^\s*\d+[.)]\s*/, ''))).filter(Boolean);
+  const n = addTeams(tab, pairs);
+  document.getElementById('pasteText').value = ''; document.getElementById('pasteBox').classList.remove('show');
+  saveState(); render(); toast(n ? `Προστέθηκαν ${n} ομάδες` : 'Δεν βρέθηκαν ομάδες· γράψε «Όνομα 1 / Όνομα 2» ανά γραμμή');
+}
+function addManual(){
+  const a = document.getElementById('addP1'), b = document.getElementById('addP2');
+  if(!a.value.trim() || !b.value.trim()){ toast('Συμπλήρωσε και τους δύο αθλητές'); return; }
+  const n = addTeams(tab, [[a.value.trim(), b.value.trim()]]);
+  if(!n) toast('Η ομάδα υπάρχει ήδη');
+  a.value = ''; b.value = ''; a.focus(); saveState(); render();
+}
+
+// ---------- Υπολογισμός λίστας ----------
+function computed(g){
+  const st = settings();
+  const rows = TEAMS[g].map(t => {
+    const m1 = matchName(g, t.n1), m2 = matchName(g, t.n2);
+    const p1 = playerPoints(g, m1.p, st), p2 = playerPoints(g, m2.p, st);
+    return { t, m1, m2, p1, p2, total: p1 + p2 };
+  });
+  rows.sort((a,b) => b.total - a.total || a.t.order - b.t.order);
+  rows.forEach((r,i) => {
+    r.seed = 1 + rows.filter(x => x.total > r.total).length;
+    r.tie = rows.some(x => x !== r && x.total === r.total);
+  });
+  // διπλοεγγραφές
+  const seen = new Map();
+  rows.forEach(r => [r.m1, r.m2].forEach((m, k) => {
+    const key = m.p ? 'P:' + m.p.name : 'R:' + nameKey(k ? r.t.n2 : r.t.n1);
+    seen.set(key, (seen.get(key) || 0) + 1);
+  }));
+  rows.forEach(r => { r.dup1 = seen.get(r.m1.p ? 'P:' + r.m1.p.name : 'R:' + nameKey(r.t.n1)) > 1;
+                      r.dup2 = seen.get(r.m2.p ? 'P:' + r.m2.p.name : 'R:' + nameKey(r.t.n2)) > 1; });
+  // κύριο ταμπλό / προκριματικά
+  const direct = st.md > 0 ? Math.max(0, st.md - st.wc) : 0;
+  rows.forEach((r,i) => { r.draw = st.md > 0 ? (i < direct ? 'MD' : 'Q') : ''; });
+  return { rows, st, direct };
+}
+
+// ---------- Εμφάνιση ----------
+function flagHtml(m, dup){
+  if(dup) return '<span class="flag dup" title="Ο αθλητής υπάρχει σε δύο ομάδες">ΔΙΠΛΟΣ</span>';
+  if(m.status === 'none') return '<span class="flag none" title="Δεν βρέθηκε στη βαθμολογία — 0 βαθμοί">0 / ΝΕΟΣ;</span>';
+  if(m.status === 'fuzzy') return `<span class="flag fuzzy" title="Αντιστοιχίστηκε με: ${esc(m.p.name)}">≈</span>`;
+  return '';
+}
+function render(){
+  ['MEN','WOMEN'].forEach(g => document.getElementById('cnt'+g).textContent = TEAMS[g].length ? '(' + TEAMS[g].length + ')' : '');
+  document.getElementById('bestNWrap').style.display = document.getElementById('method').value === 'best' ? '' : 'none';
+  const { rows, st, direct } = computed(tab);
+  document.getElementById('listTitle').textContent = 'Αρχική Λίστα — ' + (tab === 'MEN' ? 'Άνδρες' : 'Γυναίκες');
+  document.getElementById('listCount').textContent = rows.length + ' ομάδες';
+  const list = document.getElementById('list');
+  if(!rows.length){ list.innerHTML = '<div class="empty">Δεν υπάρχουν ομάδες ακόμα. Εισήγαγε το Excel δηλώσεων, επικόλλησε λίστα ή πρόσθεσε ομάδα με το χέρι.</div>'; renderWarns(rows); return; }
+  let html = '';
+  rows.forEach((r,i) => {
+    if(st.md > 0 && i === direct && i > 0) html += `<div class="cut">ΟΡΙΟ ΚΥΡΙΟΥ ΤΑΜΠΛΟ · ${st.wc ? st.wc + ' WILD CARD · ' : ''}ΑΠΟ ΕΔΩ ΠΡΟΚΡΙΜΑΤΙΚΑ</div>`;
+    const prevTie = i > 0 && rows[i-1].total === r.total;
+    const nextTie = i < rows.length-1 && rows[i+1].total === r.total;
+    html += `<div class="team ${r.draw === 'Q' ? 'q' : ''}">
+      <div class="seed">${r.seed}${r.tie ? '<small>=</small>' : ''}</div>
+      <div class="players">
+        <div class="pl"><input list="names" value="${esc(r.m1.p && r.m1.status==='exact' ? r.m1.p.name : r.t.n1)}" onchange="editName(${r.t.id},1,this.value)" aria-label="Αθλητής 1">${flagHtml(r.m1, r.dup1)}<span class="pts">${r.p1}</span></div>
+        <div class="pl"><input list="names" value="${esc(r.m2.p && r.m2.status==='exact' ? r.m2.p.name : r.t.n2)}" onchange="editName(${r.t.id},2,this.value)" aria-label="Αθλητής 2">${flagHtml(r.m2, r.dup2)}<span class="pts">${r.p2}</span></div>
+      </div>
+      <div class="right">
+        <span class="total">${r.total}</span>
+        ${r.draw ? `<span class="tag ${r.draw==='MD'?'md':'q'}">${r.draw}</span>` : (r.tie ? '<span class="tag tie">ΙΣΟΒ.</span>' : '')}
+        <div class="acts">
+          ${prevTie ? `<button class="icon-btn" title="Πάνω (ισοβαθμία)" onclick="moveTie(${r.t.id},-1)">↑</button>` : ''}
+          ${nextTie ? `<button class="icon-btn" title="Κάτω (ισοβαθμία)" onclick="moveTie(${r.t.id},1)">↓</button>` : ''}
+          <button class="icon-btn" title="Διαγραφή ομάδας" onclick="removeTeam(${r.t.id})">✕</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  list.innerHTML = html;
+  renderWarns(rows);
+}
+function renderWarns(rows){
+  const box = document.getElementById('warns'); const items = [];
+  const none = [], fuzzy = [], dup = new Set();
+  rows.forEach(r => [[r.m1,r.t.n1,r.dup1],[r.m2,r.t.n2,r.dup2]].forEach(([m,raw,d]) => {
+    if(d) dup.add(m.p ? m.p.name : raw);
+    if(m.status === 'none') none.push(raw);
+    if(m.status === 'fuzzy') fuzzy.push(`${raw} → ${m.p.name}`);
+  }));
+  if(dup.size) items.push(`<b>Σε δύο ομάδες:</b> ${[...dup].map(esc).join(', ')}`);
+  if(none.length) items.push(`<b>Χωρίς βαθμούς (δεν βρέθηκαν):</b> ${none.map(esc).join(', ')} — έλεγξε τη γραφή ή είναι νέοι αθλητές.`);
+  if(fuzzy.length) items.push(`<b>Αντιστοιχίστηκαν κατά προσέγγιση (≈):</b><ul>${fuzzy.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>Αν κάποιο είναι λάθος, διόρθωσε το όνομα στη λίστα.`);
+  box.innerHTML = items.join('<br>'); box.classList.toggle('show', items.length > 0);
+}
+
+// ---------- Ενέργειες ----------
+function findTeam(id){ return TEAMS[tab].find(t => t.id === id); }
+function editName(id, which, val){ const t = findTeam(id); if(!t) return; t['n'+which] = val.trim(); saveState(); render(); }
+function removeTeam(id){ TEAMS[tab] = TEAMS[tab].filter(t => t.id !== id); saveState(); render(); }
+function moveTie(id, dir){
+  const { rows } = computed(tab); const i = rows.findIndex(r => r.t.id === id); const j = i + dir;
+  if(j < 0 || j >= rows.length || rows[j].total !== rows[i].total) return;
+  const a = rows[i].t, b = rows[j].t; const o = a.order; a.order = b.order; b.order = o;
+  saveState(); render();
+}
+function clearList(){
+  if(!TEAMS[tab].length) return;
+  if(!confirm('Να διαγραφούν όλες οι ομάδες της καρτέλας ' + (tab==='MEN'?'Ανδρών':'Γυναικών') + ';')) return;
+  TEAMS[tab] = []; saveState(); render();
+}
+function switchTab(g){
+  tab = g;
+  document.body.classList.toggle('women-theme', g === 'WOMEN');
+  document.getElementById('tabMEN').classList.toggle('active', g === 'MEN');
+  document.getElementById('tabWOMEN').classList.toggle('active', g === 'WOMEN');
+  document.getElementById('addP1').placeholder = g === 'MEN' ? 'Αθλητής 1' : 'Αθλήτρια 1';
+  document.getElementById('addP2').placeholder = g === 'MEN' ? 'Αθλητής 2' : 'Αθλήτρια 2';
+  fillUpTo(); fillDatalist(); render();
+}
+function onSettings(){ saveState(); render(); }
+function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600); }
+
+// ---------- Αποθήκευση πρόχειρου ----------
+function saveState(){
+  try{
+    localStorage.setItem(STATE_KEY, JSON.stringify({
+      tName: document.getElementById('tName').value, tDates: document.getElementById('tDates').value,
+      method: document.getElementById('method').value, bestN: document.getElementById('bestN').value,
+      mdSize: document.getElementById('mdSize').value, wcCount: document.getElementById('wcCount').value,
+      TEAMS, nextId
+    }));
+  }catch(e){}
+}
+function loadState(){
+  try{
+    const s = JSON.parse(localStorage.getItem(STATE_KEY) || 'null'); if(!s) return;
+    ['tName','tDates','method','bestN','mdSize','wcCount'].forEach(k => { if(s[k] != null) document.getElementById(k).value = s[k]; });
+    if(s.TEAMS) TEAMS = { MEN: s.TEAMS.MEN || [], WOMEN: s.TEAMS.WOMEN || [] };
+    nextId = s.nextId || 1 + Math.max(0, ...TEAMS.MEN.map(t=>t.id), ...TEAMS.WOMEN.map(t=>t.id));
+  }catch(e){}
+}
+
+// ---------- Εξαγωγή Excel (μορφή ENTRY LIST) ----------
+function buildSheet(g){
+  const { rows, st } = computed(g);
+  const yr = RANK.year || String(new Date().getFullYear());
+  const tName = document.getElementById('tName').value.trim() || 'TOURNAMENT';
+  const tDates = document.getElementById('tDates').value.trim();
+  const title = `ΠΑΝΕΛΛΗΝΙΟ ΠΡΩΤΑΘΛΗΜΑ BEACH VOLLEY ${yr} - ${tName}${tDates ? ' (' + tDates + ')' : ''} ENTRY LIST ${g}`;
+  const p = g === 'MEN' ? 'ΑΘΛΗΤΗΣ' : 'ΑΘΛΗΤΡΙΑ';
+  const withDraw = st.md > 0;
+  const aoa = [[title], ['', p + ' 1', p + ' 2', 'ΒΑΘΜ ' + yr, '', 'ΣΥΝΟΛΟ'].concat(withDraw ? ['ΤΑΜΠΛΟ'] : [])];
+  rows.forEach(r => aoa.push([r.seed,
+    r.m1.p ? r.m1.p.name : r.t.n1,
+    r.m2.p ? r.m2.p.name : r.t.n2,
+    r.p1, r.p2, r.total].concat(withDraw ? [r.draw] : [])));
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  rows.forEach((r,i) => { const R = i + 3; ws['F' + R] = { t:'n', v:r.total, f:`SUM(D${R}:E${R})` }; });
+  ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:withDraw?6:5} }, { s:{r:1,c:3}, e:{r:1,c:4} }];
+  ws['!cols'] = [{wch:9.5},{wch:42},{wch:42},{wch:12},{wch:12},{wch:12}].concat(withDraw ? [{wch:10}] : []);
+  return ws;
+}
+function exportXlsx(){
+  if(!TEAMS.MEN.length && !TEAMS.WOMEN.length){ toast('Δεν υπάρχουν ομάδες για εξαγωγή'); return; }
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, buildSheet('MEN'), 'MEN');
+  XLSX.utils.book_append_sheet(wb, buildSheet('WOMEN'), 'WOMEN');
+  const tName = (document.getElementById('tName').value.trim() || 'TOURNAMENT').replace(/[\\/:*?"<>|]+/g,'').replace(/\s+/g,'_');
+  XLSX.writeFile(wb, `ENTRY_LIST_${tName}.xlsx`);
+}
+function downloadTemplate(){
+  const wb = XLSX.utils.book_new();
+  [['MEN','ΑΘΛΗΤΗΣ'],['WOMEN','ΑΘΛΗΤΡΙΑ']].forEach(([g,p]) => {
+    const ws = XLSX.utils.aoa_to_sheet([[p + ' 1', p + ' 2', 'ΣΧΟΛΙΑ']]);
+    ws['!cols'] = [{wch:36},{wch:36},{wch:30}];
+    XLSX.utils.book_append_sheet(wb, ws, g);
+  });
+  XLSX.writeFile(wb, 'ΔΗΛΩΣΕΙΣ_ΣΥΜΜΕΤΟΧΗΣ.xlsx');
+}
+
+// ---------- Εκκίνηση ----------
+loadState();
+loadRanking();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>
