@@ -16,7 +16,8 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="gh-publish.js"></script>
 <style>
   :root{
     --blue-900:#0d3a5c;
@@ -329,6 +330,19 @@
     .controls-row{ gap:16px; }
     .field input[type=number]{ width:110px; }
   }
+
+  /* ===== ΠΙΝΑΚΕΣ ΑΠΟ ΑΡΧΕΙΟ (PointSystem.xlsx) ===== */
+  .file-panel{margin-top:28px;}
+  .file-panel .src{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--ink-soft); margin:2px 0 14px;}
+  .file-panel .btns{display:flex; flex-wrap:wrap; gap:10px;}
+  .file-panel .hint{font-size:13px; color:var(--ink-soft); line-height:1.55; margin:12px 0 0;}
+  .file-check{display:none; margin-top:14px; border-radius:12px; padding:12px 14px; font-size:13.5px; line-height:1.5;}
+  .file-check.show{display:block;}
+  .file-check.ok{background:rgba(58,146,214,0.10); border:1px solid rgba(58,146,214,0.35);}
+  .file-check.bad{background:rgba(182,64,47,0.08); border:1px solid rgba(182,64,47,0.35);}
+  .file-check b{display:block; margin-bottom:4px;}
+  .file-check ul{margin:4px 0 0; padding-left:18px;}
+  .file-check .btns{margin-top:10px;}
 </style>
 </head>
 <body>
@@ -407,8 +421,23 @@
     <button class="btn btn-secondary" id="copyTsv">⧉ Αντιγραφή για Excel</button>
   </div>
 
+  <div class="panel file-panel">
+    <h2>Πίνακες βαθμολογίας (αρχείο)</h2>
+    <div class="src" id="psSource">Φόρτωση πινάκων…</div>
+    <div class="btns">
+      <button class="btn btn-secondary" id="psDownload" type="button">⬇ Λήψη δείγματος (PointSystem.xlsx)</button>
+      <button class="btn btn-primary" id="psUploadBtn" type="button">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 20h16"/></svg>
+        Ανέβασμα αρχείου
+      </button>
+    </div>
+    <input type="file" id="psPicker" accept=".xlsx,.xlsm,.xls" style="display:none">
+    <div class="file-check" id="psCheck"></div>
+    <p class="hint">Για νέο σύστημα βαθμολόγησης: κατέβασε το δείγμα, άλλαξε τους πίνακες στο Excel (ένα φύλλο ανά ταμπλό, οδηγίες στο φύλλο ΟΔΗΓΙΕΣ), ανέβασέ το εδώ για έλεγχο και πάτα «Δημοσίευση στο GitHub».</p>
+  </div>
+
   <footer>
-Σε κάθε πίνακα, βαθμοί αθλητή = βαθμοί ομάδας ÷ 2. Όλα τα κελιά είναι επεξεργάσιμα — προσάρμοσε ελεύθερα ανάλογα με τον αριθμό ομάδων της διοργάνωσής.
+Σε κάθε πίνακα, βαθμοί αθλητή = βαθμοί ομάδας × ποσοστό αθλητή (συνήθως ÷ 2). Όλα τα κελιά είναι επεξεργάσιμα — προσάρμοσε ελεύθερα ανάλογα με τον αριθμό ομάδων της διοργάνωσής.
   </footer>
 </div>
 
@@ -417,10 +446,10 @@
 <script>
 /* ---------- preset data ---------- */
 /* base = η τιμή του πίνακα ΠΡΙΝ τον συντελεστή. team = base * coefficient. athlete = team / 2 */
-const PRESETS = {
+const BUILTIN_PRESETS = {
   pool: {
     label: "Όμιλοι (Pool Play)",
-    coefficient: 1,
+    coefficient: 1, athleteShare: 0.5, split: [800, 700],
     rows: [
       ["1",1000],["2",900],["3",760],["-",760],
       ["5",600],["-",600],["-",600],["-",600],
@@ -433,7 +462,7 @@ const PRESETS = {
   },
   doubleEl: {
     label: "Double Elimination",
-    coefficient: 1,
+    coefficient: 1, athleteShare: 0.5, split: [800, 700],
     rows: [
       ["1",1000],["2",900],["3",760],["-",760],
       ["5",600],["-",600],["7",540],["-",540],
@@ -444,7 +473,7 @@ const PRESETS = {
   },
   pool8: {
     label: "Όμιλοι 8 ομάδων (Pool Play 8 teams)",
-    coefficient: 1,
+    coefficient: 1, athleteShare: 0.5, split: [800, 700],
     rows: [
       ["1",1000],["2",900],["3",760],["-",760],
       ["5",600],["-",600],["7",540],["-",540],
@@ -457,7 +486,7 @@ const PRESETS = {
   },
   finals: {
     label: "Finals",
-    coefficient: 1,
+    coefficient: 1, athleteShare: 0.5, split: null,
     rows: [
       ["1",2000],["2",1800],["3",1600],["4",1400],["5",1200],["-",1200],
       ["7",1080],["-",1080],["9",960],["-",960],
@@ -466,8 +495,10 @@ const PRESETS = {
   }
 };
 
+let PRESETS = BUILTIN_PRESETS;
 let currentRows = [];
-let currentPresetKey = "pool";
+let currentPresetKey = "finals";
+function share(){ const p = PRESETS[currentPresetKey]; return (p && typeof p.athleteShare === 'number') ? p.athleteShare : 0.5; }
 
 const tableBody = document.getElementById("tableBody");
 const coefficientInput = document.getElementById("coefficient");
@@ -497,9 +528,9 @@ function loadPreset(key){
   coefficientInput.value = preset.coefficient;
   buildPresetButtons();
 
-  /* 3η/4η θέση split — δεν εφαρμόζεται στο ταμπλό Finals */
+  /* 3η/4η θέση χωριστά — μόνο όπου ορίζεται στο αρχείο (π.χ. όχι στα Finals) */
   thirdFourthSplit.checked = false;
-  if(key === "finals"){
+  if(!preset.split){
     thirdFourthSplit.disabled = true;
     thirdFourthField.style.display = "none";
   } else {
@@ -511,7 +542,8 @@ function loadPreset(key){
 }
 
 function applyThirdFourthSplit(enable){
-  if(currentPresetKey === "finals") return;
+  const sp = PRESETS[currentPresetKey].split;
+  if(!sp) return;
   const idx3 = currentRows.findIndex(r => parseInt(r.pos, 10) === 3);
   if(idx3 === -1) return;
   const idx4 = idx3 + 1;
@@ -520,8 +552,8 @@ function applyThirdFourthSplit(enable){
     if(currentRows[idx3]._origBase === undefined) currentRows[idx3]._origBase = currentRows[idx3].base;
     if(currentRows[idx4]._origBase === undefined) currentRows[idx4]._origBase = currentRows[idx4].base;
     if(currentRows[idx4]._origPos === undefined) currentRows[idx4]._origPos = currentRows[idx4].pos;
-    currentRows[idx3].base = 800;
-    currentRows[idx4].base = 700;
+    currentRows[idx3].base = sp[0];
+    currentRows[idx4].base = sp[1];
     currentRows[idx4].pos = "4";
   } else {
     if(currentRows[idx3]._origBase !== undefined){ currentRows[idx3].base = currentRows[idx3]._origBase; }
@@ -546,7 +578,7 @@ function render(){
   tableBody.innerHTML = "";
   currentRows.forEach((row, idx)=>{
     const team = row.base * coeff;
-    const athlete = team / 2;
+    const athlete = team * share();
     const tr = document.createElement("tr");
     const rankNumber = parseInt(row.pos, 10);
     if(!isNaN(rankNumber) && rankNumber <= 3){
@@ -595,7 +627,7 @@ function renderComputedOnly(){
   rows.forEach((tr, idx)=>{
     const row = currentRows[idx];
     const team = row.base * coeff;
-    const athlete = team / 2;
+    const athlete = team * share();
     tr.querySelector(".computed.team").textContent = fmt(team);
     tr.querySelector(".computed.athlete").textContent = fmt(athlete);
     const badge = tr.querySelector(".pos-badge");
@@ -637,7 +669,7 @@ function getComputedRows(){
   const coeff = parseFloat(coefficientInput.value) || 0;
   return currentRows.map(row=>{
     const team = row.base * coeff;
-    const athlete = team / 2;
+    const athlete = team * share();
     return { pos: row.pos, base: row.base, team: Number(fmt(team)), athlete: Number(fmt(athlete)) };
   });
 }
@@ -664,9 +696,156 @@ document.getElementById("downloadXlsx").addEventListener("click", ()=>{
   XLSX.writeFile(wb, `vathmoi-${currentPresetKey}.xlsx`);
 });
 
-/* init */
+
+/* ---------- Πίνακες από το PointSystem.xlsx ---------- */
+const PS_FILE = 'PointSystem.xlsx';
+let psPending = null; // { bytes, name } — αρχείο που ανέβηκε για έλεγχο/δημοσίευση
+
+function psNorm(v){ return String(v == null ? '' : v).toLocaleUpperCase('el-GR').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim(); }
+function psNum(v){ if(v === '' || v == null) return NaN; return typeof v === 'number' ? v : parseFloat(String(v).replace(',', '.')); }
+function psEsc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function parsePointWorkbook(wb){
+  const boards = [], errors = [];
+  wb.SheetNames.forEach(sn => {
+    if(/^(ΟΔΗΓΙ|INSTRUCT|README)/.test(psNorm(sn))) return;
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, defval:'', raw:true, blankrows:true });
+    const hi = rows.findIndex(r => psNorm(r[0]) === 'ΘΕΣΗ');
+    if(hi === -1){ errors.push(`Φύλλο «${sn}»: δεν βρέθηκε η γραμμή ΘΕΣΗ / ΒΑΣΗ.`); return; }
+    const set = {}; rows.slice(0, hi).forEach(r => { const k = psNorm(r[0]); if(k) set[k] = r[1]; });
+    let coef = psNum(set['ΣΥΝΤΕΛΕΣΤΗΣ']); if(isNaN(coef)) coef = 1;
+    let sh = psNum(set['ΠΟΣΟΣΤΟ ΑΘΛΗΤΗ']); if(isNaN(sh)) sh = 0.5; if(sh > 1) sh = sh / 100;
+    const p3 = psNum(set['ΘΕΣΗ 3 ΧΩΡΙΣΤΑ']), p4 = psNum(set['ΘΕΣΗ 4 ΧΩΡΙΣΤΑ']);
+    const out = [];
+    rows.slice(hi + 1).forEach((r, i) => {
+      const pos = String(r[0] == null ? '' : r[0]).trim(), b = r[1];
+      if(pos === '' && (b === '' || b == null)) return;
+      const n = psNum(b);
+      if(isNaN(n)){ errors.push(`Φύλλο «${sn}», γραμμή ${hi + 2 + i}: η ΒΑΣΗ «${b}» δεν είναι αριθμός.`); return; }
+      out.push([pos === '' ? '-' : pos, n]);
+    });
+    if(!out.length){ errors.push(`Φύλλο «${sn}»: δεν έχει γραμμές βαθμών.`); return; }
+    boards.push({
+      label: String(set['ΤΑΜΠΛΟ'] || set['ΟΝΟΜΑ'] || sn).trim(),
+      coefficient: coef, athleteShare: sh,
+      split: (!isNaN(p3) && !isNaN(p4)) ? [p3, p4] : null,
+      first: /^(ΝΑΙ|YES|X|1)$/.test(psNorm(set['ΑΝΟΙΓΕΙ ΠΡΩΤΟ'])),
+      rows: out
+    });
+  });
+  if(!boards.length && !errors.length) errors.push('Δεν βρέθηκε κανένα φύλλο ταμπλό.');
+  return { boards, errors };
+}
+function boardsToPresets(boards){
+  const p = {}; let firstKey = null;
+  boards.forEach((b, i) => { const k = 'b' + i; p[k] = b; if(b.first && !firstKey) firstKey = k; });
+  return { presets: p, firstKey: firstKey || 'b0' };
+}
+function usePresets(presets, key){
+  PRESETS = presets;
+  currentPresetKey = PRESETS[key] ? key : Object.keys(PRESETS)[0];
+  buildPresetButtons();
+  loadPreset(currentPresetKey);
+}
+function setSource(t){ document.getElementById('psSource').textContent = t; }
+
+async function loadPointFile(){
+  try{
+    const r = await fetch(PS_FILE + '?t=' + Date.now());
+    if(!r.ok) throw new Error('http');
+    const wb = XLSX.read(new Uint8Array(await r.arrayBuffer()), { type:'array' });
+    const { boards, errors } = parsePointWorkbook(wb);
+    if(!boards.length) throw new Error('empty');
+    const { presets, firstKey } = boardsToPresets(boards);
+    usePresets(presets, firstKey);
+    setSource('Πίνακες από το ' + PS_FILE + ' (online) · ' + boards.length + ' ταμπλό' + (errors.length ? ' · ' + errors.length + ' γραμμές με λάθος αγνοήθηκαν' : ''));
+  }catch(e){
+    setSource('Ενσωματωμένοι πίνακες (το ' + PS_FILE + ' δεν βρέθηκε)');
+  }
+}
+
+document.getElementById('psDownload').addEventListener('click', async () => {
+  // Το δείγμα είναι το τρέχον αρχείο του GitHub (με μορφοποίηση και φύλλο ΟΔΗΓΙΕΣ).
+  try{
+    const r = await fetch(PS_FILE + '?t=' + Date.now());
+    if(!r.ok) throw new Error('http');
+    const blob = await r.blob();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = PS_FILE;
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }catch(e){
+    // χωρίς σύνδεση: φτιάξε δείγμα από τους πίνακες που φαίνονται
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Κάθε φύλλο είναι ένα ταμπλό. Άλλαξε ρυθμίσεις (στήλη B) και τον πίνακα ΘΕΣΗ / ΒΑΣΗ.']]), 'ΟΔΗΓΙΕΣ');
+    Object.keys(PRESETS).forEach(k => {
+      const b = PRESETS[k];
+      const aoa = [['ΤΑΜΠΛΟ', b.label], ['ΣΥΝΤΕΛΕΣΤΗΣ', b.coefficient], ['ΠΟΣΟΣΤΟ ΑΘΛΗΤΗ', b.athleteShare],
+                   ['ΘΕΣΗ 3 ΧΩΡΙΣΤΑ', b.split ? b.split[0] : ''], ['ΘΕΣΗ 4 ΧΩΡΙΣΤΑ', b.split ? b.split[1] : ''],
+                   ['ΑΝΟΙΓΕΙ ΠΡΩΤΟ', k === currentPresetKey ? 'ΝΑΙ' : ''], [], ['ΘΕΣΗ', 'ΒΑΣΗ']].concat(b.rows);
+      const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = [{wch:20},{wch:40}];
+      XLSX.utils.book_append_sheet(wb, ws, b.label.replace(/[\\/?*\[\]:]/g, '').slice(0, 31));
+    });
+    XLSX.writeFile(wb, PS_FILE);
+  }
+});
+
+document.getElementById('psUploadBtn').addEventListener('click', () => document.getElementById('psPicker').click());
+document.getElementById('psPicker').addEventListener('change', ev => {
+  const f = ev.target.files && ev.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = e => {
+    const box = document.getElementById('psCheck');
+    try{
+      const bytes = new Uint8Array(e.target.result);
+      const { boards, errors } = parsePointWorkbook(XLSX.read(bytes, { type:'array' }));
+      if(errors.length || !boards.length){
+        psPending = null;
+        box.className = 'file-check show bad';
+        box.innerHTML = `<b>Το αρχείο «${psEsc(f.name)}» έχει λάθη — διόρθωσέ τα και ανέβασέ το ξανά:</b><ul>${errors.map(x => '<li>' + psEsc(x) + '</li>').join('')}</ul>`;
+        return;
+      }
+      psPending = { bytes, name: f.name };
+      const { presets, firstKey } = boardsToPresets(boards);
+      usePresets(presets, firstKey);
+      setSource('Προεπισκόπηση: «' + f.name + '» (φαίνεται μόνο εδώ μέχρι να δημοσιευτεί)');
+      box.className = 'file-check show ok';
+      box.innerHTML = `<b>Το αρχείο διαβάστηκε σωστά — έλεγξε τους πίνακες πάνω.</b>
+        <ul>${boards.map(b => `<li>${psEsc(b.label)}: ${b.rows.length} γραμμές, συντελεστής ${b.coefficient}${b.split ? ', θέσεις 3-4 χωριστά' : ''}</li>`).join('')}</ul>
+        <div class="btns"><button class="btn btn-primary" type="button" id="psPublish">⬆ Δημοσίευση στο GitHub</button>
+        <button class="btn btn-secondary" type="button" id="psCancel">Ακύρωση</button></div>`;
+      document.getElementById('psPublish').onclick = psPublish;
+      document.getElementById('psCancel').onclick = () => { psPending = null; box.className = 'file-check'; loadPointFile(); };
+      box.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }catch(err){
+      psPending = null;
+      box.className = 'file-check show bad';
+      box.innerHTML = '<b>Το αρχείο δεν διαβάστηκε.</b> Βεβαιώσου ότι είναι αρχείο Excel (.xlsx) με τη μορφή του δείγματος.';
+    }
+  };
+  rd.readAsArrayBuffer(f); ev.target.value = '';
+});
+
+async function psPublish(){
+  if(!psPending) return;
+  if(!confirm('Οι πίνακες βαθμολογίας θα αντικατασταθούν για ΟΛΟΥΣ με το αρχείο «' + psPending.name + '». Συνέχεια;')) return;
+  const btn = document.getElementById('psPublish'); btn.disabled = true; btn.textContent = 'Ανέβασμα…';
+  const when = new Date().toLocaleString('el-GR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const res = await BVPublish.publish({ path: PS_FILE, bytes: psPending.bytes, message: 'Ενημέρωση πινάκων βαθμολογίας από την εφαρμογή (' + psPending.name + ', ' + when + ')' });
+  const box = document.getElementById('psCheck');
+  if(res.ok){
+    psPending = null;
+    box.className = 'file-check show ok';
+    box.innerHTML = '<b>✓ Δημοσιεύτηκε στο GitHub</b>Όλοι θα βλέπουν τους νέους πίνακες σε περίπου 1–2 λεπτά.';
+    setSource('Πίνακες από το ' + PS_FILE + ' (μόλις δημοσιεύτηκε)');
+  } else {
+    btn.disabled = false; btn.textContent = '⬆ Δημοσίευση στο GitHub';
+    if(!res.cancelled) showToast(res.error || 'Η δημοσίευση απέτυχε');
+  }
+}
+
+/* init: πρώτα οι ενσωματωμένοι πίνακες, μετά από το αρχείο */
 buildPresetButtons();
 loadPreset("finals");
+loadPointFile();
 </script>
 
 

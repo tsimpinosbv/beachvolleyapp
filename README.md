@@ -58,6 +58,8 @@
 ├── Prices.html                   # Υπολογισμός Επάθλων
 ├── Schedules.html                # Πρόγραμμα Αγώνων
 ├── PoolDraw.html                 # Κλήρωση Ομίλων (CEV)
+├── PointSystem.xlsx              # Πίνακες βαθμολογίας (διαβάζονται από το PointSystem.html)
+├── gh-publish.js                 # Δημοσίευση αρχείων στο GitHub από την εφαρμογή
 ├── EntryList.html                # Αρχική Λίστα (Entry List)
 ├── vendor/xlsx.full.min.js       # SheetJS (κοινή βιβλιοθήκη Excel)
 ├── Odigies.html                  # Οδηγίες (παράγεται από το ΟΔΗΓΙΕΣ-ΕΓΚΑΤΑΣΤΑΣΗΣ.md)

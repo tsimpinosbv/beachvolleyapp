@@ -1,6 +1,6 @@
 // BV Supervisor Tools — service worker
 // Bump CACHE_VERSION any time app-shell files change, so clients pick up the update.
-const CACHE_VERSION = 'bv-tools-v11';
+const CACHE_VERSION = 'bv-tools-v12';
 const SHELL_CACHE = CACHE_VERSION + '-shell';
 const DATA_CACHE = CACHE_VERSION + '-data';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
@@ -13,6 +13,7 @@ const APP_SHELL = [
   './Prices.html',
   './Schedules.html',
   './Odigies.html',
+  './gh-publish.js',
   './EntryList.html',
   './vendor/xlsx.full.min.js',
   './files/',
@@ -28,7 +29,7 @@ const APP_SHELL = [
   './icons/favicon-16.png'
 ];
 
-const DATA_FILE = 'Ranking.xlsx';
+const DATA_FILES = ['Ranking.xlsx', 'PointSystem.xlsx'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -77,7 +78,7 @@ self.addEventListener('fetch', (event) => {
 
   // The ranking workbook: network-first (fresh data), cached under a clean
   // key (no ?t= cache-busting query) so the offline fallback still matches.
-  if (sameOrigin && url.pathname.endsWith(DATA_FILE)) {
+  if (sameOrigin && DATA_FILES.some((f) => url.pathname.endsWith('/' + f))) {
     const cleanKey = new Request(url.origin + url.pathname);
     event.respondWith(
       fetch(req)
