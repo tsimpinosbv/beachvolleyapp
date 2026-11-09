@@ -263,6 +263,34 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     margin-top:14px; background:var(--orange); color:#fff; border:none;
     font-weight:800; font-size:13px; padding:10px 18px; border-radius:8px; cursor:pointer; font-family:inherit;
   }
+
+  /* ===== ΔΗΜΟΣΙΕΥΣΗ ΣΤΟ GITHUB ===== */
+  .publish-bar{display:none; margin-top:12px; background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.3); border-radius:12px; padding:10px 12px; color:#fff;}
+  .publish-bar.show{display:block;}
+  .publish-bar .pb-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .publish-bar .pb-text{flex:1; min-width:180px; font-size:13px; line-height:1.4;}
+  .publish-bar .pb-text b{display:block; font-size:13.5px;}
+  .publish-btn{display:inline-flex; align-items:center; gap:6px; border:none; background:#fff; color:var(--navy-deep); font-family:inherit; font-weight:800; font-size:13.5px; padding:9px 13px; border-radius:9px; cursor:pointer;}
+  .publish-btn[disabled]{opacity:.6; cursor:default;}
+  .publish-btn svg{width:15px; height:15px;}
+  .publish-bar .pb-msg{margin-top:8px; font-size:12.5px; line-height:1.45;}
+  .publish-bar .pb-msg a{color:#fff; font-weight:700;}
+  .gh-modal{position:fixed; inset:0; background:rgba(10,30,50,0.55); display:none; align-items:flex-end; justify-content:center; z-index:50; padding:16px;}
+  .gh-modal.show{display:flex;}
+  @media (min-width:600px){ .gh-modal{align-items:center;} }
+  .gh-card{background:#fff; color:var(--ink); border-radius:16px; width:100%; max-width:520px; max-height:90vh; overflow:auto; padding:18px 18px 16px; box-shadow:0 18px 40px rgba(0,0,0,0.3);}
+  .gh-card h3{font-family:'Space Grotesk',sans-serif; margin:0 0 6px; font-size:19px; color:var(--navy-deep);}
+  .gh-card p{margin:6px 0; font-size:13.5px; line-height:1.5;}
+  .gh-card ol{margin:8px 0; padding-left:20px; font-size:13.5px; line-height:1.55;}
+  .gh-card ol li{margin:3px 0;}
+  .gh-card a{color:var(--navy-light); font-weight:700;}
+  .gh-card input{width:100%; font-family:'IBM Plex Mono',monospace; font-size:13.5px; border:1.5px solid var(--sand-deep); border-radius:9px; padding:10px; margin-top:8px;}
+  .gh-card .gh-err{color:var(--neg); font-size:12.5px; font-weight:600; min-height:16px; margin-top:6px;}
+  .gh-card .gh-actions{display:flex; gap:8px; justify-content:flex-end; margin-top:10px; flex-wrap:wrap;}
+  .gh-card .gh-actions button{font-family:inherit; font-weight:700; font-size:14px; padding:10px 14px; border-radius:9px; cursor:pointer; border:1.5px solid var(--navy-light); background:#fff; color:var(--navy-light);}
+  .gh-card .gh-actions button.primary{background:var(--navy-deep); border-color:var(--navy-deep); color:#fff;}
+  .gh-card .gh-forget{background:none; border:none; padding:0; color:var(--muted); font-size:12px; text-decoration:underline; cursor:pointer; font-family:inherit; margin-top:8px;}
+  .gh-card .gh-note{font-size:12px; color:var(--muted);}
 </style>
 </head>
 <body>
@@ -295,6 +323,16 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       </span>
     </div>
     <input type="file" id="filePicker" accept=".xlsx" style="display:none;" onchange="onFilePicked(event)">
+    <div class="publish-bar" id="publishBar">
+      <div class="pb-row">
+        <div class="pb-text"><b id="pbTitle">Να δημοσιευτεί για όλους;</b><span id="pbSub">Το αρχείο φαίνεται μόνο σε αυτή τη συσκευή. Με τη δημοσίευση αντικαθιστά το Ranking.xlsx στο GitHub.</span></div>
+        <button class="publish-btn" id="publishBtn" type="button" onclick="publishToGitHub()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 21V9"/><path d="M7 14l5-5 5 5"/><path d="M4 3h16"/></svg>
+          Δημοσίευση στο GitHub
+        </button>
+      </div>
+      <div class="pb-msg" id="pbMsg"></div>
+    </div>
   </div>
 
   <div id="mainContent" style="display:none;">
@@ -418,6 +456,7 @@ function showSourceNote(override){
 }
 
 function revertToOnline(){
+  PENDING_UPLOAD = null; showPublishBar();
   clearOverride();
   loadData(true);
 }
@@ -532,9 +571,12 @@ function onFilePicked(evt){
   const reader = new FileReader();
   reader.onload = function(e){
     try{
-      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const bytes = new Uint8Array(e.target.result);
+      const wb = XLSX.read(bytes, { type: 'array' });
       applyWorkbook(wb);
       setOverride(file.name);
+      PENDING_UPLOAD = { bytes: bytes, name: file.name, published: false };
+      showPublishBar();
       const ov = getOverride();
       setStatusDot('local');
       document.getElementById('statusText').textContent = 'Τοπικό αρχείο';
@@ -546,6 +588,133 @@ function onFilePicked(evt){
     }
   };
   reader.readAsArrayBuffer(file);
+}
+
+
+// ===================== ΔΗΜΟΣΙΕΥΣΗ ΣΤΟ GITHUB =====================
+// Ανεβάζει το αρχείο που επέλεξες ως Ranking.xlsx στο repository, μέσω του GitHub API.
+// Χρειάζεται fine-grained token με Contents: Read and write μόνο για το beachvolleyapp.
+const GH_OWNER = 'tsimpinosbv', GH_REPO = 'beachvolleyapp', GH_BRANCH = 'main', GH_PATH = 'Ranking.xlsx';
+const GH_TOKEN_KEY = 'bvGithubToken';
+let PENDING_UPLOAD = null;
+let publishAfterToken = false;
+
+function getGhToken(){ try{ return localStorage.getItem(GH_TOKEN_KEY) || ''; }catch(e){ return ''; } }
+function setGhToken(t){ try{ localStorage.setItem(GH_TOKEN_KEY, t); }catch(e){} }
+function clearGhToken(){ try{ localStorage.removeItem(GH_TOKEN_KEY); }catch(e){} }
+
+function showPublishBar(){
+  const bar = document.getElementById('publishBar');
+  if(!PENDING_UPLOAD){ bar.classList.remove('show'); return; }
+  const ok = (DATA.MEN||[]).length > 0 && (DATA.WOMEN||[]).length > 0;
+  const btn = document.getElementById('publishBtn');
+  document.getElementById('pbMsg').innerHTML = '';
+  if(!ok){
+    document.getElementById('pbTitle').textContent = 'Το αρχείο δεν μπορεί να δημοσιευτεί';
+    document.getElementById('pbSub').textContent = 'Δεν βρέθηκαν αθλητές στα φύλλα MEN και WOMEN. Έλεγξε ότι είναι το σωστό Ranking.xlsx.';
+    btn.style.display = 'none';
+  } else {
+    document.getElementById('pbTitle').textContent = 'Να δημοσιευτεί για όλους;';
+    document.getElementById('pbSub').textContent = '«' + PENDING_UPLOAD.name + '»: ' + DATA.MEN.length + ' άνδρες, ' + DATA.WOMEN.length + ' γυναίκες. Φαίνεται μόνο σε αυτή τη συσκευή μέχρι να το δημοσιεύσεις.';
+    btn.style.display = '';
+    btn.disabled = false;
+  }
+  bar.classList.add('show');
+}
+function setPublishMsg(html){ document.getElementById('pbMsg').innerHTML = html; }
+
+function openGhModal(errText){
+  document.getElementById('ghErr').textContent = errText || '';
+  document.getElementById('ghTokenInput').value = '';
+  document.getElementById('ghForget').style.display = getGhToken() ? '' : 'none';
+  document.getElementById('ghModal').classList.add('show');
+  setTimeout(() => document.getElementById('ghTokenInput').focus(), 50);
+}
+function closeGhModal(){ document.getElementById('ghModal').classList.remove('show'); publishAfterToken = false; }
+function forgetGhToken(){ clearGhToken(); document.getElementById('ghForget').style.display = 'none'; document.getElementById('ghErr').textContent = 'Το κλειδί διαγράφηκε από τη συσκευή.'; }
+
+async function ghFetch(path, opts){
+  const token = getGhToken();
+  const o = Object.assign({ cache: 'no-store' }, opts || {});
+  o.headers = Object.assign({ 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + token, 'X-GitHub-Api-Version': '2022-11-28' }, o.headers || {});
+  return fetch('https://api.github.com' + path, o);
+}
+
+async function saveGhToken(){
+  const t = document.getElementById('ghTokenInput').value.trim();
+  const err = document.getElementById('ghErr');
+  if(!/^(github_pat_|ghp_)[A-Za-z0-9_]{20,}$/.test(t)){ err.textContent = 'Αυτό δεν μοιάζει με κλειδί GitHub (ξεκινά με github_pat_).'; return; }
+  const btn = document.getElementById('ghSaveBtn'); btn.disabled = true; err.textContent = 'Έλεγχος κλειδιού…';
+  const prev = getGhToken(); setGhToken(t);
+  try{
+    const r = await ghFetch('/repos/' + GH_OWNER + '/' + GH_REPO);
+    if(r.status === 401){ throw new Error('Το κλειδί δεν είναι έγκυρο ή έχει λήξει.'); }
+    if(r.status === 404){ throw new Error('Το κλειδί δεν έχει πρόσβαση στο repository beachvolleyapp. Στο Repository access διάλεξε beachvolleyapp.'); }
+    if(!r.ok){ throw new Error('Το GitHub απάντησε με σφάλμα ' + r.status + '.'); }
+    const info = await r.json();
+    if(info.permissions && info.permissions.push === false){ throw new Error('Το κλειδί δεν έχει δικαίωμα εγγραφής. Στο Permissions → Contents διάλεξε Read and write.'); }
+    err.textContent = '';
+    const go = publishAfterToken;
+    document.getElementById('ghModal').classList.remove('show'); publishAfterToken = false;
+    if(go) publishToGitHub();
+  }catch(e){
+    if(prev) setGhToken(prev); else clearGhToken();
+    err.textContent = (e && e.message && !/fetch/i.test(e.message)) ? e.message : 'Δεν υπάρχει σύνδεση με το GitHub. Έλεγξε το internet.';
+  }finally{ btn.disabled = false; }
+}
+
+function bytesToBase64(bytes){
+  let bin = '';
+  for(let i = 0; i < bytes.length; i += 0x8000){ bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); }
+  return btoa(bin);
+}
+
+async function publishToGitHub(){
+  if(!PENDING_UPLOAD) return;
+  if(!getGhToken()){ publishAfterToken = true; openGhModal(); return; }
+  if(PENDING_UPLOAD.published && !confirm('Αυτό το αρχείο έχει ήδη δημοσιευτεί. Να δημοσιευτεί ξανά;')) return;
+  const msg = 'Η βαθμολογία θα αντικατασταθεί για ΟΛΟΥΣ με το αρχείο «' + PENDING_UPLOAD.name + '» (' +
+              DATA.MEN.length + ' άνδρες, ' + DATA.WOMEN.length + ' γυναίκες). Συνέχεια;';
+  if(!confirm(msg)) return;
+
+  const btn = document.getElementById('publishBtn'); btn.disabled = true;
+  setPublishMsg('Ανέβασμα στο GitHub…');
+  const apiPath = '/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + encodeURIComponent(GH_PATH);
+  try{
+    const content = bytesToBase64(PENDING_UPLOAD.bytes);
+    const when = new Date().toLocaleString('el-GR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    let attempt = 0, res;
+    while(true){
+      // τρέχουσα έκδοση (sha) του αρχείου στο GitHub
+      const cur = await ghFetch(apiPath + '?ref=' + GH_BRANCH + '&_=' + Date.now());
+      if(cur.status === 401){ clearGhToken(); btn.disabled = false; setPublishMsg(''); publishAfterToken = true; openGhModal('Το κλειδί δεν είναι πλέον έγκυρο (ίσως έληξε). Φτιάξε νέο.'); return; }
+      let sha;
+      if(cur.ok){ sha = (await cur.json()).sha; }
+      else if(cur.status !== 404){ throw new Error('read-' + cur.status); }
+      const body = { message: 'Ενημέρωση βαθμολογίας από την εφαρμογή (' + PENDING_UPLOAD.name + ', ' + when + ')', content: content, branch: GH_BRANCH };
+      if(sha) body.sha = sha;
+      res = await ghFetch(apiPath, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if(res.status === 409 && attempt++ < 1) continue; // άλλαξε στο μεταξύ, ξαναδοκίμασε μία φορά
+      break;
+    }
+    if(res.status === 401){ clearGhToken(); btn.disabled = false; setPublishMsg(''); publishAfterToken = true; openGhModal('Το κλειδί δεν είναι πλέον έγκυρο (ίσως έληξε). Φτιάξε νέο.'); return; }
+    if(res.status === 403 || res.status === 404){ throw new Error('perm'); }
+    if(!res.ok){ throw new Error('write-' + res.status); }
+    const out = await res.json();
+    PENDING_UPLOAD.published = true;
+    document.getElementById('pbTitle').textContent = '✓ Δημοσιεύτηκε στο GitHub';
+    document.getElementById('pbSub').textContent = 'Όλοι θα βλέπουν τη νέα βαθμολογία σε περίπου 1–2 λεπτά (πατώντας «Ανανέωση»).';
+    const link = out && out.commit && out.commit.html_url ? out.commit.html_url : ('https://github.com/' + GH_OWNER + '/' + GH_REPO + '/commits/' + GH_BRANCH);
+    setPublishMsg('<a href="https://github.com/' + GH_OWNER + '/' + GH_REPO + '/actions" target="_blank" rel="noopener">Πρόοδος δημοσίευσης</a> · <a href="' + link + '" target="_blank" rel="noopener">Η αλλαγή στο GitHub</a>');
+    btn.style.display = 'none';
+  }catch(e){
+    btn.disabled = false;
+    let t = 'Η δημοσίευση απέτυχε. ';
+    if(e && e.message === 'perm') t += 'Το κλειδί δεν έχει δικαίωμα εγγραφής στο beachvolleyapp (Contents: Read and write). <a href="#" onclick="openGhModal();return false;">Νέο κλειδί</a>';
+    else if(e && /^(read|write)-/.test(e.message)) t += 'Το GitHub απάντησε με σφάλμα (' + e.message.split('-')[1] + '). Δοκίμασε ξανά σε λίγο.';
+    else t += 'Έλεγξε τη σύνδεση στο internet και δοκίμασε ξανά.';
+    setPublishMsg(t);
+  }
 }
 
 function parseSheet(wb, sheetName){
@@ -833,5 +1002,26 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<div class="gh-modal" id="ghModal" onclick="if(event.target===this)closeGhModal()">
+  <div class="gh-card" role="dialog" aria-labelledby="ghTitle">
+    <h3 id="ghTitle">Σύνδεση με το GitHub</h3>
+    <p>Για να δημοσιεύεις τη βαθμολογία από την εφαρμογή, χρειάζεται ένα <b>κλειδί πρόσβασης (token)</b> του GitHub. Το φτιάχνεις μία φορά:</p>
+    <ol>
+      <li>Άνοιξε τη <a href="https://github.com/settings/personal-access-tokens/new?name=BV%20Tools%20-%20Ranking&description=%CE%94%CE%B7%CE%BC%CE%BF%CF%83%CE%AF%CE%B5%CF%85%CF%83%CE%B7%20Ranking.xlsx%20%CE%B1%CF%80%CF%8C%20%CF%84%CE%B7%CE%BD%20%CE%B5%CF%86%CE%B1%CF%81%CE%BC%CE%BF%CE%B3%CE%AE&contents=write" target="_blank" rel="noopener">σελίδα δημιουργίας token</a> (συνδεδεμένος ως tsimpinosbv).</li>
+      <li>Στο <b>Expiration</b> διάλεξε διάρκεια, π.χ. 1 χρόνο.</li>
+      <li>Στο <b>Repository access</b> διάλεξε <b>Only select repositories</b> → <b>beachvolleyapp</b>.</li>
+      <li>Στο <b>Permissions</b> βεβαιώσου ότι το <b>Contents</b> είναι <b>Read and write</b> (είναι ήδη επιλεγμένο).</li>
+      <li>Πάτα <b>Generate token</b>, αντέγραψε το κλειδί (ξεκινά με <code>github_pat_</code>) και επικόλλησέ το εδώ:</li>
+    </ol>
+    <input id="ghTokenInput" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+    <div class="gh-err" id="ghErr"></div>
+    <p class="gh-note">Το κλειδί αποθηκεύεται μόνο σε αυτή τη συσκευή και δεν στέλνεται πουθενά αλλού εκτός από το GitHub. Επιτρέπει αλλαγές μόνο στο repository beachvolleyapp. Μην το δίνεις σε άλλους.</p>
+    <div class="gh-actions">
+      <button type="button" onclick="closeGhModal()">Άκυρο</button>
+      <button type="button" class="primary" id="ghSaveBtn" onclick="saveGhToken()">Αποθήκευση και δημοσίευση</button>
+    </div>
+    <button type="button" class="gh-forget" id="ghForget" onclick="forgetGhToken()" style="display:none">Διαγραφή αποθηκευμένου κλειδιού από τη συσκευή</button>
+  </div>
+</div>
 </body>
 </html>

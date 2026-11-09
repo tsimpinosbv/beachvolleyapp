@@ -142,7 +142,23 @@
 <h2 id="s3">3. Ενημέρωση βαθμολογίας (Ranking.xlsx)</h2>
 <p>Ανεβάζεις το νέο <code>Ranking.xlsx</code> στη ρίζα του repository και αντικαθιστά το παλιό. Βαθμολογία και έπαθλα
 ενημερώνονται μαζί, από τα φύλλα <strong>MEN</strong>, <strong>WOMEN</strong>, <strong>MEN PRIZES</strong> και <strong>WOMEN PRIZES</strong>.</p>
-<p><strong>Από υπολογιστή</strong></p>
+<p><strong>Από την εφαρμογή (ο πιο εύκολος τρόπος)</strong></p>
+<ol>
+<li>Άνοιξε τη <strong>Βαθμολογία</strong> στην εφαρμογή και πάτα <strong>Αρχείο</strong>.</li>
+<li>Διάλεξε το νέο Excel. Το όνομα του αρχείου δεν έχει σημασία: δημοσιεύεται πάντα ως <code>Ranking.xlsx</code>.</li>
+<li>Έλεγξε ότι η βαθμολογία φαίνεται σωστά (και το πορτοκαλί μήνυμα για ονόματα, αν εμφανιστεί).</li>
+<li>Πάτα <strong>Δημοσίευση στο GitHub</strong> → επιβεβαίωσε. Σε 1–2 λεπτά τη βλέπουν όλοι.</li>
+</ol>
+<p>Την <strong>πρώτη φορά</strong> σε κάθε συσκευή ζητά ένα κλειδί πρόσβασης (token) του GitHub:</p>
+<ol>
+<li>Πάτα τον σύνδεσμο <strong>σελίδα δημιουργίας token</strong> στο παράθυρο που ανοίγει (πρέπει να είσαι συνδεδεμένος ως tsimpinosbv).</li>
+<li><strong>Expiration</strong>: διάλεξε διάρκεια, π.χ. 1 χρόνο.</li>
+<li><strong>Repository access</strong>: <strong>Only select repositories</strong> → <strong>beachvolleyapp</strong>.</li>
+<li><strong>Permissions</strong>: το <strong>Contents</strong> να είναι <strong>Read and write</strong> (είναι ήδη επιλεγμένο).</li>
+<li><strong>Generate token</strong> → αντέγραψε το κλειδί (<code>github_pat_…</code>) → επικόλλησέ το στην εφαρμογή → <strong>Αποθήκευση και δημοσίευση</strong>.</li>
+</ol>
+<p>Το κλειδί μένει αποθηκευμένο μόνο σε εκείνη τη συσκευή και επιτρέπει αλλαγές μόνο στο beachvolleyapp. Μην το δίνεις σε άλλους. Όταν λήξει, η εφαρμογή σου ζητά νέο. Αν χάσεις τη συσκευή, διάγραψε το κλειδί από <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">github.com/settings/personal-access-tokens</a>.</p>
+<p><strong>Από υπολογιστή μέσω GitHub</strong></p>
 <ol>
 <li>Στο Excel, αποθήκευσε το αρχείο ως <strong>Ranking.xlsx</strong> (ακριβώς έτσι). Κράτα τα ονόματα των φύλλων όπως είναι.</li>
 <li>Άνοιξε το repository. Μείνε στην κεντρική σελίδα, όχι μέσα σε φάκελο.</li>
@@ -151,7 +167,7 @@
 <li>Κάτω, στο <strong>Commit changes</strong>, γράψε μια σύντομη περιγραφή, π.χ. «Βαθμολογία μετά το Athens Finals».</li>
 <li>Πάτα το πράσινο <strong>Commit changes</strong>.</li>
 </ol>
-<p><strong>Από κινητό</strong></p>
+<p><strong>Από κινητό μέσω GitHub</strong></p>
 <ol>
 <li>Άνοιξε το repository σε Chrome ή Safari.</li>
 <li>Πάτα το <strong>+</strong> ή το <strong>…</strong> πάνω από τη λίστα αρχείων → <strong>Upload files</strong>.
@@ -159,8 +175,8 @@
 <li>Πάτα <strong>choose your files</strong> και διάλεξε το <code>Ranking.xlsx</code> από τα Αρχεία/Λήψεις του κινητού.</li>
 <li>Γράψε περιγραφή και πάτα <strong>Commit changes</strong>.</li>
 </ol>
-<p><strong>Γρήγορη δοκιμή χωρίς ανέβασμα:</strong> στη σελίδα Βαθμολογίας, το κουμπί <strong>Αρχείο</strong> φορτώνει ένα xlsx μόνο στη
-δική σου συσκευή (δουλεύει και χωρίς σύνδεση). Δεν το βλέπουν οι άλλοι. Μένει ενεργό μέχρι να πατήσεις
+<p><strong>Δοκιμή χωρίς δημοσίευση:</strong> το κουμπί <strong>Αρχείο</strong> φορτώνει ένα xlsx μόνο στη δική σου συσκευή (δουλεύει
+και χωρίς σύνδεση). Δεν το βλέπουν οι άλλοι αν δεν πατήσεις «Δημοσίευση στο GitHub». Μένει ενεργό μέχρι να πατήσεις
 <strong>Ανανέωση</strong> ή <strong>Επαναφορά online δεδομένων</strong>.</p>
 <p>Αν μετά το ανέβασμα εμφανιστεί το πορτοκαλί μήνυμα για ονόματα που δεν ταιριάζουν, διόρθωσε τη γραφή τους
 στο Excel ώστε να είναι ίδια στα φύλλα πόντων και επάθλων, και ανέβασέ το ξανά.</p>
@@ -238,7 +254,7 @@
 <li>Πάτα <strong>Commit changes…</strong> → γράψε περιγραφή → <strong>Commit changes</strong>.</li>
 </ol>
 <p><strong>Αν αλλάξεις εικόνα ή εικονίδιο</strong> (φάκελος <code>icons/</code>), άνοιξε και το <code>service-worker.js</code> με το μολύβι και
-ανέβασε κατά ένα τον αριθμό στη γραμμή <code>const CACHE_VERSION = 'bv-tools-v9';</code> (π.χ. σε <code>v10</code>). Αλλιώς οι
+ανέβασε κατά ένα τον αριθμό στη γραμμή <code>const CACHE_VERSION = 'bv-tools-v10';</code> (π.χ. σε <code>v11</code>). Αλλιώς οι
 εγκατεστημένες εφαρμογές κρατούν την παλιά εικόνα. Για σελίδες HTML και το <code>Ranking.xlsx</code> δεν χρειάζεται.</p>
 
 <h2 id="s7">7. Διαγραφή ή μετονομασία αρχείου</h2>
@@ -297,6 +313,10 @@ xlsx που είχες φορτώσει με το κουμπί Αρχείο.</p>
 <tr>
 <td>Το αρχείο μπήκε σε λάθος φάκελο</td>
 <td>Διάγραψέ το και ανέβασέ το ξανά μέσα από τον σωστό φάκελο</td>
+</tr>
+<tr>
+<td>«Το κλειδί δεν είναι έγκυρο» κατά τη δημοσίευση</td>
+<td>Το token έληξε ή διαγράφηκε. Φτιάξε νέο με τα βήματα της ενότητας 3</td>
 </tr>
 <tr>
 <td>Η βαθμολογία δεν άλλαξε</td>

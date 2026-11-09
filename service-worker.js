@@ -1,6 +1,6 @@
 // Beach Volleyball Supervisor Tools — service worker
 // Bump CACHE_VERSION any time app-shell files change, so clients pick up the update.
-const CACHE_VERSION = 'bv-tools-v9';
+const CACHE_VERSION = 'bv-tools-v10';
 const SHELL_CACHE = CACHE_VERSION + '-shell';
 const DATA_CACHE = CACHE_VERSION + '-data';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
@@ -55,6 +55,9 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
   const sameOrigin = url.origin === self.location.origin;
+
+  // GitHub API (δημοσίευση βαθμολογίας): ποτέ από cache.
+  if (url.hostname === 'api.github.com') return;
 
   // Page navigations: network-first, fall back to cached shell, then offline page.
   if (req.mode === 'navigate') {
