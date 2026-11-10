@@ -1,6 +1,6 @@
 // BV Supervisor Tools — service worker
 // Bump CACHE_VERSION any time app-shell files change, so clients pick up the update.
-const CACHE_VERSION = 'bv-tools-v22';
+const CACHE_VERSION = 'bv-tools-v23';
 const SHELL_CACHE = CACHE_VERSION + '-shell';
 const DATA_CACHE = CACHE_VERSION + '-data';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
@@ -30,6 +30,11 @@ const APP_SHELL = [
   './ui.css',
   './icons/logo.png',
   './EntryList.html',
+  './Supervisor.html',
+  './PoolDraw.html',
+  './EuropeanCupStandings.html',
+  './International/',
+  './International/index.html',
   './vendor/xlsx.full.min.js',
   './files/',
   './files/index.html',
@@ -50,6 +55,11 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(SHELL_CACHE)
       .then((cache) => cache.addAll(APP_SHELL))
+      // Αρχεία δεδομένων: από την αρχή, για να δουλεύουν και χωρίς internet
+      // (αν κάποιο αποτύχει, δεν μπλοκάρει την εγκατάσταση).
+      .then(() => caches.open(DATA_CACHE).then((c) => Promise.all(DATA_FILES.map((f) =>
+        fetch('./' + f, { cache: 'no-store' }).then((r) => r.ok && c.put(new Request(new URL('./' + f, self.location).href), r)).catch(() => {})
+      ))))
       .then(() => self.skipWaiting())
   );
 });
@@ -65,6 +75,22 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Δίκτυο πρώτα· αν αργεί ή αποτύχει, ό,τι υπάρχει στην cache.
+function networkFirst(req, ms, ignoreSearch) {
+  const net = fetch(req).then((res) => {
+    if (res.ok) { const copy = res.clone(); caches.open(SHELL_CACHE).then((c) => c.put(req, copy)); }
+    return res;
+  });
+  const fromCache = () => caches.match(req, { ignoreSearch: !!ignoreSearch });
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = (r) => { if (!done && r) { done = true; resolve(r); } };
+    const timer = setTimeout(() => fromCache().then((c) => finish(c)), ms);
+    net.then((r) => { clearTimeout(timer); finish(r); })
+      .catch(() => { clearTimeout(timer); fromCache().then((c) => { if (c) finish(c); else net.then(finish, () => { done = true; resolve(undefined); }); }); });
+  });
+}
+
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
@@ -75,18 +101,10 @@ self.addEventListener('fetch', (event) => {
   // GitHub API (δημοσίευση βαθμολογίας): ποτέ από cache.
   if (url.hostname === 'api.github.com') return;
 
-  // Page navigations: network-first, fall back to cached shell, then offline page.
+  // Page navigations: network-first (με όριο χρόνου για αδύναμο σήμα), μετά cache, μετά offline page.
   if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(SHELL_CACHE).then((c) => c.put(req, copy));
-          return res;
-        })
-        .catch(() =>
-          caches.match(req).then((cached) => cached || caches.match('./offline.html'))
-        )
+      networkFirst(req, 6000, true).then((res) => res || caches.match('./offline.html'))
     );
     return;
   }
@@ -106,6 +124,13 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => caches.match(cleanKey))
     );
+    return;
+  }
+
+  // Κώδικας και στυλ (.js/.css): πρώτα από το δίκτυο, ώστε μια ενημέρωση να φτάνει
+  // πάντα μαζί με τις σελίδες· αν δεν απαντήσει σε 4", από την cache.
+  if (sameOrigin && /\.(js|css|json)$/.test(url.pathname)) {
+    event.respondWith(networkFirst(req, 4000).then((r) => r || Response.error()));
     return;
   }
 

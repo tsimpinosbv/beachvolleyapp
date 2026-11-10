@@ -123,7 +123,26 @@
     write(BUCKETS, B); write(ACTIVE, t); fill(t);
     return t;
   }
-  function update(fields){ const t = get(); if(!t) return null; Object.assign(t, fields); write(ACTIVE, t); return t; }
+  function update(fields){
+    const t = get(); if(!t) return null;
+    const old = { name: t.name, dates: t.dates, place: t.place };
+    Object.assign(t, fields); write(ACTIVE, t);
+    propagate(old, t);
+    return t;
+  }
+  // Νέο όνομα/ημερομηνίες/τόπος → και στα εργαλεία, όπου είχαν τα παλιά (ή τίποτα)
+  function propagate(o, t){
+    const same = (v, ov) => !v || norm(v) === norm(ov);
+    const set = (k, f) => { const v = read(k); if(v){ f(v); write(k, v); } };
+    set('entryListDraft_v1', v => { if(same(v.tName, o.name)) v.tName = t.name; if(same(v.tDates, o.dates)) v.tDates = t.dates; });
+    set('schedulesState_v2', v => { if(same(v.tName, o.name)) v.tName = t.name; });
+    set('payments_v1', v => { if(same(v.tName, o.name)) v.tName = t.name; });
+    set('prizeSheet_v1', v => { if(same(v.tName, o.name)) v.tName = t.name; if(same(v.tDate, o.dates)) v.tDate = t.dates; if(same(v.tPlace, o.place)) v.tPlace = t.place; });
+    set('checklist_v1', c => { (c.tournaments || []).forEach(x => { if(x.tourId === t.id && same(x.name, o.name)) x.name = t.name; }); });
+    set('supervisorReport_v1', R => { (R.reports || []).forEach(r => { if(r.tourId !== t.id) return;
+      if(same(r.name, o.name)) r.name = t.name; r.f = r.f || {};
+      if(same(r.f.name, o.name)) r.f.name = t.name; if(same(r.f.dates, o.dates)) r.f.dates = t.dates; if(same(r.f.place, o.place)) r.f.place = t.place; }); });
+  }
 
   function list(){ const B = buckets(); return Object.values(B).map(b => Object.assign({}, b.meta, { savedAt: b.savedAt })).sort((a, b) => String(b.from).localeCompare(String(a.from)) || b.savedAt - a.savedAt); }
   function forget(id){ const B = buckets(); delete B[id]; write(BUCKETS, B); }
@@ -206,10 +225,26 @@
       if(confirm('Για νέο τουρνουά άλλαξε το ενεργό τουρνουά. Τα δεδομένα του «' + get().name + '» φυλάγονται στη συσκευή. Να ανοίξει η σελίδα Τουρνουά;')) location.href = 'Tournament.html#new';
     }, true);
   }
+  // ---- προστασία από «παλιές» σελίδες ----
+  // Μια σελίδα που έμεινε ανοιχτή (άλλη καρτέλα/παράθυρο ή «Πίσω» στο Safari) κρατά στη μνήμη
+  // δεδομένα που μπορεί να άλλαξαν αλλού· αν αποθηκεύσει, θα γράψει πάνω τους. Την ξαναφορτώνουμε.
+  const WATCH = [ACTIVE, 'checklist_v1', 'supervisorReport_v1'].concat(SWAP);
+  let stale = false;
+  function freshReload(){
+    try{ const last = +sessionStorage.getItem('bvReloadAt') || 0; if(Date.now() - last < 2000) return; sessionStorage.setItem('bvReloadAt', Date.now()); }catch(e){}
+    location.reload();
+  }
+  window.addEventListener('storage', e => {
+    if(e.key !== null && !WATCH.includes(e.key)) return;
+    if(document.visibilityState === 'visible') freshReload(); else stale = true;
+  });
+  document.addEventListener('visibilitychange', () => { if(stale && document.visibilityState === 'visible'){ stale = false; freshReload(); } });
+  window.addEventListener('pageshow', e => { if(e.persisted) freshReload(); });
+
   const me = document.currentScript;
   if(me && me.hasAttribute('data-bar')){
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bar); else bar();
   }
 
-  window.BVTour = { get, switchTo, update, list, forget, bundle, restoreBundle, progress, backup, restore, makeMeta, datesText, rangeShort, daysTo, iso, SWAP };
+  window.BVTour = { get, switchTo, update, propagate, list, forget, bundle, restoreBundle, progress, backup, restore, makeMeta, datesText, rangeShort, daysTo, iso, SWAP };
 })();
