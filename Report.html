@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Αναφορά Επόπτη — BV Supervisor Tools</title>
+<title>Αναφορά Supervisor — BV Supervisor Tools</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d3a5c">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
@@ -49,7 +49,7 @@
 <nav class="bv-topbar" aria-label="Πλοήγηση"><a class="bv-home" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Αρχική</a><a class="bv-brand" href="index.html"><img src="icons/logo.png" alt="">Supervisor Tools</a></nav>
 <header class="hero">
   <div class="wrap">
-    <h1>Αναφορά Επόπτη</h1>
+    <h1>Αναφορά Supervisor</h1>
     <p>Συμπλήρωσέ την όσο γίνεται το τουρνουά. Αποθηκεύεται αυτόματα και στο τέλος βγαίνει σε PDF για την ομοσπονδία.</p>
   </div>
 </header>
@@ -73,7 +73,7 @@
       <label class="f full">Τουρνουά<input type="text" data-k="name"></label>
       <label class="f">Τόπος<input type="text" data-k="place"></label>
       <label class="f">Ημερομηνίες<input type="text" data-k="dates" placeholder="π.χ. 24-26/7"></label>
-      <label class="f">Επόπτης<input type="text" data-k="supervisor"></label>
+      <label class="f">Supervisor<input type="text" data-k="supervisor"></label>
       <label class="f">Διοργανωτής / υπεύθυνος<input type="text" data-k="organizer"></label>
       <label class="f">Γήπεδα<input type="number" data-k="courts" min="0" inputmode="numeric"></label>
       <label class="f">Ιατρός / διασώστης<input type="text" data-k="medic"></label>
@@ -120,16 +120,20 @@
     <button class="btn big" type="button" id="printBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg>
       Εκτύπωση / PDF</button>
-    <p class="msg" style="text-align:center">Στο παράθυρο εκτύπωσης διάλεξε «Αποθήκευση ως PDF».</p>
+    <button class="btn" type="button" id="wordBtn" style="width:100%;margin-top:10px;min-height:50px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+      Word (επεξεργάσιμο)</button>
+    <p class="msg" style="text-align:center">PDF: στο παράθυρο εκτύπωσης διάλεξε «Αποθήκευση ως PDF». Word: ανοίγει σε Word, Google Docs ή Pages για αλλαγές.</p>
   </div>
   <footer>Η αναφορά μένει μόνο σε αυτή τη συσκευή μέχρι να την τυπώσεις ή να τη στείλεις σε PDF.</footer>
 </main>
 <div class="doc" id="doc"></div>
 <div class="toast" id="toast"></div>
 
+<script src="word-export.js"></script>
 <script>
 const RATES = [
-  ['courts','Γήπεδα και άμμος'], ['equipment','Φιλέ, κεραίες και εξοπλισμός'], ['medical','Ιατρική κάλυψη'],
+  ['courts','Γήπεδα και άμμος'], ['equipment','Φιλέ, αντένες και εξοπλισμός'], ['medical','Ιατρική κάλυψη'],
   ['refs','Διαιτησία'], ['office','Γραμματεία και αποτελέσματα'], ['athletes','Χώροι αθλητών (WC, σκιά, νερό)'], ['schedule','Τήρηση προγράμματος'],
 ];
 const RATE_LABEL = { good:'Καλή', ok:'Επαρκής', bad:'Ανεπαρκής' };
@@ -139,6 +143,7 @@ let R = { reports:[], current:null };
 try{ const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if(s) R = Object.assign(R, s); }catch(e){}
 const $ = id => document.getElementById(id);
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function ml(s){ return esc(s).replace(/\r?\n/g, '<br>'); }
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600); }
 let saveT;
@@ -226,7 +231,7 @@ $('fillBtn').addEventListener('click', () => {
 $('tSel').addEventListener('change', e => { R.current = e.target.value; save(); render(); });
 $('newBtn').addEventListener('click', () => { $('newBox').classList.toggle('show'); $('newName').focus(); });
 $('newOk').addEventListener('click', () => { const v = $('newName').value.trim(); if(!v){ $('newName').focus(); return; }
-  const prev = cur(); const r = newReport(v); if(prev && prev.f.supervisor) r.f.supervisor = prev.f.supervisor; // ο επόπτης μένει ίδιος
+  const prev = cur(); const r = newReport(v); if(prev && prev.f.supervisor) r.f.supervisor = prev.f.supervisor; // ο supervisor μένει ίδιος
   $('newName').value = ''; $('newBox').classList.remove('show'); save(); render(); });
 $('delBtn').addEventListener('click', () => { const r = cur(); if(!confirm('Να διαγραφεί η αναφορά «' + (r.f.name || 'Χωρίς όνομα') + '»;')) return;
   R.reports = R.reports.filter(x => x.id !== r.id); if(!R.reports.length) newReport(''); else R.current = R.reports[0].id; save(); render(); });
@@ -235,30 +240,32 @@ $('delBtn').addEventListener('click', () => { const r = cur(); if(!confirm('Να
 function buildDoc(){
   const r = cur(), f = r.f;
   const row = (l, v) => v ? `<tr><th>${l}</th><td>${esc(v)}</td></tr>` : '';
-  const info = [row('Τουρνουά', f.name), row('Τόπος', f.place), row('Ημερομηνίες', f.dates), row('Επόπτης', f.supervisor), row('Διοργανωτής', f.organizer),
+  const info = [row('Τουρνουά', f.name), row('Τόπος', f.place), row('Ημερομηνίες', f.dates), row('Supervisor', f.supervisor), row('Διοργανωτής', f.organizer),
     row('Γήπεδα', f.courts), row('Ομάδες', [f.teamsMen ? f.teamsMen + ' ανδρών' : '', f.teamsWomen ? f.teamsWomen + ' γυναικών' : ''].filter(Boolean).join(' · ')),
     row('Ιατρός / διασώστης', f.medic)].join('');
   const rates = RATES.filter(([k]) => r.rates[k] && (r.rates[k].v || r.rates[k].c))
     .map(([k, l]) => `<tr><td>${l}</td><td class="badge">${RATE_LABEL[r.rates[k].v] || '—'}</td><td>${esc(r.rates[k].c || '')}</td></tr>`).join('');
   const wx = r.weather.filter(w => w.day || w.cond || w.temp || w.wind)
     .map((w, i) => `<tr><td>${esc(w.day || (i + 1) + 'η')}</td><td>${esc(w.cond)}</td><td>${esc(w.temp)}${w.temp && !/°/.test(w.temp) ? ' °C' : ''}</td><td>${esc(w.wind)}</td></tr>`).join('');
-  const inc = r.incidents.map((n, i) => `<tr><td>${i + 1}</td><td><b>${esc(n.type)}</b><br>${esc(n.when)}</td><td>${esc(n.who)}</td><td class="pre">${esc(n.desc)}</td><td class="pre">${esc(n.action)}</td></tr>`).join('');
+  const inc = r.incidents.map((n, i) => `<tr><td>${i + 1}</td><td><b>${esc(n.type)}</b><br>${esc(n.when)}</td><td>${esc(n.who)}</td><td>${ml(n.desc)}</td><td>${ml(n.action)}</td></tr>`).join('');
   const p = f.incPay ? paySummary() : null;
   const today = new Date().toLocaleDateString('el-GR');
   $('doc').innerHTML = `
-    <h1>Αναφορά Επόπτη</h1>
+    <h1>Αναφορά Supervisor</h1>
     <p class="sub">${esc(f.name || '')}${f.place ? ' · ' + esc(f.place) : ''}${f.dates ? ' · ' + esc(f.dates) : ''}</p>
     <h2>1. Στοιχεία τουρνουά</h2><table>${info || '<tr><td>—</td></tr>'}</table>
     ${f.referees ? `<p><b>Διαιτητές:</b> ${esc(f.referees.split('\n').map(x => x.trim()).filter(Boolean).join(', '))}</p>` : ''}
     <h2>2. Εγκαταστάσεις και οργάνωση</h2>${rates ? `<table class="rt"><thead><tr><th>Τομέας</th><th>Αξιολόγηση</th><th>Σχόλιο</th></tr></thead><tbody>${rates}</tbody></table>` : '<p>—</p>'}
     <h2>3. Καιρός</h2>${wx ? `<table><thead><tr><th>Ημέρα</th><th>Συνθήκες</th><th>Θερμοκρασία</th><th>Άνεμος</th></tr></thead><tbody>${wx}</tbody></table>` : '<p>—</p>'}
     <h2>4. Περιστατικά</h2>${inc ? `<table><thead><tr><th>#</th><th>Τύπος / ώρα</th><th>Αγώνας / πρόσωπα</th><th>Περιγραφή</th><th>Ενέργειες</th></tr></thead><tbody>${inc}</tbody></table>` : '<p>Δεν υπήρξαν περιστατικά.</p>'}
-    <h2>5. Οικονομικά</h2>${p ? `<p>${esc(payText(p))}</p>` : ''}${f.finNotes ? `<p class="pre">${esc(f.finNotes)}</p>` : (p ? '' : '<p>—</p>')}
+    <h2>5. Οικονομικά</h2>${p ? `<p>${esc(payText(p))}</p>` : ''}${f.finNotes ? `<p>${ml(f.finNotes)}</p>` : (p ? '' : '<p>—</p>')}
     <h2>6. Γενικά σχόλια και προτάσεις</h2>
-    ${f.general ? `<p class="pre">${esc(f.general)}</p>` : ''}${f.suggestions ? `<p><b>Προτάσεις:</b></p><p class="pre">${esc(f.suggestions)}</p>` : ''}${!f.general && !f.suggestions ? '<p>—</p>' : ''}
-    <div class="sign"><div>Ημερομηνία: ${today}</div><div>Ο/Η Επόπτης${f.supervisor ? '<br>' + esc(f.supervisor) : ''}</div></div>`;
+    ${f.general ? `<p>${ml(f.general)}</p>` : ''}${f.suggestions ? `<p><b>Προτάσεις:</b></p><p>${ml(f.suggestions)}</p>` : ''}${!f.general && !f.suggestions ? '<p>—</p>' : ''}
+    <div class="sign"><div>Ημερομηνία: ${today}</div><div>Ο/Η Supervisor${f.supervisor ? '<br>' + esc(f.supervisor) : ''}</div></div>`;
 }
 $('printBtn').addEventListener('click', () => { buildDoc(); window.print(); });
+$('wordBtn').addEventListener('click', () => { buildDoc(); const f = cur().f;
+  BVWord.download($('doc').innerHTML, 'Αναφορά Supervisor' + (f.name ? ' - ' + f.name : '')); });
 window.addEventListener('beforeprint', buildDoc);
 render();
 </script>
