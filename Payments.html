@@ -68,14 +68,23 @@
   .filters button.on{background:var(--navy); border-color:var(--navy); color:#fff;}
 
   .team{background:var(--paper); border:1px solid var(--line); border-left:5px solid var(--st); border-radius:14px; padding:12px; margin-top:8px;}
-  .team.due{--st:var(--due);} .team.cash, .team.bank{--st:var(--ok);} .team.exempt{--st:var(--ex);}
+  .team.due{--st:var(--due);} .team.paidok{--st:var(--ok);} .team.exempt{--st:var(--ex);}
+  .ath{display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-weight:700; font-size:15px; line-height:1.3;}
+  .ath.second{font-weight:600; color:var(--ink-soft); margin-top:4px;}
+  .regchip{border:1.5px dashed rgba(15,36,56,0.25); background:#fff; color:var(--ink-soft); border-radius:8px; font-size:12px; font-weight:700; padding:3px 8px; cursor:pointer; min-height:28px;}
+  .regchip.owes{border-style:solid; border-color:var(--due); background:var(--due-bg); color:var(--due);}
+  .regchip.ok{border-style:solid; border-color:var(--ok); background:var(--ok-bg); color:var(--ok);}
+  .breakdown{font-size:12.5px; color:var(--ink-soft); margin:6px 0 0 34px;}
+  .hint{font-weight:500; font-size:12px;}
+  .chk{display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; padding:6px 0; cursor:pointer;}
+  .chk input{width:20px; height:20px; accent-color:var(--ex);}
   .t-top{display:flex; gap:10px; align-items:flex-start;}
   .seed{font-family:'Space Grotesk',sans-serif; font-weight:700; color:var(--ink-soft); min-width:24px;}
   .names{flex:1; min-width:0; font-weight:700; font-size:15px; line-height:1.35;}
   .names small{display:block; font-weight:500; font-size:13px; color:var(--ink-soft);}
   .amt{text-align:right; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px; white-space:nowrap; font-variant-numeric:tabular-nums;}
   .amt small{display:block; font-family:'IBM Plex Sans',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:.03em; color:var(--st);}
-  .status{display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:10px;}
+  .status{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:10px;}
   .status button{min-height:40px; border-radius:9px; border:1.5px solid var(--line); background:#fff; font-weight:700; font-size:13px; cursor:pointer; color:var(--ink-soft); padding:0 4px;}
   .status button.on[data-s=due]{background:var(--due-bg); border-color:var(--due); color:var(--due);}
   .status button.on[data-s=cash], .status button.on[data-s=bank]{background:var(--ok-bg); border-color:var(--ok); color:var(--ok);}
@@ -105,7 +114,7 @@
 <header class="hero">
   <div class="wrap">
     <h1>Συμμετοχές & Πληρωμές</h1>
-    <p>Ποιες ομάδες πλήρωσαν παράβολο, πόσα μαζεύτηκαν, ποιοι χρωστάνε. Οι ομάδες έρχονται από την Αρχική Λίστα.</p>
+    <p>Συμμετοχές και παράβολα μητρώου: ποιοι πλήρωσαν, πόσα μαζεύτηκαν, ποιοι χρωστάνε. Οι ομάδες έρχονται από την Αρχική Λίστα.</p>
   </div>
 </header>
 
@@ -113,9 +122,10 @@
   <section class="card">
     <div class="grid">
       <label class="f full">Τουρνουά<input type="text" id="tName" placeholder="π.χ. Athens Open"></label>
-      <label class="f">Παράβολο (€)<input type="number" id="fee" min="0" step="1" inputmode="decimal" value="40"></label>
+      <label class="f">Συμμετοχή (€)<input type="number" id="fee" min="0" step="1" inputmode="decimal" value="40"></label>
       <div><div style="font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:5px">Ανά</div>
         <div class="seg" id="perSeg"><button type="button" data-v="team">ομάδα</button><button type="button" data-v="athlete">αθλητή</button></div></div>
+      <label class="f full">Παράβολο μητρώου ανά αθλητή (€) <span class="hint">— μετά σημειώνεις σε κάθε αθλητή αν χρωστάει ή αν το έχει ήδη· κενό αν δεν υπάρχει</span><input type="number" id="regFee" min="0" step="1" inputmode="decimal" placeholder="π.χ. 10"></label>
     </div>
     <div class="btns">
       <button class="btn primary" type="button" id="importBtn">
@@ -124,6 +134,12 @@
       <button class="btn ghost" type="button" id="clearBtn">Νέο τουρνουά</button>
     </div>
     <p class="msg" id="msg"></p>
+    <details class="opts" id="regPanel" style="display:none">
+      <summary>Λίστα μητρώου σεζόν <span id="regCount"></span> — όσοι έχουν ήδη πληρώσει</summary>
+      <p class="msg" style="margin-top:4px">Ένα όνομα ανά γραμμή (ΕΠΩΝΥΜΟ ΟΝΟΜΑ). Όσοι είναι εδώ σημειώνονται αυτόματα «✓ Έχει μητρώο» σε κάθε τουρνουά. Η λίστα συμπληρώνεται και μόνη της όταν κάποιος πληρώσει μητρώο, και μένει όταν πατάς «Νέο τουρνουά».</p>
+      <textarea id="regText" rows="6" style="width:100%;border:1.5px solid var(--line);border-radius:11px;padding:10px 12px;font-size:15px;margin-top:6px" placeholder="π.χ.&#10;ΙΩΑΝΝΙΔΗΣ ΠΑΝΑΓΙΩΤΗΣ&#10;ΜΑΤΙΟΥ ΔΙΟΝΥΣΙΑ"></textarea>
+      <button class="btn" type="button" id="regSave" style="margin-top:8px">Αποθήκευση λίστας</button>
+    </details>
   </section>
 
   <div class="sum" id="sum"></div>
@@ -137,6 +153,7 @@
     <button type="button" data-f="all" class="on">Όλες</button>
     <button type="button" data-f="due">Χρωστάνε</button>
     <button type="button" data-f="paid">Πλήρωσαν</button>
+    <button type="button" data-f="reg">Μητρώο</button>
     <button type="button" data-f="exempt">Απαλλαγή</button>
   </div>
   <div id="list"></div>
@@ -150,15 +167,27 @@
     </div>
   </section>
 
-  <footer>Τα στοιχεία μένουν μόνο σε αυτή τη συσκευή. Πάτα «Από την Αρχική Λίστα» ξανά όποτε αλλάξει η λίστα: προστίθενται οι νέες ομάδες και οι πληρωμές που έχεις ήδη σημειώσει μένουν ως έχουν.</footer>
+  <footer>Τα στοιχεία μένουν μόνο σε αυτή τη συσκευή. Πάτα «Από την Αρχική Λίστα» ξανά όποτε αλλάξει η λίστα: προστίθενται οι νέες ομάδες και οι πληρωμές που έχεις ήδη σημειώσει μένουν ως έχουν. Η απαλλαγή αφορά μόνο τη συμμετοχή· το παράβολο μητρώου μετράει κανονικά.</footer>
 </main>
 <div class="toast" id="toast"></div>
 
 <script>
+/* Δύο χρεώσεις:
+   - Συμμετοχή: ανά ομάδα ή ανά αθλητή (μία ομάδα μπορεί να έχει απαλλαγή).
+   - Παράβολο μητρώου: ανά αθλητή. Κάθε αθλητής είναι: '' (δεν ξέρουμε), 'owes' (χρωστάει),
+     'ok' (έχει ήδη πληρώσει). Όσοι έχουν πληρώσει κρατιούνται στη «Λίστα μητρώου σεζόν»
+     και αναγνωρίζονται αυτόματα στα επόμενα τουρνουά. */
 const KEY = 'payments_v1';
-const STATUS = { due:'Χρωστάει', cash:'Μετρητά', bank:'Κατάθεση', exempt:'Απαλλαγή' };
-let S = { tName:'', fee:40, per:'team', teams:{ MEN:[], WOMEN:[] } };
+const STATUS = { due:'Χρωστάει', cash:'Μετρητά', bank:'Κατάθεση' };
+let S = { tName:'', fee:40, per:'team', regFee:'', regList:[], teams:{ MEN:[], WOMEN:[] } };
 try{ const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if(s) S = Object.assign(S, s); }catch(e){}
+// μετατροπή από την προηγούμενη μορφή (status 'exempt' → απαλλαγή συμμετοχής)
+['MEN','WOMEN'].forEach(g => (S.teams[g] || []).forEach(t => {
+  if(t.status === 'exempt'){ t.status = 'due'; t.exempt = true; }
+  if(!Array.isArray(t.reg)) t.reg = ['', ''];
+  t.reg = t.reg.map(v => v === true ? 'owes' : v === false ? '' : v);
+}));
+if(!Array.isArray(S.regList)) S.regList = [];
 let tab = 'MEN', filter = 'all';
 const $ = id => document.getElementById(id);
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
@@ -166,12 +195,33 @@ function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&'
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 const EUR = new Intl.NumberFormat('el-GR', { minimumFractionDigits:0, maximumFractionDigits:2 });
 function eur(v){ return EUR.format(Math.round((Number(v) || 0) * 100) / 100) + ' €'; }
+function caps(s){ return String(s).toLocaleUpperCase('el-GR').normalize('NFD').replace(/[̀-ͯ]/g,''); }
 function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 3000); }
-function key(a, b){ const n = x => String(x).toLocaleUpperCase('el-GR').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim(); return [n(a), n(b)].sort().join('|'); }
+function key(a, b){ const n = x => caps(x).replace(/\s+/g,' ').trim(); return [n(a), n(b)].sort().join('|'); }
+function newTeam(a, b, seed){ return { id: uid(), a, b, seed, status:'due', paid:'', custom:'', note:'', exempt:false, reg:[inReg(a) ? 'ok' : '', inReg(b) ? 'ok' : ''] }; }
 
-// οφειλόμενο ποσό ομάδας (με προσαρμογή ανά ομάδα)
-function dueOf(t){ if(t.status === 'exempt') return 0; if(t.custom != null && t.custom !== '') return Number(t.custom) || 0; return (Number(S.fee) || 0) * (S.per === 'athlete' ? 2 : 1); }
-function paidOf(t){ if(t.status === 'cash' || t.status === 'bank') return t.paid != null && t.paid !== '' ? Number(t.paid) || 0 : dueOf(t); return 0; }
+/* ---- λίστα μητρώου σεζόν (όσοι έχουν ήδη πληρώσει) ---- */
+function nkey(x){ return caps(x).replace(/[^\p{L}\s]/gu, ' ').replace(/\s+/g, ' ').trim(); }
+function inReg(name){ const k = nkey(name); return !!k && S.regList.some(r => nkey(r) === k); }
+function addReg(name){ if(!inReg(name)) S.regList.push(String(name).trim()); }
+function removeReg(name){ const k = nkey(name); S.regList = S.regList.filter(r => nkey(r) !== k); }
+// όταν μια ομάδα εξοφλήσει, όσοι χρωστούσαν μητρώο μπαίνουν στη λίστα της σεζόν
+function rememberPaidReg(t){ if(!owes(t) && (t.status === 'cash' || t.status === 'bank')) [t.a, t.b].forEach((n, i) => { if(t.reg[i] === 'owes') addReg(n); }); }
+function syncRegFromList(){ ['MEN','WOMEN'].forEach(g => S.teams[g].forEach(t => [t.a, t.b].forEach((n, i) => {
+  if(inReg(n) && t.reg[i] === '') t.reg[i] = 'ok';
+  if(!inReg(n) && t.reg[i] === 'ok') t.reg[i] = '';
+}))); }
+
+/* ---- ποσά ---- */
+const regFee = () => Number(S.regFee) || 0;
+const hasReg = () => regFee() > 0;
+function baseFee(){ return (Number(S.fee) || 0) * (S.per === 'athlete' ? 2 : 1); }
+function entryOf(t){ if(t.exempt) return 0; return (t.custom !== '' && t.custom != null) ? (Number(t.custom) || 0) : baseFee(); }
+function regCount(t){ return hasReg() ? t.reg.filter(v => v === 'owes').length : 0; }
+function regOf(t){ return regCount(t) * regFee(); }
+function dueOf(t){ return entryOf(t) + regOf(t); }
+function paidOf(t){ if(t.status === 'cash' || t.status === 'bank') return (t.paid !== '' && t.paid != null) ? (Number(t.paid) || 0) : dueOf(t); return 0; }
+function owes(t){ return paidOf(t) < dueOf(t); }
 
 /* ---- εισαγωγή από την Αρχική Λίστα ---- */
 function importEntryList(){
@@ -183,67 +233,99 @@ function importEntryList(){
     const have = new Map(S.teams[g].map(t => [key(t.a, t.b), t]));
     full.forEach(([a, b], i) => {
       const k = key(a, b);
-      if(have.has(k)){ have.get(k).seed = i + 1; return; }
-      S.teams[g].push({ id: uid(), a, b, seed: i + 1, status:'due', paid:'', custom:'', note:'' }); added++;
+      if(have.has(k)){ const t = have.get(k); t.seed = i + 1; [a, b].forEach((n, j) => { if(t.reg[j] === '' && inReg(n)) t.reg[j] = 'ok'; }); return; }
+      S.teams[g].push(newTeam(a, b, i + 1)); added++;
     });
     S.teams[g].sort((x, y) => (x.seed || 999) - (y.seed || 999));
   });
-  if(d.tName && !S.tName){ S.tName = d.tName; $('tName').value = d.tName; }
+  if(d.tName && !S.tName){ S.tName = d.tName; }
   save(); render();
   $('msg').textContent = added ? `Προστέθηκαν ${added} ομάδες από την Αρχική Λίστα${d.tName ? ' «' + d.tName + '»' : ''}.` : 'Όλες οι ομάδες της Αρχικής Λίστας υπάρχουν ήδη.';
 }
 
-/* ---- εμφάνιση ---- */
+/* ---- σύνολα ---- */
 function totals(){
   const all = S.teams.MEN.concat(S.teams.WOMEN);
-  const expected = all.reduce((a, t) => a + dueOf(t), 0);
-  const cash = all.filter(t => t.status === 'cash').reduce((a, t) => a + paidOf(t), 0);
-  const bank = all.filter(t => t.status === 'bank').reduce((a, t) => a + paidOf(t), 0);
-  const owing = all.filter(t => t.status !== 'exempt' && paidOf(t) < dueOf(t));
-  const balance = owing.reduce((a, t) => a + (dueOf(t) - paidOf(t)), 0);
-  return { all, expected, cash, bank, collected: cash + bank, owing, balance };
+  const sum = f => all.reduce((a, t) => a + f(t), 0);
+  const cash = sum(t => t.status === 'cash' ? paidOf(t) : 0);
+  const bank = sum(t => t.status === 'bank' ? paidOf(t) : 0);
+  const owing = all.filter(owes);
+  return {
+    all, cash, bank, collected: cash + bank,
+    entry: sum(entryOf), reg: sum(regOf), expected: sum(dueOf),
+    regAthletes: sum(regCount), regOk: all.reduce((a, t) => a + t.reg.filter(v => v === 'ok').length, 0),
+    regUnknown: all.reduce((a, t) => a + t.reg.filter(v => v === '').length, 0), exempt: all.filter(t => t.exempt).length,
+    owing, balance: owing.reduce((a, t) => a + dueOf(t) - paidOf(t), 0)
+  };
+}
+
+/* ---- εμφάνιση ---- */
+function athleteRow(t, i){
+  const name = i === 0 ? t.a : t.b;
+  const v = t.reg[i] || '';
+  const label = v === 'owes' ? 'Χρωστάει μητρώο ' + eur(regFee()) : v === 'ok' ? '✓ Έχει μητρώο' : 'Μητρώο;';
+  return `<div class="ath ${i ? 'second' : ''}"><span>${esc(name)}</span>${hasReg()
+    ? `<button type="button" class="regchip ${v}" data-reg="${i}" title="Πάτα για αλλαγή: Μητρώο; → Χρωστάει → Έχει μητρώο">${label}</button>` : ''}</div>`;
+}
+function renderRegList(){
+  $('regCount').textContent = S.regList.length ? '(' + S.regList.length + ')' : '';
+  if(document.activeElement !== $('regText')) $('regText').value = S.regList.join('\n');
+  $('regPanel').style.display = hasReg() ? '' : 'none';
 }
 function render(){
-  $('tName').value = S.tName; $('fee').value = S.fee;
+  renderRegList();
+  $('tName').value = S.tName; $('fee').value = S.fee; $('regFee').value = S.regFee;
   document.querySelectorAll('#perSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === S.per));
   const T = totals();
+  const expectedSub = hasReg() ? `Συμμετοχές ${eur(T.entry)} · Μητρώο ${eur(T.reg)}` : `${T.all.length} ομάδες`;
+  const fourth = hasReg()
+    ? `<div class="kpi"><div class="v">${T.regAthletes} <span style="font-size:14px;color:var(--ink-soft)">χρωστ.</span></div><div class="l">Μητρώο</div><div class="s">${T.regOk} έχουν ήδη · ${T.regUnknown} χωρίς σήμανση</div></div>`
+    : `<div class="kpi"><div class="v">${T.exempt}</div><div class="l">Απαλλαγές</div><div class="s">χωρίς συμμετοχή</div></div>`;
   $('sum').innerHTML = `
     <div class="kpi ok"><div class="v">${eur(T.collected)}</div><div class="l">Εισπράχθηκαν</div><div class="s">Μετρητά ${eur(T.cash)} · Κατάθεση ${eur(T.bank)}</div></div>
     <div class="kpi due"><div class="v">${eur(T.balance)}</div><div class="l">Υπόλοιπο</div><div class="s">${T.owing.length} ${T.owing.length === 1 ? 'ομάδα χρωστάει' : 'ομάδες χρωστάνε'}</div></div>
-    <div class="kpi"><div class="v">${eur(T.expected)}</div><div class="l">Αναμενόμενα</div><div class="s">${T.all.length} ομάδες</div></div>
-    <div class="kpi"><div class="v">${T.all.filter(t => t.status === 'exempt').length}</div><div class="l">Απαλλαγές</div><div class="s">χωρίς παράβολο</div></div>`;
+    <div class="kpi"><div class="v">${eur(T.expected)}</div><div class="l">Αναμενόμενα</div><div class="s">${expectedSub}</div></div>
+    ${fourth}`;
   $('meter').style.width = (T.expected ? Math.min(100, T.collected / T.expected * 100) : 0) + '%';
   ['MEN','WOMEN'].forEach(g => {
-    const n = S.teams[g].length, d = S.teams[g].filter(t => t.status !== 'exempt' && paidOf(t) < dueOf(t)).length;
+    const n = S.teams[g].length, d = S.teams[g].filter(owes).length;
     $('tab' + g).innerHTML = (g === 'MEN' ? 'Άνδρες' : 'Γυναίκες') + (n ? ` <small style="opacity:.8">(${n}${d ? ' · ' + d + ' χρωστ.' : ''})</small>` : '');
     $('tab' + g).classList.toggle('on', g === tab);
   });
+  document.querySelector('#filters [data-f=reg]').style.display = hasReg() ? '' : 'none';
+  if(filter === 'reg' && !hasReg()) filter = 'all';
   document.querySelectorAll('#filters button').forEach(b => b.classList.toggle('on', b.dataset.f === filter));
-  const list = S.teams[tab].filter(t => {
-    const owes = t.status !== 'exempt' && paidOf(t) < dueOf(t);
-    return filter === 'all' || (filter === 'due' && owes) || (filter === 'paid' && (t.status === 'cash' || t.status === 'bank') && !owes) || (filter === 'exempt' && t.status === 'exempt');
-  });
+  const list = S.teams[tab].filter(t => filter === 'all' || (filter === 'due' && owes(t)) ||
+    (filter === 'paid' && (t.status === 'cash' || t.status === 'bank') && !owes(t)) ||
+    (filter === 'exempt' && t.exempt) || (filter === 'reg' && regCount(t) > 0));
   $('list').innerHTML = !S.teams[tab].length
     ? `<div class="empty">Δεν υπάρχουν ομάδες ακόμα.<br>Πάτα «Από την Αρχική Λίστα» ή πρόσθεσε ομάδα με το χέρι.</div>`
     : !list.length ? '<div class="empty">Καμία ομάδα σε αυτό το φίλτρο.</div>'
     : list.map(t => {
-      const due = dueOf(t), paid = paidOf(t), owes = t.status !== 'exempt' && paid < due;
-      const right = t.status === 'exempt' ? `<span>—</span><small>ΑΠΑΛΛΑΓΗ</small>`
-        : owes && paid > 0 ? `${eur(due - paid)}<small>ΥΠΟΛΟΙΠΟ</small>`
-        : owes ? `${eur(due)}<small>ΧΡΩΣΤΑΕΙ</small>` : `${eur(paid)}<small>${STATUS[t.status].toLocaleUpperCase('el-GR').normalize('NFD').replace(/[\u0300-\u036f]/g,'')}</small>`;
-      const st = owes && paid > 0 ? 'due' : t.status;
-      return `<div class="team ${st}" data-id="${t.id}">
+      const due = dueOf(t), paid = paidOf(t), ow = owes(t);
+      const right = due === 0 && !paid ? `—<small>ΑΠΑΛΛΑΓΗ</small>`
+        : ow && paid > 0 ? `${eur(due - paid)}<small>ΥΠΟΛΟΙΠΟ</small>`
+        : ow ? `${eur(due)}<small>ΧΡΩΣΤΑΕΙ</small>` : `${eur(paid)}<small>${caps(STATUS[t.status])}</small>`;
+      const cls = due === 0 && !paid ? 'exempt' : ow ? 'due' : 'paidok';
+      const parts = [];
+      if(hasReg() || t.exempt){
+        parts.push(t.exempt ? 'Συμμετοχή: απαλλαγή' : 'Συμμετοχή ' + eur(entryOf(t)));
+        if(regCount(t)) parts.push('Μητρώο ' + regCount(t) + ' × ' + eur(regFee()));
+      }
+      return `<div class="team ${cls}" data-id="${t.id}">
         <div class="t-top"><span class="seed">${t.seed || ''}</span>
-          <div class="names">${esc(t.a)}<small>${esc(t.b)}</small></div>
+          <div class="names">${athleteRow(t, 0)}${athleteRow(t, 1)}</div>
           <div class="amt">${right}</div></div>
-        <div class="status">${Object.keys(STATUS).map(s => `<button type="button" data-s="${s}" class="${t.status === s ? 'on' : ''}">${STATUS[s]}</button>`).join('')}</div>
+        ${parts.length ? `<div class="breakdown">${parts.join(' · ')}</div>` : ''}
+        ${due > 0 || paid > 0 ? `<div class="status">${Object.keys(STATUS).map(s => `<button type="button" data-s="${s}" class="${t.status === s ? 'on' : ''}">${STATUS[s]}</button>`).join('')}</div>` : ''}
         <div class="more">
           ${t.status === 'cash' || t.status === 'bank' ? `<label class="pl">Ποσό<input class="paid" type="number" inputmode="decimal" min="0" data-f="paid" value="${esc(t.paid)}" placeholder="${due}"></label>` : ''}
           <input type="text" data-f="note" value="${esc(t.note)}" placeholder="Σημείωση">
         </div>
         <details class="opts"><summary>Περισσότερα</summary>
+          <label class="chk"><input type="checkbox" data-exempt="1" ${t.exempt ? 'checked' : ''}> Απαλλαγή από τη συμμετοχή</label>
           <div class="more">
-            <label class="pl">Άλλη οφειλή για αυτή την ομάδα (€)<input class="paid" type="number" inputmode="decimal" min="0" data-f="custom" value="${esc(t.custom)}" placeholder="${(Number(S.fee) || 0) * (S.per === 'athlete' ? 2 : 1)}"></label>
+            <label class="pl">Άλλο ποσό συμμετοχής (€)<input class="paid" type="number" inputmode="decimal" min="0" data-f="custom" value="${esc(t.custom)}" placeholder="${baseFee()}"></label>
             <button type="button" class="x" data-del="1">Διαγραφή ομάδας</button>
           </div>
         </details>
@@ -252,36 +334,49 @@ function render(){
 }
 
 /* ---- ενέργειες ---- */
+function teamOf(el){ const c = el.closest('.team'); return c && S.teams[tab].find(x => x.id === c.dataset.id); }
 $('list').addEventListener('click', e => {
-  const card = e.target.closest('.team'); if(!card) return;
-  const t = S.teams[tab].find(x => x.id === card.dataset.id); if(!t) return;
+  const t = teamOf(e.target); if(!t) return;
   const b = e.target.closest('[data-s]');
-  if(b){ t.status = b.dataset.s; if(t.status === 'due' || t.status === 'exempt') t.paid = ''; t.when = Date.now(); save(); render(); return; }
+  if(b){ t.status = b.dataset.s; if(t.status === 'due') t.paid = ''; t.when = Date.now(); rememberPaidReg(t); save(); render(); return; }
+  const r = e.target.closest('[data-reg]');
+  if(r){ const i = Number(r.dataset.reg), name = i ? t.b : t.a;
+    const next = { '':'owes', owes:'ok', ok:'' }[t.reg[i] || ''];
+    t.reg[i] = next;
+    if(next === 'ok') addReg(name); else if(next === '') removeReg(name);
+    syncRegFromList(); save(); render(); return; }
   if(e.target.closest('[data-del]')){ if(confirm('Να διαγραφεί η ομάδα «' + t.a + ' / ' + t.b + '»;')){ S.teams[tab] = S.teams[tab].filter(x => x !== t); save(); render(); } }
 });
 $('list').addEventListener('change', e => {
+  const t = teamOf(e.target); if(!t) return;
+  const ex = e.target.closest('[data-exempt]');
+  if(ex){ t.exempt = ex.checked; save(); render(); return; }
   const inp = e.target.closest('[data-f]'); if(!inp) return;
-  const card = inp.closest('.team'); const t = S.teams[tab].find(x => x.id === card.dataset.id); if(!t) return;
-  t[inp.dataset.f] = inp.value.trim(); save(); render();
+  t[inp.dataset.f] = inp.value.trim(); rememberPaidReg(t); save(); render();
 });
 $('tName').addEventListener('input', e => { S.tName = e.target.value; save(); });
-$('fee').addEventListener('input', e => { S.fee = e.target.value === '' ? '' : Number(e.target.value); save(); renderKeepFocus(); });
-function renderKeepFocus(){ const a = document.activeElement && document.activeElement.id; render(); if(a){ const el = $(a); if(el){ el.focus(); const v = el.value; if(el.setSelectionRange && el.type === 'text') el.setSelectionRange(v.length, v.length); } } }
+$('fee').addEventListener('change', e => { S.fee = e.target.value === '' ? '' : Number(e.target.value); save(); render(); });
+$('regFee').addEventListener('change', e => { S.regFee = e.target.value === '' ? '' : Number(e.target.value); save(); render();
+  if(hasReg()) toast('Πάτα «+ Μητρώο» δίπλα σε όσους αθλητές το χρωστάνε'); });
 $('perSeg').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; S.per = b.dataset.v; save(); render(); });
 document.querySelectorAll('.tabs .tab').forEach(b => b.addEventListener('click', () => { tab = b.dataset.g; render(); }));
 $('filters').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; filter = b.dataset.f; render(); });
 $('importBtn').addEventListener('click', importEntryList);
+$('regSave').addEventListener('click', () => {
+  S.regList = [...new Set($('regText').value.split('\n').map(x => x.trim()).filter(Boolean))];
+  syncRegFromList(); save(); render(); toast('Η λίστα μητρώου ενημερώθηκε: ' + S.regList.length + ' αθλητές');
+});
 $('addBtn').addEventListener('click', () => {
   const a = $('a1').value.trim(), b = $('a2').value.trim();
   if(!a || !b){ toast('Συμπλήρωσε και τους δύο αθλητές'); return; }
   if(S.teams[tab].some(t => key(t.a, t.b) === key(a, b))){ toast('Η ομάδα υπάρχει ήδη'); return; }
-  S.teams[tab].push({ id: uid(), a, b, seed:'', status:'due', paid:'', custom:'', note:'' });
+  S.teams[tab].push(newTeam(a, b, ''));
   $('a1').value = ''; $('a2').value = ''; save(); render(); toast('Προστέθηκε στους ' + (tab === 'MEN' ? 'Άνδρες' : 'Γυναίκες'));
 });
 $('clearBtn').addEventListener('click', () => {
   if(!S.teams.MEN.length && !S.teams.WOMEN.length) return;
   if(!confirm('Να σβηστούν όλες οι ομάδες και οι πληρωμές για να ξεκινήσεις νέο τουρνουά; Κατέβασε πρώτα το Excel αν θες να τα κρατήσεις.')) return;
-  S.teams = { MEN:[], WOMEN:[] }; S.tName = ''; save(); render(); $('msg').textContent = '';
+  S.teams = { MEN:[], WOMEN:[] }; S.tName = ''; save(); render(); $('msg').textContent = 'Νέο τουρνουά. Η λίστα μητρώου σεζόν κρατήθηκε.';
 });
 $('xlsBtn').addEventListener('click', () => {
   const T = totals();
@@ -289,19 +384,30 @@ $('xlsBtn').addEventListener('click', () => {
   const wb = XLSX.utils.book_new();
   const sum = [
     ['Συμμετοχές & Πληρωμές' + (S.tName ? ' — ' + S.tName : '')], [],
-    ['Παράβολο', (Number(S.fee) || 0) + ' € ανά ' + (S.per === 'athlete' ? 'αθλητή' : 'ομάδα')],
-    ['Ομάδες', T.all.length], ['Αναμενόμενα (€)', T.expected], ['Εισπράχθηκαν (€)', T.collected],
-    ['  Μετρητά (€)', T.cash], ['  Κατάθεση (€)', T.bank], ['Υπόλοιπο (€)', T.balance], ['Ομάδες που χρωστάνε', T.owing.length]
+    ['Συμμετοχή', (Number(S.fee) || 0) + ' € ανά ' + (S.per === 'athlete' ? 'αθλητή' : 'ομάδα')],
+    ['Παράβολο μητρώου', hasReg() ? regFee() + ' € ανά αθλητή' : '—'],
+    ['Ομάδες', T.all.length], ['Απαλλαγές συμμετοχής', T.exempt], ['Αθλητές που χρωστάνε μητρώο', T.regAthletes], ['Αθλητές με ήδη πληρωμένο μητρώο', T.regOk], [],
+    ['Αναμενόμενα — συμμετοχές (€)', T.entry], ['Αναμενόμενα — μητρώο (€)', T.reg], ['Αναμενόμενα — σύνολο (€)', T.expected], [],
+    ['Εισπράχθηκαν (€)', T.collected], ['  Μετρητά (€)', T.cash], ['  Κατάθεση (€)', T.bank],
+    ['Υπόλοιπο (€)', T.balance], ['Ομάδες που χρωστάνε', T.owing.length]
   ];
-  const ws0 = XLSX.utils.aoa_to_sheet(sum); ws0['!cols'] = [{wch:24},{wch:28}];
+  const ws0 = XLSX.utils.aoa_to_sheet(sum); ws0['!cols'] = [{wch:34},{wch:28}];
   XLSX.utils.book_append_sheet(wb, ws0, 'Σύνοψη');
   [['MEN','Άνδρες'],['WOMEN','Γυναίκες']].forEach(([g, nm]) => {
-    const rows = [['#','Αθλητής 1','Αθλητής 2','Κατάσταση','Οφειλή (€)','Πληρώθηκε (€)','Υπόλοιπο (€)','Σημείωση']];
-    S.teams[g].forEach(t => { const d = dueOf(t), p = paidOf(t); rows.push([t.seed || '', t.a, t.b, (t.status !== 'exempt' && p > 0 && p < d) ? 'Μερική πληρωμή' : STATUS[t.status], d, p, t.status === 'exempt' ? 0 : Math.max(0, d - p), t.note || '']); });
-    const ws = XLSX.utils.aoa_to_sheet(rows); ws['!cols'] = [{wch:4},{wch:30},{wch:30},{wch:15},{wch:11},{wch:13},{wch:12},{wch:30}];
-    ws['!autofilter'] = { ref: 'A1:H' + rows.length };
+    const rows = [['#','Αθλητής 1','Μητρώο 1','Αθλητής 2','Μητρώο 2','Συμμετοχή (€)','Μητρώο (€)','Σύνολο (€)','Πληρώθηκε (€)','Υπόλοιπο (€)','Κατάσταση','Σημείωση']];
+    S.teams[g].forEach(t => {
+      const d = dueOf(t), p = paidOf(t);
+      const st = d === 0 && !p ? 'Απαλλαγή' : (p > 0 && p < d) ? 'Μερική πληρωμή' : STATUS[t.status];
+      const rl = v => !hasReg() ? '' : v === 'owes' ? 'Χρωστάει' : v === 'ok' ? 'Έχει' : '';
+      rows.push([t.seed || '', t.a, rl(t.reg[0]), t.b, rl(t.reg[1]),
+                 entryOf(t), regOf(t), d, p, Math.max(0, d - p), st + (t.exempt ? ' (απαλλαγή συμμετοχής)' : ''), t.note || '']);
+    });
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{wch:4},{wch:28},{wch:9},{wch:28},{wch:9},{wch:13},{wch:11},{wch:11},{wch:13},{wch:12},{wch:28},{wch:28}];
+    ws['!autofilter'] = { ref: 'A1:L' + rows.length };
     XLSX.utils.book_append_sheet(wb, ws, nm);
   });
+  if(S.regList.length){ const wr = XLSX.utils.aoa_to_sheet([['Λίστα μητρώου σεζόν (έχουν πληρώσει)'], ...S.regList.map(n => [n])]); wr['!cols'] = [{wch:40}]; XLSX.utils.book_append_sheet(wb, wr, 'Μητρώο σεζόν'); }
   XLSX.writeFile(wb, ((S.tName || 'Τουρνουά').replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '_')) + '_πληρωμές.xlsx');
 });
 render();
