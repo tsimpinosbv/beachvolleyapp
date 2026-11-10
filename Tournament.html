@@ -49,6 +49,12 @@
   .links a{display:block; text-decoration:none; color:var(--navy-2); font-weight:700; font-size:14px; border:1.5px solid var(--line); border-radius:11px; padding:10px 12px; background:#fff;}
   .hidden{display:none !important;}
   iframe.worker{position:absolute; width:1px; height:1px; left:-9999px; border:0;}
+  .settings summary{cursor:pointer; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:18px; list-style:none; display:flex; align-items:baseline; gap:8px;}
+  .settings summary::-webkit-details-marker{display:none;}
+  .settings summary::after{content:'›'; margin-left:auto; transform:rotate(90deg); color:var(--ink-soft);}
+  .settings[open] summary::after{transform:rotate(-90deg);}
+  .settings summary small{font-family:'IBM Plex Sans',sans-serif; font-weight:600; font-size:13px; color:var(--ink-soft);}
+  .sh{font-size:15px; margin:18px 0 6px;}
 </style>
 <link rel="stylesheet" href="ui.css">
 </head>
@@ -57,14 +63,14 @@
 <header class="hero">
   <div class="wrap">
     <h1>Τουρνουά</h1>
-    <p>Διάλεξε το τουρνουά που δουλεύεις. Όνομα, ημερομηνίες και τόπος μπαίνουν μόνα τους σε όλα τα εργαλεία και τα δεδομένα κάθε τουρνουά κρατιούνται χωριστά.</p>
+    <p>Το τουρνουά που δουλεύεις. Τα στοιχεία του μπαίνουν μόνα τους σε όλα τα εργαλεία.</p>
   </div>
 </header>
 
 <main class="wrap">
   <section class="card active" id="activeCard"></section>
 
-  <section class="card" id="pickCard">
+  <section class="card" id="pickCard" hidden>
     <h2>Αλλαγή τουρνουά</h2>
     <div class="seg" id="pickSeg">
       <button type="button" data-v="cal" class="on">Ημερολόγιο</button>
@@ -87,23 +93,21 @@
 
   <section class="card bv-admin-only" id="closeCard">
     <h2>Κλείσιμο τουρνουά</h2>
-    <p class="msg" style="margin-top:0">Αποθηκεύει όλο το τουρνουά στο αρχείο σεζόν: αναφορά και φύλλο πληρωμής (με Word), σύνοψη σε Excel (Αρχική Λίστα, Πληρωμές) και όλα τα δεδομένα για επαναφορά.</p>
-    <button class="btn big" type="button" id="closeBtn">Κλείσιμο και αποθήκευση στο αρχείο</button>
+    <p class="msg" style="margin-top:0">Όταν τελειώσει το τουρνουά: όλα στο αρχείο σεζόν με ένα πάτημα.</p>
+    <button class="btn big" type="button" id="closeBtn">Κλείσιμο τουρνουά</button>
     <div class="log" id="closeLog"></div>
   </section>
 
-  <section class="card">
-    <h2>Αντίγραφο ασφαλείας</h2>
+  <details class="card settings">
+    <summary>Ρυθμίσεις <small>αντίγραφο ασφαλείας, διαχείριση</small></summary>
+  <h3 class="sh">Αντίγραφο ασφαλείας</h3>
     <p class="msg" style="margin-top:0">Ένα αρχείο με ό,τι έχεις συμπληρώσει σε αυτή τη συσκευή (όλα τα τουρνουά, λίστες, αναφορές, ρυθμίσεις). Επαναφέρεται σε άλλο κινητό ή αν σβηστούν τα δεδομένα του browser. Το κλειδί GitHub δεν μπαίνει μέσα.</p>
     <div class="btns">
       <button class="btn primary" type="button" id="bkDown">⬇ Λήψη αντιγράφου</button>
       <button class="btn" type="button" id="bkUp">Επαναφορά από αρχείο</button>
       <input type="file" id="bkFile" accept=".json,application/json" hidden>
     </div>
-  </section>
-
-  <section class="card">
-    <h2>Διαχείριση</h2>
+<h3 class="sh">Διαχείριση</h3>
     <div class="switchrow">
       <div><b>Λειτουργίες διαχειριστή</b><span>Δημοσίευση Βαθμολογίας, Ημερολογίου και πινάκων βαθμολογίας στο GitHub, αρχείο σεζόν. Οι υπόλοιποι supervisors δεν τις χρειάζονται.</span></div>
       <label class="tgl"><input type="checkbox" id="admTgl" aria-label="Λειτουργίες διαχειριστή"><span></span></label>
@@ -118,7 +122,7 @@
       <p class="msg" id="tokMsg"></p>
       <button class="link danger" type="button" id="tokDel">Αφαίρεση κλειδιού GitHub από τη συσκευή</button>
     </div>
-  </section>
+  </details>
 
   <footer>Όλα μένουν στη συσκευή σου. Στο GitHub ανεβαίνουν μόνο όταν πατήσεις αποθήκευση ή δημοσίευση.</footer>
 </main>
@@ -142,7 +146,7 @@ function renderActive(){
   const t = BVTour.get();
   if(!t){
     $('activeCard').innerHTML = `<h2>Ενεργό τουρνουά</h2><div class="empty" style="padding:10px 4px 4px">Δεν έχει οριστεί τουρνουά.<br>Διάλεξε ένα από το ημερολόγιο ή φτιάξε νέο παρακάτω.</div>`;
-    $('closeCard').classList.add('hidden'); return;
+    $('closeCard').classList.add('hidden'); $('pickCard').hidden = false; return;
   }
   $('closeCard').classList.remove('hidden');
   const n = BVTour.daysTo(t);
@@ -153,12 +157,14 @@ function renderActive(){
     <span class="tx"><b>${p.label}</b><span>${esc(p.text)}</span></span><span class="ar">›</span></a>`).join('');
   $('activeCard').innerHTML = `<h2>Ενεργό τουρνουά</h2><h3>${esc(t.name)}</h3><div class="meta">${meta || 'Χωρίς ημερομηνίες'}</div>${cd}
     <div class="prog">${prog}</div>
-    <div class="btns"><button class="link" type="button" id="editBtn">Αλλαγή στοιχείων</button></div>`;
-  $('editBtn').onclick = () => { setPick('new'); $('nName').value = t.name; $('nPlace').value = t.place || ''; $('nFrom').value = t.from || ''; $('nTo').value = t.to || '';
+    <div class="btns"><button class="btn primary" type="button" id="chgBtn">Αλλαγή τουρνουά</button><button class="link" type="button" id="editBtn">Διόρθωση στοιχείων</button></div>`;
+  $('chgBtn').onclick = () => { showPick(); };
+  $('editBtn').onclick = () => { showPick(); setPick('new'); $('nName').value = t.name; $('nPlace').value = t.place || ''; $('nFrom').value = t.from || ''; $('nTo').value = t.to || '';
     $('nOk').textContent = 'Αποθήκευση στοιχείων'; $('nOk').dataset.edit = t.id; $('pickCard').scrollIntoView({ behavior:'smooth' }); };
 }
 
 /* ---- επιλογή ---- */
+function showPick(){ $('pickCard').hidden = false; $('pickCard').scrollIntoView({ behavior:'smooth' }); }
 function setPick(v){
   document.querySelectorAll('#pickSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   $('pickCal').classList.toggle('hidden', v !== 'cal'); $('pickPrev').classList.toggle('hidden', v !== 'prev'); $('pickNew').classList.toggle('hidden', v !== 'new');
@@ -184,7 +190,7 @@ function renderPrev(){
     : '<p class="msg">Δεν υπάρχουν άλλα τουρνουά σε αυτή τη συσκευή. Όταν αλλάξεις τουρνουά, το προηγούμενο εμφανίζεται εδώ.</p>';
 }
 function doSwitch(meta){
-  const t = BVTour.switchTo(meta); toast('Ενεργό τουρνουά: ' + t.name); renderAll(); window.scrollTo({ top:0, behavior:'smooth' });
+  const t = BVTour.switchTo(meta); toast('Ενεργό τουρνουά: ' + t.name); $('pickCard').hidden = true; renderAll(); window.scrollTo({ top:0, behavior:'smooth' });
 }
 $('pickSeg').addEventListener('click', e => { const b = e.target.closest('button'); if(b) setPick(b.dataset.v); });
 $('pickCal').addEventListener('click', e => { const b = e.target.closest('[data-ev]'); if(!b) return; doSwitch(evMeta(EVENTS[+b.dataset.ev])); });
@@ -298,7 +304,7 @@ $('tokDel').addEventListener('click', () => { if(!confirm('Να αφαιρεθε
 function renderAll(){ renderActive(); renderCal(); renderPrev(); renderAdmin(); }
 renderAll();
 BVCal.load().then(ev => { EVENTS = ev; renderCal(); }).catch(() => { if(!EVENTS.length) $('pickCal').innerHTML = '<p class="msg">Το ημερολόγιο δεν φορτώθηκε. Φτιάξε το τουρνουά από το «Νέο».</p>'; });
-if(location.hash === '#new') setPick('new');
+if(location.hash === '#new'){ $('pickCard').hidden = false; setPick('new'); }
 </script>
 <script>
 if ('serviceWorker' in navigator) {

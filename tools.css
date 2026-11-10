@@ -75,3 +75,4 @@ footer{margin:28px 0 40px; color:var(--ink-soft); font-size:13px; line-height:1.
   .doc p{margin:1.5mm 0; line-height:1.4;}
   .doc .pre{white-space:pre-wrap;}
 }
+[hidden]{display:none !important;}

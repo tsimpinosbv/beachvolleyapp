@@ -93,6 +93,12 @@
   .tour-f a{color:var(--navy-2); font-weight:700; font-size:14px; text-decoration:none;}
   .tour.empty-t{padding:16px; display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit;}
   .tour.empty-t .t2{flex:1;} .tour.empty-t b{display:block; font-family:'Space Grotesk',sans-serif; font-size:18px;} .tour.empty-t span{font-size:13.5px; color:var(--ink-soft);}
+  @media (max-width:559px){
+    .tiles{grid-template-columns:1fr 1fr; gap:10px;}
+    .tile{flex-direction:column; align-items:flex-start; gap:10px; min-height:0; padding:13px;}
+    .tile .d, .tile .arr{display:none;}
+    .t{font-size:15.5px;}
+  }
 </style>
 <script src="bv-admin.js"></script>
 </head>
@@ -136,7 +142,7 @@
     </a>
     <a class="tile" href="Checklist.html">
       <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="M8.5 13l2.5 2.5 4.5-5"/></svg></span>
-      <span class="txt"><span class="t">CheckList Supervisor</span><span class="d">Πριν, κατά και μετά το τουρνουά</span></span>
+      <span class="txt"><span class="t">Λίστα Ελέγχου</span><span class="d">Πριν, κατά και μετά το τουρνουά</span></span>
       <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
     </a>
     <a class="tile" href="Payments.html">
