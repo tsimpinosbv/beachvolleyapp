@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Αποτελέσματα & Βαθμολογία — BV Supervisor Tools</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d3a5c">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Supervisor Tools">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tools.css">
+<style>
+  .tabs{display:flex; gap:8px; margin-top:16px;}
+  .tab{flex:1; min-height:46px; border-radius:11px; border:1.5px solid var(--line); background:#fff; font-weight:700; font-size:15px; cursor:pointer; color:var(--ink-soft);}
+  .tab.on.men{background:var(--men); border-color:var(--men); color:#fff;}
+  .tab.on.women{background:var(--women); border-color:var(--women); color:#fff;}
+  .chk{display:flex; align-items:center; gap:9px; font-size:14.5px; font-weight:600; min-height:46px; cursor:pointer;}
+  .chk input{width:22px; height:22px; accent-color:var(--navy-2); flex:none;}
+  .places{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px;}
+  .pl{font-size:12.5px; font-weight:700; border-radius:8px; padding:4px 8px; background:#eef3f7; color:var(--ink-soft);}
+  .pl.full{background:var(--ok-bg); color:var(--ok);} .pl.over{background:var(--bad-bg); color:var(--bad);}
+  .team{display:grid; grid-template-columns:1fr auto; gap:6px 12px; align-items:center; background:#fff; border:1px solid var(--line); border-left:5px solid #c9d3dc; border-radius:12px; padding:10px 12px; margin-top:8px;}
+  .team.placed{border-left-color:var(--ok);}
+  .team .nm{font-weight:700; font-size:15px; line-height:1.35; min-width:0; cursor:pointer;}
+  .team .nm span{display:block;}
+  .team .nm span + span{font-weight:500; color:var(--ink-soft); font-size:14px;}
+  .team .nm .new{display:inline-block; font-size:10.5px; font-weight:800; letter-spacing:.04em; color:var(--warn); background:var(--warn-bg); border-radius:5px; padding:1px 5px; margin-left:4px; vertical-align:1px;}
+  .team select{width:auto; min-width:120px; min-height:42px; font-size:15px;}
+  .team .res{grid-column:1/-1; display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; font-size:13.5px; color:var(--ink-soft);}
+  .team .res b{color:var(--ok);}
+  .team .res label{display:flex; align-items:center; gap:6px; font-weight:600;}
+  .team .res input{width:96px; min-height:36px; padding:4px 8px; font-size:15px;}
+  .team .x{border:none; background:none; color:var(--ink-soft); font-size:12.5px; text-decoration:underline; cursor:pointer; margin-left:auto;}
+  .sumbar{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:12px; border-radius:12px; padding:11px 13px; background:var(--accent-bg); font-size:14px; font-weight:600;}
+  .sumbar.warn{background:var(--warn-bg); color:#6b3d00;}
+  .add-row{display:grid; grid-template-columns:1fr 1fr auto; gap:8px; margin-top:12px;}
+  @media (max-width:480px){ .add-row{grid-template-columns:1fr;} }
+  .src{font-size:13px; color:var(--ink-soft); margin:0 0 10px;}
+  .rep{margin-top:12px; display:grid; gap:8px;}
+  .rep .r{border:1px solid var(--line); border-radius:12px; padding:10px 12px; font-size:14px; line-height:1.5; background:#fbfdff;}
+  .rep .r b.h{display:block; font-family:'Space Grotesk',sans-serif; font-size:15px; color:var(--navy);}
+  .rep .r.warn{background:var(--warn-bg); border-color:transparent; color:#6b3d00;}
+  .rep ul{margin:4px 0 0; padding-left:20px;}
+  .outbtns{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;} .outbtns .btn{flex:1; min-height:50px;}
+  .step{display:flex; gap:10px; align-items:baseline; font-size:13.5px; color:var(--ink-soft); margin-top:6px;}
+  .done-note{background:var(--ok-bg); color:var(--ok); border-radius:12px; padding:10px 13px; font-weight:700; font-size:14px; margin-top:12px;}
+</style>
+<script src="bv-admin.js"></script>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+<nav class="bv-topbar" aria-label="Πλοήγηση"><a class="bv-home" href="index.html" aria-label="Αρχική" title="Αρχική"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9v11h13V9"/><path d="M10 20v-6h4v6"/></svg></a><a class="bv-brand" href="index.html"><img src="icons/logo.png" alt="">Supervisor Tools</a></nav>
+<header class="hero">
+  <div class="wrap">
+    <h1>Αποτελέσματα & Βαθμολογία</h1>
+    <p>Δώσε την τελική θέση κάθε ομάδας. Οι πόντοι βγαίνουν από τους πίνακες βαθμών και τα έπαθλα από το Φύλλο Πληρωμής· μετά ενημερώνεται το Ranking.xlsx με ένα κουμπί.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <h2><span class="num">1</span>Ομάδες</h2>
+    <div class="btns" style="margin-top:0">
+      <button class="btn primary" type="button" id="importBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></svg>Ομάδες από την Αρχική Λίστα</button>
+      <button class="btn ghost" type="button" id="prizeImportBtn">Θέσεις από το Φύλλο Πληρωμής</button>
+    </div>
+    <p class="msg" id="msg"></p>
+  </section>
+
+  <div class="tabs">
+    <button class="tab men on" type="button" data-g="MEN" id="tabMEN">Άνδρες</button>
+    <button class="tab women" type="button" data-g="WOMEN" id="tabWOMEN">Γυναίκες</button>
+  </div>
+
+  <section class="card">
+    <h2><span class="num">2</span>Πίνακας βαθμών <small id="catName">— Άνδρες</small></h2>
+    <p class="src" id="psSrc">Φόρτωση πινάκων…</p>
+    <div class="grid">
+      <label class="f full">Ταμπλό<select id="board"></select></label>
+      <label class="f">Συντελεστής τουρνουά<input type="number" id="coef" min="0" step="0.1" inputmode="decimal"></label>
+      <label class="chk" id="splitWrap"><input type="checkbox" id="split"> Αγώνας 3ης-4ης θέσης</label>
+    </div>
+    <div class="places" id="places"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">3</span>Τελική θέση ομάδων</h2>
+    <div id="list"></div>
+    <div class="sumbar" id="sumbar"></div>
+    <div class="add-row">
+      <input type="text" id="a1" placeholder="Αθλητής 1 (ΕΠΩΝΥΜΟ ΟΝΟΜΑ)">
+      <input type="text" id="a2" placeholder="Αθλητής 2 (ΕΠΩΝΥΜΟ ΟΝΟΜΑ)">
+      <button class="btn" type="button" id="addBtn">+ Ομάδα</button>
+    </div>
+    <p class="msg">Πάτα το όνομα για διόρθωση. «ΝΕΟΣ» = δεν υπάρχει στη βαθμολογία· θα μπει ως νέος αθλητής, οπότε έλεγξε ότι γράφεται ακριβώς όπως εκεί.</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">4</span>Ενημέρωση Ranking.xlsx</h2>
+    <p class="src" id="rkSrc">Φόρτωση βαθμολογίας…</p>
+    <div class="grid">
+      <label class="f full">Στήλη τουρνουά — Άνδρες<select id="colMEN"></select></label>
+      <label class="f full">Στήλη τουρνουά — Γυναίκες<select id="colWOMEN"></select></label>
+    </div>
+    <div class="btns"><button class="btn primary" type="button" id="checkBtn">Έλεγχος αλλαγών</button></div>
+    <div class="rep" id="rep"></div>
+    <div class="outbtns" id="outBtns" hidden>
+      <button class="btn" type="button" id="dlBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></svg>Λήψη Ranking.xlsx</button>
+      <button class="btn primary bv-admin-only" type="button" id="pubBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-1.4-8.8A6 6 0 0 0 4.5 13 3.5 3.5 0 0 0 6 19z"/><path d="M12 16v-5M9.5 13.5 12 11l2.5 2.5"/></svg>Δημοσίευση στο GitHub</button>
+    </div>
+    <div id="pubNote"></div>
+  </section>
+
+  <footer>Πόντοι αθλητή = βάση θέσης × συντελεστής × ποσοστό αθλητή (από τον <a href="PointSystem.html">Υπολογισμό Βαθμών</a>). Έπαθλο αθλητή = ποσό ομάδας ÷ 2 από το <a href="PrizeSheet.html">Φύλλο Πληρωμής Επάθλων</a>· γράψε δικό σου ποσό όπου χρειάζεται. Στο Ranking.xlsx η στήλη του τουρνουά ξαναγράφεται από την αρχή, το ΣΥΝΟΛΟ ξαναϋπολογίζεται και οι αθλητές ταξινομούνται· η μορφοποίηση του αρχείου μένει ίδια.</footer>
+</main>
+<div class="toast" id="toast"></div>
+
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="vendor/exceljs.min.js" defer></script>
+<script src="ranking-write.js" defer></script>
+<script src="gh-publish.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const CAT = { MEN:'Άνδρες', WOMEN:'Γυναίκες' }, GS = ['MEN','WOMEN'];
+const KEY = 'results_v1';
+const blankCat = () => ({ board:'', split:false, teams:[] });
+let S = { coef:'', cats:{ MEN: blankCat(), WOMEN: blankCat() } };
+try{ const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if(s && s.cats) S = Object.assign(S, s); }catch(e){}
+GS.forEach(g => { S.cats[g] = Object.assign(blankCat(), S.cats[g] || {}); });
+let tab = 'MEN';
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+const EUR = new Intl.NumberFormat('el-GR', { minimumFractionDigits:0, maximumFractionDigits:2 });
+const eur = v => EUR.format(Math.round((Number(v) || 0) * 100) / 100) + ' €';
+const pts = v => EUR.format(Math.round((Number(v) || 0) * 100) / 100);
+const r2 = x => Math.round(x * 100) / 100;
+function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 3200); }
+const norm = s => String(s || '').toLocaleUpperCase('el-GR').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
+const tkey = (a, b) => [norm(a), norm(b)].sort().join('|');
+const read = k => { try{ return JSON.parse(localStorage.getItem(k) || 'null'); }catch(e){ return null; } };
+const meta = () => (window.BVTour && BVTour.get()) || null;
+
+/* ============ Πίνακες βαθμών (PointSystem.xlsx — ίδια ανάγνωση με τον Υπολογισμό Βαθμών) ============ */
+let BOARDS = [];
+const psNum = v => { if(v === '' || v == null) return NaN; return typeof v === 'number' ? v : parseFloat(String(v).replace(',', '.')); };
+function parseBoards(wb){
+  const out = [];
+  wb.SheetNames.forEach(sn => {
+    if(/^(ΟΔΗΓΙ|INSTRUCT|README)/.test(norm(sn))) return;
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, defval:'', raw:true, blankrows:true });
+    const hi = rows.findIndex(r => norm(r[0]) === 'ΘΕΣΗ'); if(hi === -1) return;
+    const set = {}; rows.slice(0, hi).forEach(r => { const k = norm(r[0]); if(k) set[k] = r[1]; });
+    let coef = psNum(set['ΣΥΝΤΕΛΕΣΤΗΣ']); if(isNaN(coef)) coef = 1;
+    let sh = psNum(set['ΠΟΣΟΣΤΟ ΑΘΛΗΤΗ']); if(isNaN(sh)) sh = 0.5; if(sh > 1) sh = sh / 100;
+    const p3 = psNum(set['ΘΕΣΗ 3 ΧΩΡΙΣΤΑ']), p4 = psNum(set['ΘΕΣΗ 4 ΧΩΡΙΣΤΑ']);
+    const rr = [];
+    rows.slice(hi + 1).forEach(r => { const pos = String(r[0] == null ? '' : r[0]).trim(), n = psNum(r[1]);
+      if(pos === '' && (r[1] === '' || r[1] == null)) return; if(!isNaN(n)) rr.push([pos === '' ? '-' : pos, n]); });
+    if(rr.length) out.push({ label: String(set['ΤΑΜΠΛΟ'] || sn).trim(), coef, share: sh, split: (!isNaN(p3) && !isNaN(p4)) ? [p3, p4] : null,
+      first: /^(ΝΑΙ|YES|X|1)$/.test(norm(set['ΑΝΟΙΓΕΙ ΠΡΩΤΟ'])), rows: rr });
+  });
+  return out;
+}
+async function loadBoards(){
+  try{
+    const r = await fetch('PointSystem.xlsx?t=' + Date.now()); if(!r.ok) throw 0;
+    BOARDS = parseBoards(XLSX.read(new Uint8Array(await r.arrayBuffer()), { type:'array' }));
+    $('psSrc').textContent = BOARDS.length ? 'Πίνακες από το PointSystem.xlsx · ' + BOARDS.length + ' ταμπλό' : 'Το PointSystem.xlsx δεν έχει πίνακες.';
+  }catch(e){ $('psSrc').textContent = 'Δεν φορτώθηκαν οι πίνακες βαθμών (PointSystem.xlsx). Άνοιξε τη σελίδα με internet μία φορά.'; }
+  GS.forEach(g => { if(!BOARDS.some(b => b.label === S.cats[g].board)){ const f = BOARDS.find(b => b.first && !/FINAL/i.test(b.label)) || BOARDS.find(b => !/FINAL/i.test(b.label)) || BOARDS[0]; S.cats[g].board = f ? f.label : ''; } });
+  render();
+}
+const boardOf = g => BOARDS.find(b => b.label === S.cats[g].board) || null;
+
+// Θέσεις του ταμπλό: κάθε γραμμή = μία θέση. Ομάδες θέσεων με ίδια βάση → «5-8».
+function placeGroups(g){
+  const b = boardOf(g); if(!b) return [];
+  const rows = b.rows.map(([pos, base]) => ({ pos, base }));
+  if(S.cats[g].split && b.split){
+    const i3 = rows.findIndex(r => r.pos === '3');
+    if(i3 !== -1 && rows[i3 + 1]){ rows[i3].base = b.split[0]; rows[i3 + 1] = { pos:'4', base: b.split[1] }; }
+  }
+  const out = []; let label = '';
+  rows.forEach((r, i) => {
+    if(r.pos !== '-') label = r.pos;
+    const last = out[out.length - 1];
+    if(last && r.pos === '-' && last.label === label && last.base === r.base) last.end = i + 1;
+    else out.push({ start: i + 1, end: i + 1, label, base: r.base });
+  });
+  out.forEach(x => { x.text = x.start === x.end ? String(x.start) : x.start + '-' + x.end; x.slots = x.end - x.start + 1; });
+  return out;
+}
+function coef(g){ const c = psNum(S.coef); if(!isNaN(c)) return c; const m = meta(); if(m && m.coef != null && !isNaN(psNum(m.coef))) return psNum(m.coef); const b = boardOf(g); return b ? b.coef : 1; }
+function athletePoints(g, place){
+  const grp = placeGroups(g).find(x => String(x.start) === String(place)); const b = boardOf(g);
+  return grp && b ? r2(grp.base * coef(g) * b.share) : 0;
+}
+
+/* ============ Έπαθλα (από το Φύλλο Πληρωμής Επάθλων) ============ */
+const PRICE_DEFAULTS = {
+  "8": [ { label:"1", percent:30 }, { label:"2", percent:20 }, { label:"3-4", percent:12 }, { label:"5-6", percent:8 }, { label:"7-8", percent:5 } ],
+  "12": [ { label:"1", percent:30 }, { label:"2", percent:20 }, { label:"3-4", percent:12 }, { label:"5-8", percent:6.5 } ],
+  "finals": [ { label:"1", percent:30 }, { label:"2", percent:20 }, { label:"3", percent:14 }, { label:"4", percent:10 }, { label:"5-6", percent:8 }, { label:"7-8", percent:5 } ],
+};
+function prizeGroups(c){ const p = read('pricesState_v1'); return (p && p.groups && p.groups[c.format]) || PRICE_DEFAULTS[c.format] || PRICE_DEFAULTS['8']; }
+const range = l => { const m = String(l).match(/^(\d+)(?:\s*-\s*(\d+))?/); return m ? [+m[1], +(m[2] || m[1])] : null; };
+// έπαθλο ανά αθλητή: δικό σου ποσό › θέση στο Φύλλο Πληρωμής › από την τελική θέση εδώ
+function prizeInfo(g, t){
+  if(t.prize !== '' && t.prize != null && !isNaN(psNum(t.prize))) return { v: psNum(t.prize), src:'own' };
+  const P = read('prizeSheet_v1'), c = P && P.cats && P.cats[g]; if(!c || !Number(c.prize)) return { v:0, src:'' };
+  const groups = prizeGroups(c), amount = gr => gr ? (Number(c.prize) || 0) * gr.percent / 100 / 2 : 0;
+  const pt = (c.teams || []).find(x => tkey(x.a, x.b) === tkey(t.a, t.b) && x.place);
+  if(pt) return { v: r2(amount(groups.find(x => x.label === pt.place))), src:'sheet' };
+  if(!t.place) return { v:0, src:'' };
+  const p = +t.place, gr = groups.find(x => { const r = range(x.label); return r && p >= r[0] && p <= r[1]; });
+  return { v: r2(amount(gr)), src: gr ? 'place' : '' };
+}
+
+/* ============ Βαθμολογία: ποιοι αθλητές υπάρχουν ήδη ============ */
+let RANK_BYTES = null, RANK_SRC = '', KNOWN = { MEN:null, WOMEN:null }, COLS = { MEN:[], WOMEN:[] };
+const LATIN = {A:'Α',B:'Β',E:'Ε',H:'Η',I:'Ι',K:'Κ',M:'Μ',N:'Ν',O:'Ο',P:'Ρ',T:'Τ',X:'Χ',Y:'Υ',Z:'Ζ'};
+const nameKey = s => String(s || '').toLocaleUpperCase('el-GR').normalize('NFD').replace(/[̀-ͯ]/g, '')
+  .replace(/[ABEHIKMNOPTXYZ]/g, c => LATIN[c]).replace(/[.\-–_,]+/g, ' ').replace(/\s+/g, ' ').trim();
+async function fetchRanking(){
+  // Με κλειδί GitHub: το πιο πρόσφατο από το repo (η σελίδα μπορεί να αργεί λίγα λεπτά)
+  if(window.BVPublish && BVPublish.hasToken()){
+    try{ const b = await BVPublish.getFile('beachvolleyapp', 'Ranking.xlsx'); RANK_SRC = 'GitHub'; return b; }catch(e){}
+  }
+  const r = await fetch('Ranking.xlsx?t=' + Date.now(), { cache:'no-store' }); if(!r.ok) throw new Error('Δεν βρέθηκε το Ranking.xlsx');
+  RANK_SRC = 'εφαρμογή'; return new Uint8Array(await r.arrayBuffer());
+}
+async function loadRanking(){
+  try{
+    RANK_BYTES = await fetchRanking();
+    const wb = XLSX.read(RANK_BYTES, { type:'array' });
+    GS.forEach(g => {
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[g], { header:1, defval:'' });
+      const hdr = rows[1] || [], tc = hdr.findIndex(h => nameKey(h) === 'ΣΥΝΟΛΟ');
+      KNOWN[g] = new Set(); for(let i = 3; i < rows.length && String(rows[i][1]).trim(); i++) KNOWN[g].add(nameKey(rows[i][1]));
+      COLS[g] = []; for(let c = 2; c < tc; c++) COLS[g].push({ col: c + 1, header: String(hdr[c]).trim(), dates: String((rows[2] || [])[c] || '').trim(),
+        filled: rows.slice(3).filter(r => String(r[1]).trim() && r[c] !== '' && r[c] != null).length });
+    });
+    $('rkSrc').textContent = 'Ranking.xlsx (' + RANK_SRC + ') · ' + KNOWN.MEN.size + ' άνδρες · ' + KNOWN.WOMEN.size + ' γυναίκες';
+  }catch(e){ $('rkSrc').textContent = 'Δεν φορτώθηκε το Ranking.xlsx — χρειάζεται internet.'; }
+  fillCols(); render();
+}
+const tourKey = s => nameKey(String(s || '').replace(/\([^)]*\)/g, ''));
+function newHeader(){ const m = meta(), c = coef('MEN'); return ((m && m.name) || 'ΤΟΥΡΝΟΥΑ').toLocaleUpperCase('el-GR') + ' (' + Number(c).toFixed(1).replace('.', ',') + ')'; }
+function fillCols(){
+  const m = meta();
+  GS.forEach(g => {
+    const sel = $('col' + g), cols = COLS[g]; let cur = S['col' + g];
+    if(cur == null || (cur !== 'new' && !cols.some(c => c.header === cur))){
+      cur = 'new';
+      if(m){ const k = tourKey(m.name);
+        const hit = cols.find(c => tourKey(c.header) === k) || cols.find(c => { const h = tourKey(c.header); return h && k && (h.startsWith(k) || k.startsWith(h)); })
+          || cols.find(c => m.dates && c.dates.replace(/\s/g,'') === String(m.dates).replace(/\s/g,'') && !c.filled);
+        if(hit) cur = hit.header; }
+      S['col' + g] = cur;
+    }
+    sel.innerHTML = cols.map(c => `<option value="${esc(c.header)}">${esc(c.header)}${c.dates ? ' · ' + esc(c.dates) : ''}${c.filled ? ' · έχει ' + c.filled + ' τιμές' : ''}</option>`).join('')
+      + `<option value="new">➕ Νέα στήλη: ${esc(newHeader())}</option>`;
+    sel.value = cur;
+  });
+}
+
+/* ============ Εισαγωγή ομάδων ============ */
+function importEntryList(){
+  const d = read('entryListSeeded_v1');
+  if(!d){ $('msg').textContent = 'Δεν βρέθηκε Αρχική Λίστα σε αυτή τη συσκευή. Πρόσθεσε ομάδες με το χέρι ή πάρε τες από το Φύλλο Πληρωμής.'; return; }
+  let added = 0;
+  GS.forEach(g => {
+    const full = d[g + '_FULL'] || (d[g] || []).map(s => s.split(' / '));
+    const have = new Set(S.cats[g].teams.map(t => tkey(t.a, t.b)));
+    full.forEach(([a, b]) => { if(a && b && !have.has(tkey(a, b))){ S.cats[g].teams.push({ id: uid(), a, b, place:'', prize:'' }); added++; } });
+  });
+  save(); render();
+  $('msg').textContent = added ? `Μπήκαν ${added} ομάδες. Δώσε σε κάθε μία την τελική της θέση.` : 'Όλες οι ομάδες της Αρχικής Λίστας υπάρχουν ήδη.';
+}
+function importPrizeSheet(){
+  const P = read('prizeSheet_v1'); if(!P || !P.cats){ $('msg').textContent = 'Δεν βρέθηκε Φύλλο Πληρωμής σε αυτή τη συσκευή.'; return; }
+  let added = 0, placed = 0;
+  GS.forEach(g => {
+    const groups = placeGroups(g);
+    (P.cats[g].teams || []).forEach(pt => {
+      let t = S.cats[g].teams.find(x => tkey(x.a, x.b) === tkey(pt.a, pt.b));
+      if(!t){ t = { id: uid(), a: pt.a, b: pt.b, place:'', prize:'' }; S.cats[g].teams.push(t); added++; }
+      const r = range(pt.place);
+      if(r && !t.place){ const grp = groups.find(x => r[0] >= x.start && r[0] <= x.end); if(grp){ t.place = String(grp.start); placed++; } }
+    });
+  });
+  save(); render();
+  $('msg').textContent = `Από το Φύλλο Πληρωμής: ${added} νέες ομάδες, ${placed} θέσεις. Συμπλήρωσε τις υπόλοιπες θέσεις.`;
+}
+
+/* ============ Εμφάνιση ============ */
+function render(){
+  GS.forEach(g => $('tab' + g).classList.toggle('on', g === tab));
+  const c = S.cats[tab], b = boardOf(tab), groups = placeGroups(tab);
+  $('catName').textContent = '— ' + CAT[tab];
+  $('board').innerHTML = BOARDS.map(x => `<option ${x.label === c.board ? 'selected' : ''}>${esc(x.label)}</option>`).join('');
+  $('coef').value = S.coef !== '' ? S.coef : '';
+  $('coef').placeholder = String(coef(tab));
+  $('splitWrap').hidden = !(b && b.split); $('split').checked = !!c.split;
+  const used = {}; c.teams.forEach(t => { if(t.place) used[t.place] = (used[t.place] || 0) + 1; });
+  $('places').innerHTML = groups.map(x => {
+    const u = used[x.start] || 0, cls = u > x.slots ? 'over' : u === x.slots ? 'full' : '';
+    return `<span class="pl ${cls}">${x.text}η: ${u}/${x.slots} · ${pts(r2(x.base * coef(tab) * (b ? b.share : .5)))} π.</span>`;
+  }).join('');
+  const opts = '<option value="">— θέση</option>' + groups.map(x => `<option value="${x.start}">${x.text}η θέση</option>`).join('');
+  const known = KNOWN[tab];
+  const sorted = c.teams.slice().sort((x, y) => (+x.place || 999) - (+y.place || 999));
+  $('list').innerHTML = !c.teams.length
+    ? '<div class="empty">Δεν υπάρχουν ομάδες. Πάτα «Ομάδες από την Αρχική Λίστα» ή πρόσθεσε με το χέρι.</div>'
+    : sorted.map(t => {
+      const p = t.place ? athletePoints(tab, t.place) : 0, pr = prizeInfo(tab, t);
+      const nw = n => known && !known.has(nameKey(n)) ? '<span class="new">ΝΕΟΣ</span>' : '';
+      const valid = !t.place || groups.some(x => String(x.start) === String(t.place));
+      return `<div class="team ${t.place && valid ? 'placed' : ''}" data-id="${t.id}">
+        <div class="nm" data-edit title="Διόρθωση ονομάτων"><span>${esc(t.a)}${nw(t.a)}</span><span>${esc(t.b)}${nw(t.b)}</span></div>
+        <select data-place aria-label="Τελική θέση">${opts.replace(`value="${t.place}"`, `value="${t.place}" selected`)}</select>
+        <div class="res">
+          ${t.place && valid ? `<span>Πόντοι/αθλητή <b>${pts(p)}</b></span>` : `<span>${t.place ? '⚠ η θέση δεν υπάρχει σε αυτό το ταμπλό' : 'Χωρίς θέση'}</span>`}
+          <label>Έπαθλο/αθλητή <input type="number" inputmode="decimal" min="0" step="0.01" data-prize value="${esc(t.prize)}" placeholder="${pr.src && pr.src !== 'own' ? pr.v : 0}"> €</label>
+          <button type="button" class="x" data-del>Διαγραφή</button>
+        </div>
+      </div>`;
+    }).join('');
+  renderSum();
+}
+function renderSum(){
+  const c = S.cats[tab], groups = placeGroups(tab);
+  const used = {}; c.teams.forEach(t => { if(t.place) used[t.place] = (used[t.place] || 0) + 1; });
+  const none = c.teams.filter(t => !t.place).length, over = groups.filter(x => (used[x.start] || 0) > x.slots).map(x => x.text + 'η');
+  const sumPts = c.teams.reduce((a, t) => a + (t.place ? athletePoints(tab, t.place) * 2 : 0), 0);
+  const sumEur = c.teams.reduce((a, t) => a + prizeInfo(tab, t).v * 2, 0);
+  const P = read('prizeSheet_v1'), pool = P && P.cats && P.cats[tab] ? Number(P.cats[tab].prize) || 0 : 0;
+  const sb = $('sumbar');
+  sb.className = 'sumbar ' + (over.length || none ? 'warn' : '');
+  sb.innerHTML = c.teams.length ? [
+    over.length ? `<span>⚠ Περισσότερες ομάδες από θέσεις: ${over.join(', ')}</span>` : '',
+    none ? `<span>⚠ ${none} ${none === 1 ? 'ομάδα' : 'ομάδες'} χωρίς θέση (δεν παίρνουν πόντους)</span>` : '',
+    `<span>${c.teams.length - none}/${c.teams.length} με θέση</span>`,
+    `<span>Έπαθλα <b>${eur(sumEur)}</b>${pool ? ' από ' + eur(pool) : ''}</span>`
+  ].filter(Boolean).join('') : '<span>Καμία ομάδα ακόμα</span>';
+  if(sumPts < 0) sb.className = 'sumbar warn';
+}
+
+/* ============ Ενημέρωση Ranking.xlsx ============ */
+let OUT = null; // { bytes, report }
+function valuesFor(g){
+  const pv = [], ev = [];
+  S.cats[g].teams.forEach(t => {
+    const p = t.place ? athletePoints(g, t.place) : 0, e = prizeInfo(g, t).v;
+    [t.a, t.b].forEach(n => { if(p) pv.push({ name:n, value:p }); if(e) ev.push({ name:n, value:e }); });
+  });
+  return { pv, ev };
+}
+async function buildRanking(){
+  if(!window.ExcelJS || !window.BVRankingWriter) throw new Error('Η βιβλιοθήκη Excel φορτώνει ακόμα — δοκίμασε ξανά σε λίγο.');
+  RANK_BYTES = await fetchRanking(); // πάντα το πιο πρόσφατο
+  const R = await BVRankingWriter.open(RANK_BYTES), m = meta(), report = [];
+  for(const g of GS){
+    const { pv, ev } = valuesFor(g); if(!pv.length && !ev.length) continue;
+    const choice = S['col' + g] || 'new';
+    const header = choice === 'new' ? newHeader() : choice;
+    const dates = choice === 'new' ? ((m && m.dates) || '') : (COLS[g].find(c => c.header === choice) || {}).dates || '';
+    const findIn = sh => { const k = tourKey(header); const c = R.columns(sh).find(x => tourKey(x.header) === k); return c ? c.col : 0; };
+    const a = R.apply(g, { col: findIn(g), header, dates, values: pv });
+    const b = R.apply(g + ' PRIZES', { col: findIn(g + ' PRIZES'), header, dates, values: ev });
+    report.push({ g, a, b, teams: S.cats[g].teams.filter(t => t.place).length });
+  }
+  if(!report.length) throw new Error('Δεν υπάρχουν αποτελέσματα: δώσε τελική θέση στις ομάδες.');
+  return { bytes: await R.save(), report };
+}
+function showReport(rep){
+  const coefWarn = GS.map(g => { const ch = S['col' + g]; const c = COLS[g].find(x => x.header === ch); if(!c) return '';
+    const m = c.header.match(/\(([\d.,]+)\)\s*$/); const hc = m ? parseFloat(m[1].replace(',', '.')) : null;
+    return hc != null && Math.abs(hc - coef(g)) > 1e-9 ? `${CAT[g]}: η στήλη γράφει συντελεστή ${m[1]} αλλά υπολογίζεις με ${String(coef(g)).replace('.', ',')}.` : ''; }).filter(Boolean);
+  $('rep').innerHTML = rep.map(({ g, a, b, teams }) => `<div class="r">
+      <b class="h">${CAT[g]} — ${esc(a.header)}${a.created ? ' (νέα στήλη)' : ''}</b>
+      ${teams} ομάδες · πόντοι σε ${a.updated} αθλητές · έπαθλα σε ${b.updated} αθλητές
+      ${a.replaced || b.replaced ? `<br>Αντικαθίστανται ${a.replaced} προηγούμενες τιμές πόντων και ${b.replaced} επάθλων αυτής της στήλης.` : ''}
+    </div>${a.added.length || b.added.length ? `<div class="r warn"><b>Νέοι αθλητές στο ${CAT[g] === 'Άνδρες' ? 'φύλλο ανδρών' : 'φύλλο γυναικών'}:</b><ul>${[...new Set(a.added.concat(b.added))].map(n => '<li>' + esc(n) + '</li>').join('')}</ul>Αν κάποιος υπάρχει ήδη με άλλη γραφή, διόρθωσε το όνομα στην ομάδα και ξαναπάτα «Έλεγχος αλλαγών».</div>` : ''}`).join('')
+    + coefWarn.map(w => `<div class="r warn">⚠ ${esc(w)}</div>`).join('');
+}
+$('checkBtn').addEventListener('click', async () => {
+  const b = $('checkBtn'); b.disabled = true; $('rep').innerHTML = '<div class="r">Υπολογισμός…</div>'; $('outBtns').hidden = true; $('pubNote').innerHTML = '';
+  try{ OUT = await buildRanking(); showReport(OUT.report); $('outBtns').hidden = false; }
+  catch(e){ OUT = null; $('rep').innerHTML = `<div class="r warn">${esc(e.message || e)}</div>`; }
+  b.disabled = false;
+});
+$('dlBtn').addEventListener('click', () => {
+  if(!OUT) return;
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([OUT.bytes], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  a.download = 'Ranking.xlsx'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+});
+$('pubBtn').addEventListener('click', async () => {
+  if(!OUT) return;
+  const m = meta(), names = OUT.report.map(r => r.a.header).filter((x, i, a) => a.indexOf(x) === i).join(', ');
+  if(!confirm('Να δημοσιευτεί το νέο Ranking.xlsx (' + names + ');\nΗ Ατομική Βαθμολογία θα δείχνει τα νέα στοιχεία σε 1-2 λεπτά.')) return;
+  const b = $('pubBtn'); b.disabled = true; $('pubNote').innerHTML = '<p class="msg">Δημοσίευση…</p>';
+  const res = await BVPublish.publish({ path:'Ranking.xlsx', bytes: OUT.bytes, message:'Αποτελέσματα ' + ((m && m.name) || names) + ' στη βαθμολογία (από την εφαρμογή)' });
+  b.disabled = false;
+  if(res.ok){ S.publishedAt = Date.now(); S.publishedCols = names; save();
+    $('pubNote').innerHTML = `<div class="done-note">✓ Δημοσιεύτηκε. Η <a href="Ranking.html">Ατομική Βαθμολογία</a> θα δείχνει τα νέα στοιχεία σε 1-2 λεπτά.</div>`; toast('✓ Το Ranking.xlsx ενημερώθηκε');
+    setTimeout(loadRanking, 1500);
+  } else if(!res.cancelled){ $('pubNote').innerHTML = `<div class="note">${esc(res.error)}</div>`; }
+  else $('pubNote').innerHTML = '';
+});
+
+/* ============ Ενέργειες ============ */
+const team = el => S.cats[tab].teams.find(x => x.id === el.closest('.team').dataset.id);
+const dirty = () => { OUT = null; $('outBtns').hidden = true; $('rep').innerHTML = ''; $('pubNote').innerHTML = ''; };
+$('list').addEventListener('change', e => {
+  const sel = e.target.closest('[data-place]'); if(sel){ team(sel).place = sel.value; save(); dirty(); render(); return; }
+});
+// ποσό επάθλου: αποθήκευση χωρίς να ξαναχτίζεται η λίστα (αλλιώς χάνεται το πεδίο την ώρα που γράφεις)
+$('list').addEventListener('input', e => {
+  const pr = e.target.closest('[data-prize]'); if(pr){ team(pr).prize = pr.value.trim(); save(); dirty(); renderSum(); }
+});
+$('list').addEventListener('click', e => {
+  if(e.target.closest('[data-del]')){ const t = team(e.target); if(!confirm('Να διαγραφεί η ομάδα ' + t.a + ' / ' + t.b + ';')) return;
+    S.cats[tab].teams = S.cats[tab].teams.filter(x => x !== t); save(); dirty(); render(); return; }
+  if(e.target.closest('[data-edit]')){ const t = team(e.target);
+    const a = prompt('Αθλητής 1 (ΕΠΩΝΥΜΟ ΟΝΟΜΑ):', t.a); if(a === null) return;
+    const b = prompt('Αθλητής 2 (ΕΠΩΝΥΜΟ ΟΝΟΜΑ):', t.b); if(b === null) return;
+    if(a.trim()) t.a = a.trim(); if(b.trim()) t.b = b.trim(); save(); dirty(); render(); }
+});
+$('board').addEventListener('change', e => { const c = S.cats[tab]; c.board = e.target.value;
+  const starts = placeGroups(tab).map(x => String(x.start)); c.teams.forEach(t => { if(t.place && !starts.includes(String(t.place))) t.place = ''; });
+  save(); dirty(); render(); });
+$('split').addEventListener('change', e => { S.cats[tab].split = e.target.checked;
+  // 3-4 κοινή ↔ 3η και 4η χωριστά: όποια ομάδα ήταν «4» γυρνά στο «3» και ανάποδα δεν αλλάζει τίποτα
+  if(!e.target.checked) S.cats[tab].teams.forEach(t => { if(String(t.place) === '4') t.place = '3'; });
+  save(); dirty(); render(); });
+$('coef').addEventListener('input', e => { S.coef = e.target.value.trim(); save(); dirty(); render(); fillCols(); });
+GS.forEach(g => $('col' + g).addEventListener('change', e => { S['col' + g] = e.target.value; save(); dirty(); }));
+document.querySelectorAll('.tabs .tab').forEach(b => b.addEventListener('click', () => { tab = b.dataset.g; render(); }));
+$('importBtn').addEventListener('click', () => { importEntryList(); dirty(); });
+$('prizeImportBtn').addEventListener('click', () => { importPrizeSheet(); dirty(); });
+$('addBtn').addEventListener('click', () => {
+  const a = $('a1').value.trim(), b = $('a2').value.trim(); if(!a || !b){ toast('Συμπλήρωσε και τους δύο αθλητές'); return; }
+  S.cats[tab].teams.push({ id: uid(), a, b, place:'', prize:'' }); $('a1').value = ''; $('a2').value = ''; save(); dirty(); render();
+});
+if(S.publishedAt) $('pubNote').innerHTML = `<p class="msg">Τελευταία δημοσίευση: ${esc(S.publishedCols || '')} · ${new Date(S.publishedAt).toLocaleString('el-GR', { dateStyle:'short', timeStyle:'short' })}</p>`;
+render(); loadBoards(); loadRanking();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
+}
+</script>
+<script src="tournament.js" data-bar></script>
+</body>
+</html>

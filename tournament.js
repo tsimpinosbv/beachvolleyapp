@@ -13,7 +13,7 @@
  */
 (function(){
   const ACTIVE = 'activeTournament_v1', BUCKETS = 'tourBuckets_v1';
-  const SWAP = ['entryListSeeded_v1', 'entryListDraft_v1', 'schedulesState_v2', 'payments_v1', 'prizeSheet_v1'];
+  const SWAP = ['entryListSeeded_v1', 'entryListDraft_v1', 'schedulesState_v2', 'payments_v1', 'prizeSheet_v1', 'results_v1'];
   const NEVER_BACKUP = ['bvGithubToken'];
   const MSH = ['Ιαν','Φεβ','Μαρ','Απρ','Μαΐ','Ιουν','Ιουλ','Αυγ','Σεπ','Οκτ','Νοε','Δεκ'];
 
@@ -194,6 +194,9 @@
     const z = read('prizeSheet_v1'), zt = z && z.cats ? z.cats.MEN.teams.concat(z.cats.WOMEN.teams) : [], zp = zt.filter(x => x.place).length;
     out.push({ k:'prize', label:'Φύλλο Πληρωμής Επάθλων', href:'PrizeSheet.html', state: z && z.archivedAt ? 'done' : zp ? 'doing' : 'todo',
       text: z && z.archivedAt ? 'Στο αρχείο σεζόν' : zt.length ? `${zp}/${zt.length} ομάδες με θέση` : 'Δεν έχει ξεκινήσει' });
+    const rs = read('results_v1'), rt = rs && rs.cats ? (rs.cats.MEN.teams || []).concat(rs.cats.WOMEN.teams || []) : [], rp = rt.filter(x => x.place).length;
+    out.push({ k:'results', label:'Αποτελέσματα & Βαθμολογία', href:'Results.html', state: rs && rs.publishedAt ? 'done' : rp ? 'doing' : 'todo',
+      text: rs && rs.publishedAt ? 'Στο Ranking.xlsx' : rt.length ? `${rp}/${rt.length} ομάδες με θέση` : 'Δεν έχει ξεκινήσει' });
     return out;
   }
 
