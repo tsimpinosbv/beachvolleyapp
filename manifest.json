@@ -65,7 +65,7 @@
       ]
     },
     {
-      "name": "Λίστα Ελέγχου Επόπτη",
+      "name": "CheckList Supervisor",
       "short_name": "Checklist",
       "url": "./Checklist.html",
       "icons": [
