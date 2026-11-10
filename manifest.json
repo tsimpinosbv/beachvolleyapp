@@ -118,6 +118,17 @@
           "sizes": "192x192"
         }
       ]
+    },
+    {
+      "name": "Ημερολόγιο Σεζόν",
+      "short_name": "Ημερολόγιο",
+      "url": "./Calendar.html",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

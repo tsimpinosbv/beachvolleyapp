@@ -1,6 +1,6 @@
 // BV Supervisor Tools — service worker
 // Bump CACHE_VERSION any time app-shell files change, so clients pick up the update.
-const CACHE_VERSION = 'bv-tools-v18';
+const CACHE_VERSION = 'bv-tools-v17';
 const SHELL_CACHE = CACHE_VERSION + '-shell';
 const DATA_CACHE = CACHE_VERSION + '-data';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
@@ -14,6 +14,10 @@ const APP_SHELL = [
   './Schedules.html',
   './Checklist.html',
   './Payments.html',
+  './PrizeSheet.html',
+  './Report.html',
+  './Calendar.html',
+  './tools.css',
   './Odigies.html',
   './gh-publish.js',
   './ui.css',
@@ -33,7 +37,7 @@ const APP_SHELL = [
   './icons/favicon-16.png'
 ];
 
-const DATA_FILES = ['Ranking.xlsx', 'PointSystem.xlsx'];
+const DATA_FILES = ['Ranking.xlsx', 'PointSystem.xlsx', 'Calendar.xlsx'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

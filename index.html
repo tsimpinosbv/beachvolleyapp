@@ -23,6 +23,7 @@
     --s1:#1f7fc4; --s1-bg:#e3f0fa;   /* πριν το τουρνουά */
     --s2:#b7791f; --s2-bg:#fbf1dc;   /* βαθμοί & έπαθλα */
     --s3:#2f7d6d; --s3-bg:#e1f2ee;   /* αρχεία & οδηγίες */
+    --s4:#6b4fa0; --s4-bg:#eee8f8;   /* μετά το τουρνουά */
   }
   *{box-sizing:border-box;}
   html{-webkit-text-size-adjust:100%;}
@@ -51,7 +52,7 @@
   .group h2{display:flex; align-items:center; gap:8px; margin:0 2px 10px; font-size:12.5px; font-weight:700;
             letter-spacing:0.09em; text-transform:uppercase; color:var(--ink-soft);}
   .group h2::before{content:""; width:9px; height:9px; border-radius:3px; background:var(--c);}
-  .s1{--c:var(--s1); --cb:var(--s1-bg);} .s2{--c:var(--s2); --cb:var(--s2-bg);} .s3{--c:var(--s3); --cb:var(--s3-bg);}
+  .s1{--c:var(--s1); --cb:var(--s1-bg);} .s2{--c:var(--s2); --cb:var(--s2-bg);} .s3{--c:var(--s3); --cb:var(--s3-bg);} .s4{--c:var(--s4); --cb:var(--s4-bg);}
   .tiles{display:grid; grid-template-columns:1fr; gap:10px;}
   @media (min-width:560px){ .tiles{grid-template-columns:repeat(2,1fr);} }
   @media (min-width:900px){ .tiles{grid-template-columns:repeat(3,1fr);} }
@@ -122,12 +123,32 @@
     </a>
     </div>
   </section>
-  <section class="group s2">
-    <h2>Βαθμοί & Έπαθλα</h2>
+  <section class="group s4">
+    <h2>Μετά το τουρνουά</h2>
     <div class="tiles">
+    <a class="tile" href="PrizeSheet.html">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h4"/><path d="M14 17l1.5 1.5L18 16"/></svg></span>
+      <span class="txt"><span class="t">Φύλλο Πληρωμής Επάθλων</span><span class="d">Θέσεις → ποσά ανά αθλητή, με υπογραφές (PDF)</span></span>
+      <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
+    <a class="tile" href="Report.html">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>
+      <span class="txt"><span class="t">Αναφορά Επόπτη</span><span class="d">Περιστατικά, καιρός, εγκαταστάσεις → PDF</span></span>
+      <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
+    </div>
+  </section>
+  <section class="group s2">
+    <h2>Σεζόν</h2>
+    <div class="tiles">
+    <a class="tile" href="Calendar.html">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="M8 14h2M14 14h2M8 17h2"/></svg></span>
+      <span class="txt"><span class="t">Ημερολόγιο Σεζόν</span><span class="d">Τουρνουά, συντελεστές, προθεσμίες δηλώσεων</span></span>
+      <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
     <a class="tile" href="Ranking.html">
       <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
-      <span class="txt"><span class="t">Ατομική Βαθμολογία</span><span class="d">Πόντοι και έπαθλα κάθε αθλητή</span></span>
+      <span class="txt"><span class="t">Ατομική Βαθμολογία</span><span class="d">Πόντοι, έπαθλα και καρτέλα κάθε αθλητή</span></span>
       <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
     </a>
     <a class="tile" href="PointSystem.html">

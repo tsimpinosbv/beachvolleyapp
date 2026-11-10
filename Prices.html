@@ -228,6 +228,13 @@ const DEFAULTS = {
 };
 
 let state = { format: "8", prize: 2500, groups: JSON.parse(JSON.stringify(DEFAULTS)) };
+// Οι ρυθμίσεις μένουν στη συσκευή και τις χρησιμοποιεί και το «Φύλλο πληρωμής επάθλων».
+const PRICES_KEY = "pricesState_v1";
+try {
+  const saved = JSON.parse(localStorage.getItem(PRICES_KEY) || "null");
+  if (saved && saved.groups) state = Object.assign(state, saved);
+} catch (e) {}
+function savePrices() { try { localStorage.setItem(PRICES_KEY, JSON.stringify(state)); } catch (e) {} }
 const fmt = n => new Intl.NumberFormat("el-GR", { style: "currency", currency: "EUR", maximumFractionDigits: 2 }).format(n);
 
 function renderFmt() {
@@ -244,6 +251,7 @@ function renderFmt() {
 }
 
 function render() {
+  savePrices();
   renderFmt();
   const active = state.groups[state.format];
   const gEl = document.getElementById("groups");
@@ -360,6 +368,7 @@ document.getElementById("download").addEventListener("click", () => {
   URL.revokeObjectURL(url);
 });
 
+document.getElementById("prize").value = state.prize;
 render();
 </script>
 

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ημερολόγιο Σεζόν — BV Supervisor Tools</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d3a5c">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Supervisor Tools">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tools.css">
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="gh-publish.js"></script>
+<style>
+  .next{background:linear-gradient(135deg,#0f3d63,#1f7fc4); color:#fff; border-radius:18px; padding:16px; margin-top:16px; box-shadow:0 10px 24px rgba(11,49,80,0.22);}
+  .next .k{font-size:12px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; opacity:.85;}
+  .next h2{font-family:'Space Grotesk',sans-serif; font-size:24px; line-height:1.15; margin:6px 0 4px;}
+  .next .d{font-size:14.5px; opacity:.92;}
+  .cd{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+  .cd div{background:rgba(255,255,255,0.15); border-radius:12px; padding:9px 12px; min-width:130px;}
+  .cd b{display:block; font-family:'Space Grotesk',sans-serif; font-size:22px; line-height:1.1;}
+  .cd span{font-size:12.5px; font-weight:600; opacity:.9;}
+  .cd .urgent{background:#ffefe0; color:#7a3d00;}
+  .next .btn{margin-top:12px; background:#fff; color:var(--navy); border-color:#fff;}
+  .bar{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:18px;}
+  .bar .seg{flex:1; min-width:220px;}
+  .month{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin:20px 2px 6px;}
+  .ev{display:grid; grid-template-columns:62px 1fr auto; gap:12px; align-items:center; background:#fff; border:1px solid var(--line); border-radius:14px; padding:11px 12px; margin-top:8px;}
+  .ev.past{opacity:.6;}
+  .ev.now{border:2px solid var(--accent);}
+  .day{text-align:center; border-radius:11px; background:var(--accent-bg); padding:6px 4px; color:var(--navy);}
+  .day b{display:block; font-family:'Space Grotesk',sans-serif; font-size:19px; line-height:1;}
+  .day span{font-size:11px; font-weight:800; letter-spacing:.04em;}
+  .ev .t{font-weight:700; font-size:15.5px; line-height:1.3;}
+  .ev .m{font-size:13px; color:var(--ink-soft); margin-top:2px; line-height:1.4;}
+  .chip{display:inline-block; font-size:11.5px; font-weight:800; border-radius:6px; padding:2px 7px; margin:4px 4px 0 0; background:#eef3f7; color:var(--ink-soft);}
+  .chip.coef{background:#fbf1dc; color:#7a4b00;}
+  .chip.dl{background:var(--ok-bg); color:var(--ok);} .chip.dl.soon{background:var(--warn-bg); color:var(--warn);} .chip.dl.gone{background:#eef3f7; color:var(--ink-soft);}
+  .ics{border:1.5px solid var(--line); background:#fff; border-radius:10px; width:42px; height:42px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--navy-2);}
+  .ics svg{width:20px; height:20px;}
+  .check{display:none; margin-top:12px; border-radius:12px; padding:11px 13px; font-size:14px; line-height:1.5;}
+  .check.show{display:block;} .check.ok{background:var(--accent-bg);} .check.bad{background:var(--bad-bg); color:var(--bad);}
+  .check ul{margin:4px 0 0; padding-left:18px;}
+</style>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+<nav class="bv-topbar" aria-label="Πλοήγηση"><a class="bv-home" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Αρχική</a><a class="bv-brand" href="index.html"><img src="icons/logo.png" alt="">Supervisor Tools</a></nav>
+<header class="hero">
+  <div class="wrap">
+    <h1>Ημερολόγιο Σεζόν</h1>
+    <p>Τουρνουά, ημερομηνίες, συντελεστές και προθεσμίες δηλώσεων σε ένα μέρος. Προσθήκη στο ημερολόγιο του κινητού με ένα πάτημα.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="nextBox"></div>
+
+  <div class="bar">
+    <div class="seg" id="viewSeg"><button type="button" data-v="up" class="on">Επερχόμενα</button><button type="button" data-v="all">Όλη η σεζόν</button></div>
+    <button class="btn" type="button" id="icsAll" title="Όλα τα τουρνουά στο ημερολόγιο">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M12 14v4M10 16h4"/></svg>Όλα στο ημερολόγιο</button>
+  </div>
+  <div id="list"></div>
+
+  <section class="card">
+    <h2>Αλλαγή ημερολογίου <small>— για τον διαχειριστή</small></h2>
+    <p class="msg" style="margin-top:0" id="src">Φόρτωση…</p>
+    <div class="btns">
+      <button class="btn" type="button" id="dlBtn">⬇ Λήψη δείγματος (Calendar.xlsx)</button>
+      <button class="btn primary" type="button" id="upBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 20h16"/></svg>Ανέβασμα αρχείου</button>
+    </div>
+    <input type="file" id="picker" accept=".xlsx,.xls" style="display:none">
+    <div class="check" id="check"></div>
+    <p class="msg">Κατέβασε το δείγμα, συμπλήρωσε τα τουρνουά της νέας σεζόν (μία γραμμή το καθένα), ανέβασέ το για έλεγχο και πάτα «Δημοσίευση στο GitHub».</p>
+  </section>
+  <footer>Οι προθεσμίες εμφανίζονται πράσινες, πορτοκαλί όταν μένουν 7 ημέρες ή λιγότερες, και γκρι όταν έχουν λήξει.</footer>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const FILE = 'Calendar.xlsx';
+const MONTHS = ['Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος','Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
+const MON3 = ['ΙΑΝ','ΦΕΒ','ΜΑΡ','ΑΠΡ','ΜΑΪ','ΙΟΥΝ','ΙΟΥΛ','ΑΥΓ','ΣΕΠ','ΟΚΤ','ΝΟΕ','ΔΕΚ'];
+const MSH = ['Ιαν','Φεβ','Μαρ','Απρ','Μαΐ','Ιουν','Ιουλ','Αυγ','Σεπ','Οκτ','Νοε','Δεκ'];
+let EVENTS = [], TITLE = '', view = 'up', pending = null;
+const $ = id => document.getElementById(id);
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2800); }
+function norm(v){ return String(v == null ? '' : v).toLocaleUpperCase('el-GR').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim(); }
+function today(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
+function toDate(v){
+  if(v instanceof Date && !isNaN(v)) { const d = new Date(v.getFullYear(), v.getMonth(), v.getDate()); return d; }
+  if(typeof v === 'number') { const d = XLSX.SSF.parse_date_code(v); return d ? new Date(d.y, d.m - 1, d.d) : null; }
+  const m = String(v || '').trim().match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})$/);
+  if(m){ const y = +m[3] < 100 ? 2000 + +m[3] : +m[3]; return new Date(y, +m[2] - 1, +m[1]); }
+  return null;
+}
+const daysBetween = (a, b) => Math.round((b - a) / 86400000);
+function fmtD(d){ return d ? d.getDate() + '/' + (d.getMonth() + 1) : ''; }
+function fmtRange(a, b){
+  if(!a) return '';
+  if(!b || +a === +b) return a.getDate() + ' ' + MSH[a.getMonth()];
+  if(a.getMonth() === b.getMonth()) return a.getDate() + '-' + b.getDate() + ' ' + MSH[a.getMonth()];
+  return a.getDate() + ' ' + MSH[a.getMonth()] + ' – ' + b.getDate() + ' ' + MSH[b.getMonth()];
+}
+function inDays(n){ return n === 0 ? 'σήμερα' : n === 1 ? 'αύριο' : 'σε ' + n + ' ημέρες'; }
+
+/* ---- ανάγνωση αρχείου ---- */
+function parseCalendar(wb){
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'', raw:true });
+  const hi = rows.findIndex(r => r.some(c => norm(c) === 'ΤΟΥΡΝΟΥΑ'));
+  if(hi === -1) return { events:[], errors:['Δεν βρέθηκε η γραμμή επικεφαλίδων (ΤΟΥΡΝΟΥΑ, ΑΠΟ, …).'], title:'' };
+  const h = rows[hi].map(norm);
+  const col = (...names) => h.findIndex(x => names.some(n => x.startsWith(n)));
+  const c = { name: col('ΤΟΥΡΝΟΥΑ'), place: col('ΤΟΠΟΣ'), from: col('ΑΠΟ'), to: col('ΕΩΣ'), coef: col('ΣΥΝΤΕΛΕΣΤ'),
+              cats: col('ΚΑΤΗΓΟΡΙ'), dl: col('ΠΡΟΘΕΣΜΙΑ'), fee: col('ΠΑΡΑΒΟΛ'), prize: col('ΕΠΑΘΛ'), notes: col('ΣΗΜΕΙΩΣ') };
+  const events = [], errors = [];
+  rows.slice(hi + 1).forEach((r, i) => {
+    const name = String(r[c.name] || '').trim(); if(!name) return;
+    const from = toDate(r[c.from]), to = c.to >= 0 ? toDate(r[c.to]) : null;
+    if(!from){ errors.push(`Γραμμή ${hi + 2 + i} (${name}): λείπει ή δεν διαβάζεται η ημερομηνία ΑΠΟ.`); return; }
+    const coefRaw = c.coef >= 0 ? r[c.coef] : '';
+    const coef = coefRaw === '' ? null : (typeof coefRaw === 'number' ? coefRaw : parseFloat(String(coefRaw).replace(',', '.')));
+    events.push({ name, place: c.place >= 0 ? String(r[c.place] || '').trim() : '', from, to: to || from,
+      coef: isNaN(coef) ? null : coef, cats: c.cats >= 0 ? String(r[c.cats] || '').trim() : '',
+      dl: c.dl >= 0 ? toDate(r[c.dl]) : null, fee: c.fee >= 0 ? r[c.fee] : '', prize: c.prize >= 0 ? r[c.prize] : '',
+      notes: c.notes >= 0 ? String(r[c.notes] || '').trim() : '' });
+  });
+  events.sort((a, b) => a.from - b.from);
+  const title = String((rows[0] || [])[0] || '').trim();
+  if(!events.length && !errors.length) errors.push('Δεν βρέθηκε κανένα τουρνουά κάτω από τις επικεφαλίδες.');
+  return { events, errors, title };
+}
+async function load(){
+  try{
+    const r = await fetch(FILE + '?t=' + Date.now()); if(!r.ok) throw new Error('http');
+    const res = parseCalendar(XLSX.read(new Uint8Array(await r.arrayBuffer()), { type:'array' }));
+    EVENTS = res.events; TITLE = res.title;
+    $('src').textContent = `Από το ${FILE} (online) · ${EVENTS.length} τουρνουά${TITLE ? ' · ' + TITLE : ''}`;
+  }catch(e){ $('src').textContent = 'Δεν βρέθηκε το ' + FILE + '.'; EVENTS = []; }
+  render();
+}
+
+/* ---- εμφάνιση ---- */
+function evMeta(e){
+  const t = today(), chips = [];
+  if(e.coef != null) chips.push(`<span class="chip coef">συντ. ${String(e.coef).replace('.', ',')}</span>`);
+  if(e.cats) chips.push(`<span class="chip">${esc(e.cats)}</span>`);
+  if(e.dl){ const n = daysBetween(t, e.dl);
+    chips.push(`<span class="chip dl ${n < 0 ? 'gone' : n <= 7 ? 'soon' : ''}">Δηλώσεις έως ${fmtD(e.dl)}${n >= 0 ? ' · ' + inDays(n) : ' · έληξε'}</span>`); }
+  if(e.fee !== '' && e.fee != null) chips.push(`<span class="chip">Παράβολο ${esc(e.fee)} €</span>`);
+  if(e.prize !== '' && e.prize != null) chips.push(`<span class="chip">Έπαθλα ${esc(e.prize)} €</span>`);
+  return chips.join('');
+}
+function render(){
+  const t = today();
+  const upcoming = EVENTS.filter(e => e.to >= t);
+  const next = upcoming[0];
+  if(next){
+    const n = daysBetween(t, next.from), live = next.from <= t;
+    const dln = next.dl ? daysBetween(t, next.dl) : null;
+    $('nextBox').innerHTML = `<div class="next"><div class="k">${live ? 'Σε εξέλιξη' : 'Επόμενο τουρνουά'}</div>
+      <h2>${esc(next.name)}</h2><div class="d">${fmtRange(next.from, next.to)} ${next.from.getFullYear()}${next.place ? ' · ' + esc(next.place) : ''}${next.coef != null ? ' · συντελεστής ' + String(next.coef).replace('.', ',') : ''}</div>
+      <div class="cd">${live ? '<div><b>Τώρα</b><span>παίζεται</span></div>' : `<div><b>${n}</b><span>${n === 1 ? 'ημέρα' : 'ημέρες'} ως την έναρξη</span></div>`}
+      ${dln != null ? `<div class="${dln >= 0 && dln <= 7 ? 'urgent' : ''}"><b>${dln >= 0 ? dln : '—'}</b><span>${dln >= 0 ? (dln === 1 ? 'ημέρα' : 'ημέρες') + ' για δηλώσεις' : 'οι δηλώσεις έκλεισαν'}</span></div>` : ''}</div>
+      <button class="btn" type="button" data-ics="${EVENTS.indexOf(next)}">Προσθήκη στο ημερολόγιο</button></div>`;
+  } else {
+    $('nextBox').innerHTML = EVENTS.length ? `<div class="next"><div class="k">Η σεζόν ολοκληρώθηκε</div><h2>Δεν υπάρχουν επερχόμενα τουρνουά</h2>
+      <div class="d">Το τελευταίο ήταν το ${esc(EVENTS[EVENTS.length - 1].name)} (${fmtRange(EVENTS[EVENTS.length - 1].from, EVENTS[EVENTS.length - 1].to)}). Ανέβασε το ημερολόγιο της νέας σεζόν από κάτω.</div></div>` : '';
+    if(view === 'up' && EVENTS.length){ view = 'all'; }
+  }
+  document.querySelectorAll('#viewSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === view));
+  const list = view === 'up' ? upcoming : EVENTS;
+  let html = '', lastM = '';
+  list.forEach(e => {
+    const m = MONTHS[e.from.getMonth()] + ' ' + e.from.getFullYear();
+    if(m !== lastM){ html += `<div class="month">${m}</div>`; lastM = m; }
+    const past = e.to < t, now = e.from <= t && e.to >= t;
+    html += `<div class="ev ${past ? 'past' : ''} ${now ? 'now' : ''}">
+      <div class="day"><b>${e.from.getDate()}${+e.to !== +e.from && e.to.getMonth() === e.from.getMonth() ? '-' + e.to.getDate() : ''}</b><span>${MON3[e.from.getMonth()]}</span></div>
+      <div><div class="t">${esc(e.name)}</div><div class="m">${[e.place, e.notes].filter(Boolean).map(esc).join(' · ')}</div><div>${evMeta(e)}</div></div>
+      <button class="ics" type="button" data-ics="${EVENTS.indexOf(e)}" aria-label="Προσθήκη στο ημερολόγιο" title="Προσθήκη στο ημερολόγιο">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M12 14v4M10 16h4"/></svg></button>
+    </div>`;
+  });
+  $('list').innerHTML = html || `<div class="empty">${EVENTS.length ? 'Δεν υπάρχουν επερχόμενα τουρνουά.' : 'Το ημερολόγιο είναι κενό.'}</div>`;
+}
+
+/* ---- .ics (ημερολόγιο κινητού) ---- */
+function icsDate(d){ return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); }
+function icsEsc(s){ return String(s || '').replace(/\\/g, '\\\\').replace(/[,;]/g, m => '\\' + m).replace(/\n/g, '\\n'); }
+function icsEvent(e, i){
+  const end = new Date(e.to); end.setDate(end.getDate() + 1);
+  const desc = [e.coef != null ? 'Συντελεστής ' + String(e.coef).replace('.', ',') : '', e.cats ? 'Κατηγορίες: ' + e.cats : '',
+                e.dl ? 'Δηλώσεις έως ' + e.dl.toLocaleDateString('el-GR') : '', e.notes].filter(Boolean).join('\n');
+  const ev = ['BEGIN:VEVENT', 'UID:bv-' + icsDate(e.from) + '-' + i + '@tsimpinosbv.github.io', 'DTSTAMP:' + icsDate(new Date()) + 'T000000Z',
+    'DTSTART;VALUE=DATE:' + icsDate(e.from), 'DTEND;VALUE=DATE:' + icsDate(end), 'SUMMARY:' + icsEsc('🏐 ' + e.name),
+    e.place ? 'LOCATION:' + icsEsc(e.place) : '', desc ? 'DESCRIPTION:' + icsEsc(desc) : '', 'END:VEVENT'].filter(Boolean);
+  if(e.dl){ const d2 = new Date(e.dl); d2.setDate(d2.getDate() + 1);
+    ev.push('BEGIN:VEVENT', 'UID:bv-dl-' + icsDate(e.from) + '-' + i + '@tsimpinosbv.github.io', 'DTSTAMP:' + icsDate(new Date()) + 'T000000Z',
+      'DTSTART;VALUE=DATE:' + icsDate(e.dl), 'DTEND;VALUE=DATE:' + icsDate(d2), 'SUMMARY:' + icsEsc('Λήξη δηλώσεων: ' + e.name), 'END:VEVENT'); }
+  return ev;
+}
+function downloadICS(events, fname){
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//BV Supervisor Tools//EL', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:Beach Volley — σεζόν'];
+  events.forEach(e => lines.push(...icsEvent(e, EVENTS.indexOf(e))));
+  lines.push('END:VCALENDAR');
+  const blob = new Blob([lines.join('\r\n')], { type:'text/calendar;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fname; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-ics]'); if(!b) return;
+  const ev = EVENTS[Number(b.dataset.ics)]; if(ev) downloadICS([ev], ev.name.replace(/[^\p{L}\p{N}]+/gu, '_') + '.ics');
+});
+$('icsAll').addEventListener('click', () => {
+  const t = today(); const list = EVENTS.filter(e => e.to >= t);
+  if(!list.length){ toast('Δεν υπάρχουν επερχόμενα τουρνουά'); return; }
+  downloadICS(list, 'BV_ημερολόγιο_σεζόν.ics');
+});
+$('viewSeg').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; view = b.dataset.v; render(); });
+
+/* ---- διαχείριση αρχείου ---- */
+$('dlBtn').addEventListener('click', async () => {
+  try{ const r = await fetch(FILE + '?t=' + Date.now()); if(!r.ok) throw 0; const blob = await r.blob();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = FILE; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }catch(e){ toast('Χρειάζεται σύνδεση στο internet για τη λήψη'); }
+});
+$('upBtn').addEventListener('click', () => $('picker').click());
+$('picker').addEventListener('change', ev => {
+  const f = ev.target.files && ev.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = e => {
+    const box = $('check');
+    try{
+      const bytes = new Uint8Array(e.target.result);
+      const res = parseCalendar(XLSX.read(bytes, { type:'array' }));
+      if(res.errors.length || !res.events.length){ pending = null; box.className = 'check show bad';
+        box.innerHTML = `<b>Το αρχείο «${esc(f.name)}» έχει λάθη:</b><ul>${res.errors.map(x => '<li>' + esc(x) + '</li>').join('')}</ul>`; return; }
+      pending = { bytes, name: f.name };
+      EVENTS = res.events; TITLE = res.title; view = 'all'; render();
+      $('src').textContent = 'Προεπισκόπηση: «' + f.name + '» (φαίνεται μόνο εδώ μέχρι να δημοσιευτεί)';
+      box.className = 'check show ok';
+      box.innerHTML = `<b>Διαβάστηκαν ${res.events.length} τουρνουά</b> (${fmtRange(res.events[0].from, res.events[0].from)} – ${fmtRange(res.events[res.events.length - 1].to, res.events[res.events.length - 1].to)} ${res.events[res.events.length - 1].to.getFullYear()}). Έλεγξέ τα πάνω.
+        <div class="btns"><button class="btn primary" type="button" id="pubBtn">⬆ Δημοσίευση στο GitHub</button><button class="btn" type="button" id="cancelBtn">Ακύρωση</button></div>`;
+      $('pubBtn').onclick = publish; $('cancelBtn').onclick = () => { pending = null; box.className = 'check'; load(); };
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }catch(err){ pending = null; box.className = 'check show bad'; box.innerHTML = '<b>Το αρχείο δεν διαβάστηκε.</b> Πρέπει να είναι Excel με τη μορφή του δείγματος.'; }
+  };
+  rd.readAsArrayBuffer(f); ev.target.value = '';
+});
+async function publish(){
+  if(!pending || !confirm('Το ημερολόγιο θα αντικατασταθεί για ΟΛΟΥΣ με το «' + pending.name + '». Συνέχεια;')) return;
+  const b = $('pubBtn'); b.disabled = true; b.textContent = 'Ανέβασμα…';
+  const res = await BVPublish.publish({ path: FILE, bytes: pending.bytes, message: 'Ενημέρωση ημερολογίου σεζόν από την εφαρμογή (' + pending.name + ')' });
+  const box = $('check');
+  if(res.ok){ pending = null; box.className = 'check show ok'; box.innerHTML = '<b>✓ Δημοσιεύτηκε στο GitHub</b>Όλοι θα βλέπουν το νέο ημερολόγιο σε περίπου 1–2 λεπτά.'; $('src').textContent = 'Από το ' + FILE + ' (μόλις δημοσιεύτηκε)'; }
+  else { b.disabled = false; b.textContent = '⬆ Δημοσίευση στο GitHub'; if(!res.cancelled) toast(res.error || 'Η δημοσίευση απέτυχε'); }
+}
+load();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Φύλλο Πληρωμής Επάθλων — BV Supervisor Tools</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d3a5c">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Supervisor Tools">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tools.css">
+<style>
+  .tabs{display:flex; gap:8px; margin-top:16px;}
+  .tab{flex:1; min-height:46px; border-radius:11px; border:1.5px solid var(--line); background:#fff; font-weight:700; font-size:15px; cursor:pointer; color:var(--ink-soft);}
+  .tab.on.men{background:var(--men); border-color:var(--men); color:#fff;}
+  .tab.on.women{background:var(--women); border-color:var(--women); color:#fff;}
+  .team{display:grid; grid-template-columns:1fr auto; gap:6px 12px; align-items:center; background:#fff; border:1px solid var(--line); border-left:5px solid #c9d3dc; border-radius:12px; padding:10px 12px; margin-top:8px;}
+  .team.won{border-left-color:var(--ok);}
+  .team .nm{font-weight:700; font-size:15px; line-height:1.35; min-width:0;}
+  .team .nm small{display:block; font-weight:500; color:var(--ink-soft); font-size:13.5px;}
+  .team select{width:auto; min-width:118px; min-height:42px; font-size:15px;}
+  .team .amt{grid-column:1/-1; font-size:13px; color:var(--ok); font-weight:700;}
+  .team .x{grid-column:2; justify-self:end; border:none; background:none; color:var(--ink-soft); font-size:12.5px; text-decoration:underline; cursor:pointer;}
+  .sumbar{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:12px; border-radius:12px; padding:11px 13px; background:var(--accent-bg); font-size:14px; font-weight:600;}
+  .sumbar.ok{background:var(--ok-bg);} .sumbar.warn{background:var(--warn-bg); color:#6b3d00;}
+  .places{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;}
+  .pl{font-size:12.5px; font-weight:700; border-radius:8px; padding:4px 8px; background:#eef3f7; color:var(--ink-soft);}
+  .pl.full{background:var(--ok-bg); color:var(--ok);} .pl.over{background:var(--bad-bg); color:var(--bad);}
+  .add-row{display:grid; grid-template-columns:1fr 1fr auto; gap:8px; margin-top:12px;}
+  @media (max-width:480px){ .add-row{grid-template-columns:1fr;} }
+  @media print{ .doc .page{page-break-after:always;} .doc .page:last-child{page-break-after:auto;} .doc td.sig{width:42%;} .doc td.pos{width:9%; text-align:center;} }
+</style>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+<nav class="bv-topbar" aria-label="Πλοήγηση"><a class="bv-home" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Αρχική</a><a class="bv-brand" href="index.html"><img src="icons/logo.png" alt="">Supervisor Tools</a></nav>
+<header class="hero">
+  <div class="wrap">
+    <h1>Φύλλο Πληρωμής Επάθλων</h1>
+    <p>Δώσε την τελική θέση κάθε ομάδας. Τα ποσά βγαίνουν από τον Υπολογισμό Επάθλων και το φύλλο τυπώνεται ή σώζεται σε PDF με χώρο για υπογραφή.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <div class="grid">
+      <label class="f full">Τουρνουά<input type="text" id="tName" placeholder="π.χ. Athens Open"></label>
+      <label class="f">Ημερομηνία<input type="text" id="tDate" placeholder="π.χ. 24-26/7"></label>
+      <label class="f">Τόπος<input type="text" id="tPlace" placeholder="π.χ. Αθήνα"></label>
+    </div>
+    <div class="btns">
+      <button class="btn primary" type="button" id="importBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></svg>Ομάδες από την Αρχική Λίστα</button>
+      <button class="btn ghost" type="button" id="clearBtn">Νέο τουρνουά</button>
+    </div>
+    <p class="msg" id="msg"></p>
+  </section>
+
+  <div class="tabs">
+    <button class="tab men on" type="button" data-g="MEN" id="tabMEN">Άνδρες</button>
+    <button class="tab women" type="button" data-g="WOMEN" id="tabWOMEN">Γυναίκες</button>
+  </div>
+
+  <section class="card">
+    <h2>Έπαθλα <small id="catName">— Άνδρες</small></h2>
+    <div class="grid">
+      <label class="f">Χρηματικό έπαθλο (€)<input type="number" id="prize" min="0" step="50" inputmode="decimal"></label>
+      <div class="full"><div style="font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:5px">Σύστημα</div>
+        <div class="seg" id="fmtSeg"></div></div>
+    </div>
+    <div class="places" id="places"></div>
+    <p class="msg">Τα ποσοστά ανά θέση είναι αυτά του <a href="Prices.html">Υπολογισμού Επάθλων</a>. Αν τα αλλάξεις εκεί, ισχύουν και εδώ.</p>
+  </section>
+
+  <section class="card">
+    <h2>Τελική θέση ομάδων</h2>
+    <div id="list"></div>
+    <div class="sumbar" id="sumbar"></div>
+    <div class="add-row">
+      <input type="text" id="a1" placeholder="Αθλητής 1">
+      <input type="text" id="a2" placeholder="Αθλητής 2">
+      <button class="btn" type="button" id="addBtn">+ Ομάδα</button>
+    </div>
+  </section>
+
+  <div style="margin-top:16px">
+    <button class="btn big" type="button" id="printBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg>
+      Εκτύπωση / PDF</button>
+    <p class="msg" style="text-align:center">Στο παράθυρο εκτύπωσης διάλεξε «Αποθήκευση ως PDF» για να το στείλεις.</p>
+  </div>
+
+  <footer>Ένα φύλλο ανά κατηγορία, με μία γραμμή για κάθε αθλητή (ποσό ομάδας ÷ 2) και χώρο για υπογραφή. Ομάδες χωρίς θέση με έπαθλο δεν τυπώνονται.</footer>
+</main>
+
+<div class="doc" id="doc"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* Ίδια προεπιλογή με τον Υπολογισμό Επάθλων (Prices.html). Αν εκεί έχουν αλλάξει, διαβάζονται από τη συσκευή. */
+const FORMAT_LABEL = { "8": "8 ομάδες", "12": "12 ομάδες", "finals": "Finals" };
+const DEFAULTS = {
+  "8": [ { label:"1", positions:1, percent:30 }, { label:"2", positions:1, percent:20 }, { label:"3-4", positions:2, percent:12 },
+         { label:"5-6", positions:2, percent:8 }, { label:"7-8", positions:2, percent:5 } ],
+  "12": [ { label:"1", positions:1, percent:30 }, { label:"2", positions:1, percent:20 }, { label:"3-4", positions:2, percent:12 },
+          { label:"5-8", positions:4, percent:6.5 } ],
+  "finals": [ { label:"1", positions:1, percent:30 }, { label:"2", positions:1, percent:20 }, { label:"3", positions:1, percent:14 },
+              { label:"4", positions:1, percent:10 }, { label:"5-6", positions:2, percent:8 }, { label:"7-8", positions:2, percent:5 } ],
+};
+let PRICES = { format:"8", prize:2500, groups: JSON.parse(JSON.stringify(DEFAULTS)) };
+try{ const p = JSON.parse(localStorage.getItem('pricesState_v1') || 'null'); if(p && p.groups) PRICES = Object.assign(PRICES, p); }catch(e){}
+
+const KEY = 'prizeSheet_v1';
+let S = { tName:'', tDate:'', tPlace:'', cats:{ MEN:{ format:PRICES.format, prize:PRICES.prize, teams:[] }, WOMEN:{ format:PRICES.format, prize:PRICES.prize, teams:[] } } };
+try{ const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if(s) S = Object.assign(S, s); }catch(e){}
+let tab = 'MEN';
+const $ = id => document.getElementById(id);
+const CAT = { MEN:'Άνδρες', WOMEN:'Γυναίκες' };
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+const EUR = new Intl.NumberFormat('el-GR', { minimumFractionDigits:2, maximumFractionDigits:2 });
+function eur(v){ return EUR.format(Math.round((Number(v) || 0) * 100) / 100) + ' €'; }
+function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 3000); }
+function key(a, b){ const n = x => String(x).toLocaleUpperCase('el-GR').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim(); return [n(a), n(b)].sort().join('|'); }
+
+function groupsOf(c){ return PRICES.groups[c.format] || DEFAULTS[c.format] || DEFAULTS['8']; }
+function teamAmount(c, label){ const g = groupsOf(c).find(x => x.label === label); return g ? (Number(c.prize) || 0) * g.percent / 100 : 0; }
+// σειρά ταξινόμησης: πρώτος αριθμός της θέσης
+const placeNum = l => parseInt(String(l), 10) || 999;
+
+/* ---- εισαγωγή ---- */
+function importEntryList(){
+  let d = null; try{ d = JSON.parse(localStorage.getItem('entryListSeeded_v1') || 'null'); }catch(e){}
+  if(!d){ $('msg').textContent = 'Δεν βρέθηκε Αρχική Λίστα σε αυτή τη συσκευή. Μπορείς να προσθέσεις ομάδες με το χέρι.'; return; }
+  let added = 0;
+  ['MEN','WOMEN'].forEach(g => {
+    const full = d[g + '_FULL'] || (d[g] || []).map(s => s.split(' / '));
+    const have = new Set(S.cats[g].teams.map(t => key(t.a, t.b)));
+    full.forEach(([a, b]) => { if(!have.has(key(a, b))){ S.cats[g].teams.push({ id: uid(), a, b, place:'' }); added++; } });
+  });
+  if(d.tName && !S.tName) S.tName = d.tName;
+  save(); render();
+  $('msg').textContent = added ? `Μπήκαν ${added} ομάδες. Τώρα διάλεξε την τελική θέση όσων παίρνουν έπαθλο.` : 'Όλες οι ομάδες υπάρχουν ήδη.';
+}
+
+/* ---- εμφάνιση ---- */
+function render(){
+  $('tName').value = S.tName; $('tDate').value = S.tDate; $('tPlace').value = S.tPlace;
+  ['MEN','WOMEN'].forEach(g => $('tab' + g).classList.toggle('on', g === tab));
+  const c = S.cats[tab];
+  $('catName').textContent = '— ' + CAT[tab];
+  $('prize').value = c.prize;
+  $('fmtSeg').innerHTML = Object.keys(FORMAT_LABEL).map(k => `<button type="button" data-v="${k}" class="${k === c.format ? 'on' : ''}">${FORMAT_LABEL[k]}</button>`).join('');
+  const groups = groupsOf(c);
+  const used = {}; c.teams.forEach(t => { if(t.place) used[t.place] = (used[t.place] || 0) + 1; });
+  $('places').innerHTML = groups.map(g => {
+    const u = used[g.label] || 0, cls = u > g.positions ? 'over' : u === g.positions ? 'full' : '';
+    return `<span class="pl ${cls}">${g.label}η: ${u}/${g.positions} · ${eur(teamAmount(c, g.label))}</span>`;
+  }).join('');
+  const opts = ['<option value="">— χωρίς έπαθλο</option>'].concat(groups.map(g => `<option value="${g.label}">${g.label}η θέση</option>`)).join('');
+  const sorted = c.teams.slice().sort((x, y) => placeNum(x.place) - placeNum(y.place));
+  $('list').innerHTML = !c.teams.length
+    ? '<div class="empty">Δεν υπάρχουν ομάδες. Πάτα «Ομάδες από την Αρχική Λίστα» ή πρόσθεσε με το χέρι.</div>'
+    : sorted.map(t => {
+      const amt = t.place ? teamAmount(c, t.place) : 0;
+      return `<div class="team ${t.place ? 'won' : ''}" data-id="${t.id}">
+        <div class="nm">${esc(t.a)}<small>${esc(t.b)}</small></div>
+        <select data-place aria-label="Τελική θέση">${opts.replace(`value="${t.place}"`, `value="${t.place}" selected`)}</select>
+        ${t.place ? `<div class="amt">Ομάδα ${eur(amt)} · ανά αθλητή ${eur(amt / 2)}</div>` : ''}
+        <button type="button" class="x" data-del>Διαγραφή</button>
+      </div>`;
+    }).join('');
+  const total = c.teams.reduce((a, t) => a + (t.place ? teamAmount(c, t.place) : 0), 0);
+  const over = groups.filter(g => (used[g.label] || 0) > g.positions).map(g => g.label + 'η');
+  const sb = $('sumbar');
+  sb.className = 'sumbar ' + (over.length ? 'warn' : Math.abs(total - c.prize) < 0.01 ? 'ok' : '');
+  sb.innerHTML = over.length
+    ? `<span>⚠ Περισσότερες ομάδες από όσες θέσεις: ${over.join(', ')}</span>`
+    : `<span>Μοιράζονται <b>${eur(total)}</b> από ${eur(c.prize)}</span><span>${Object.values(used).reduce((a, b) => a + b, 0)} ομάδες με έπαθλο</span>`;
+}
+
+/* ---- έγγραφο για εκτύπωση ---- */
+function buildDoc(){
+  const pages = ['MEN','WOMEN'].map(g => {
+    const c = S.cats[g];
+    const rows = c.teams.filter(t => t.place).sort((x, y) => placeNum(x.place) - placeNum(y.place));
+    if(!rows.length) return '';
+    const total = rows.reduce((a, t) => a + teamAmount(c, t.place), 0);
+    const tr = rows.map(t => { const a = teamAmount(c, t.place) / 2;
+      return `<tr><td class="pos" rowspan="2"><b>${t.place}</b></td><td>${esc(t.a)}</td><td class="r">${eur(a)}</td><td class="sig"></td></tr>
+              <tr><td>${esc(t.b)}</td><td class="r">${eur(a)}</td><td class="sig"></td></tr>`; }).join('');
+    return `<div class="page">
+      <h1>Φύλλο Πληρωμής Επάθλων — ${CAT[g]}</h1>
+      <p class="sub">${esc(S.tName || 'Τουρνουά')}${S.tPlace ? ' · ' + esc(S.tPlace) : ''}${S.tDate ? ' · ' + esc(S.tDate) : ''} · Χρηματικό έπαθλο ${eur(c.prize)} (${FORMAT_LABEL[c.format]})</p>
+      <table><thead><tr><th>Θέση</th><th>Ονοματεπώνυμο αθλητή</th><th class="r">Ποσό</th><th>Υπογραφή</th></tr></thead>
+      <tbody>${tr}<tr><td colspan="2"><b>Σύνολο</b></td><td class="r"><b>${eur(total)}</b></td><td></td></tr></tbody></table>
+      <div class="sign"><div>Ο/Η Επόπτης</div><div>Ο Διοργανωτής</div></div>
+    </div>`;
+  }).filter(Boolean);
+  $('doc').innerHTML = pages.join('');
+  return pages.length;
+}
+
+/* ---- ενέργειες ---- */
+$('list').addEventListener('change', e => {
+  const sel = e.target.closest('[data-place]'); if(!sel) return;
+  const t = S.cats[tab].teams.find(x => x.id === sel.closest('.team').dataset.id); t.place = sel.value; save(); render();
+});
+$('list').addEventListener('click', e => {
+  if(!e.target.closest('[data-del]')) return;
+  const id = e.target.closest('.team').dataset.id; S.cats[tab].teams = S.cats[tab].teams.filter(t => t.id !== id); save(); render();
+});
+['tName','tDate','tPlace'].forEach(id => $(id).addEventListener('input', e => { S[id] = e.target.value; save(); }));
+$('prize').addEventListener('change', e => { S.cats[tab].prize = Number(e.target.value) || 0; save(); render(); });
+$('fmtSeg').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return;
+  const c = S.cats[tab]; c.format = b.dataset.v;
+  const labels = groupsOf(c).map(g => g.label); c.teams.forEach(t => { if(t.place && !labels.includes(t.place)) t.place = ''; });
+  save(); render(); });
+document.querySelectorAll('.tabs .tab').forEach(b => b.addEventListener('click', () => { tab = b.dataset.g; render(); }));
+$('importBtn').addEventListener('click', importEntryList);
+$('addBtn').addEventListener('click', () => {
+  const a = $('a1').value.trim(), b = $('a2').value.trim(); if(!a || !b){ toast('Συμπλήρωσε και τους δύο αθλητές'); return; }
+  S.cats[tab].teams.push({ id: uid(), a, b, place:'' }); $('a1').value = ''; $('a2').value = ''; save(); render();
+});
+$('clearBtn').addEventListener('click', () => {
+  if(!confirm('Να σβηστούν οι ομάδες και οι θέσεις για νέο τουρνουά;')) return;
+  S.tName = ''; S.tDate = ''; S.tPlace = ''; S.cats.MEN.teams = []; S.cats.WOMEN.teams = []; save(); render(); $('msg').textContent = '';
+});
+$('printBtn').addEventListener('click', () => {
+  if(!buildDoc()){ toast('Διάλεξε πρώτα τελική θέση για τις ομάδες με έπαθλο'); return; }
+  window.print();
+});
+window.addEventListener('beforeprint', buildDoc);
+render();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>

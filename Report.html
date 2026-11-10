@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Αναφορά Επόπτη — BV Supervisor Tools</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d3a5c">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Supervisor Tools">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tools.css">
+<style>
+  .trow{display:flex; gap:8px;}
+  .trow select{flex:1; min-width:0; font-weight:700;}
+  .newbox{display:none; gap:8px; margin-top:10px;} .newbox.show{display:flex;}
+  .rate{border-top:1px solid rgba(15,36,56,0.08); padding:12px 0;}
+  .rate:first-of-type{border-top:none; padding-top:2px;}
+  .rate-top{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+  .rate-top b{font-size:15px;}
+  .rate .seg{min-height:40px; flex:0 0 auto;}
+  .rate .seg button{min-height:34px; font-size:13px; padding:0 10px;}
+  .rate .seg button.on[data-v=good]{color:var(--ok);} .rate .seg button.on[data-v=ok]{color:var(--warn);} .rate .seg button.on[data-v=bad]{color:var(--bad);}
+  .rate input{margin-top:8px; min-height:42px; font-size:15px; font-weight:500;}
+  .entry{border:1px solid var(--line); border-radius:12px; padding:12px; margin-top:10px; background:#fbfdff;}
+  .entry-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .entry-top b{font-family:'Space Grotesk',sans-serif;}
+  .entry .grid{gap:8px;}
+  .entry input, .entry select{min-height:42px; font-size:15px;}
+  .entry textarea{min-height:64px;}
+  .wx{display:grid; grid-template-columns:70px 1fr 74px 1fr auto; gap:6px; align-items:center; margin-top:8px;}
+  .wx input{min-height:42px; font-size:14.5px; padding:6px 8px; font-weight:500;}
+  .wx .x{border:none; background:none; color:var(--ink-soft); font-size:18px; cursor:pointer; padding:4px;}
+  .wx-head{display:grid; grid-template-columns:70px 1fr 74px 1fr auto; gap:6px; font-size:12px; font-weight:700; color:var(--ink-soft); margin-top:4px;}
+  @media (max-width:480px){ .wx, .wx-head{grid-template-columns:54px 1fr 60px; } .wx .wind, .wx-head .wind{grid-column:2/4;} }
+  .auto{display:flex; align-items:center; gap:10px; font-size:14.5px; font-weight:600; padding:6px 0;}
+  .auto input{width:22px; height:22px; accent-color:var(--navy-2);}
+  .autobox{font-size:13.5px; color:var(--ink-soft); background:#f4f8fb; border-radius:10px; padding:10px 12px; margin-top:6px; line-height:1.5;}
+  .saved{font-size:12.5px; color:var(--ok); font-weight:700; margin-left:auto;}
+  @media print{ .doc .rt td:first-child{width:30%;} .doc .badge{font-weight:700;} }
+</style>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+<nav class="bv-topbar" aria-label="Πλοήγηση"><a class="bv-home" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Αρχική</a><a class="bv-brand" href="index.html"><img src="icons/logo.png" alt="">Supervisor Tools</a></nav>
+<header class="hero">
+  <div class="wrap">
+    <h1>Αναφορά Επόπτη</h1>
+    <p>Συμπλήρωσέ την όσο γίνεται το τουρνουά. Αποθηκεύεται αυτόματα και στο τέλος βγαίνει σε PDF για την ομοσπονδία.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <div class="trow">
+      <select id="tSel" aria-label="Αναφορά"></select>
+      <button class="btn primary" type="button" id="newBtn">+ Νέα</button>
+    </div>
+    <div class="newbox" id="newBox">
+      <input type="text" id="newName" placeholder="Όνομα τουρνουά" maxlength="60">
+      <button class="btn primary" type="button" id="newOk">Δημιουργία</button>
+    </div>
+    <div class="btns" style="margin-top:8px"><button class="link danger" type="button" id="delBtn">Διαγραφή αυτής της αναφοράς</button><span class="saved" id="saved"></span></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">1</span>Στοιχεία τουρνουά</h2>
+    <div class="grid">
+      <label class="f full">Τουρνουά<input type="text" data-k="name"></label>
+      <label class="f">Τόπος<input type="text" data-k="place"></label>
+      <label class="f">Ημερομηνίες<input type="text" data-k="dates" placeholder="π.χ. 24-26/7"></label>
+      <label class="f">Επόπτης<input type="text" data-k="supervisor"></label>
+      <label class="f">Διοργανωτής / υπεύθυνος<input type="text" data-k="organizer"></label>
+      <label class="f">Γήπεδα<input type="number" data-k="courts" min="0" inputmode="numeric"></label>
+      <label class="f">Ιατρός / διασώστης<input type="text" data-k="medic"></label>
+      <label class="f">Ομάδες ανδρών<input type="number" data-k="teamsMen" min="0" inputmode="numeric"></label>
+      <label class="f">Ομάδες γυναικών<input type="number" data-k="teamsWomen" min="0" inputmode="numeric"></label>
+      <label class="f full">Διαιτητές<textarea data-k="referees" placeholder="Ονόματα διαιτητών, ένα ανά γραμμή"></textarea></label>
+    </div>
+    <div class="btns"><button class="btn ghost" type="button" id="fillBtn">Συμπλήρωση από την Αρχική Λίστα</button></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">2</span>Εγκαταστάσεις και οργάνωση</h2>
+    <div id="rates"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">3</span>Καιρός</h2>
+    <div class="wx-head"><span>Ημέρα</span><span>Συνθήκες</span><span>°C</span><span class="wind">Άνεμος</span><span></span></div>
+    <div id="weather"></div>
+    <div class="btns"><button class="btn ghost" type="button" id="wxAdd">+ Ημέρα</button></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">4</span>Περιστατικά <small id="incCount"></small></h2>
+    <p class="msg" style="margin-top:0">Τραυματισμοί, ενστάσεις, πειθαρχικά, καθυστερήσεις ή διακοπές.</p>
+    <div id="incidents"></div>
+    <div class="btns"><button class="btn" type="button" id="incAdd">+ Περιστατικό</button></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">5</span>Οικονομικά</h2>
+    <label class="auto"><input type="checkbox" data-k="incPay"> Να μπουν στην αναφορά τα σύνολα από τις Πληρωμές</label>
+    <div class="autobox" id="payBox"></div>
+    <label class="f" style="margin-top:10px">Σχόλια<textarea data-k="finNotes" placeholder="π.χ. έξοδα, εκκρεμότητες"></textarea></label>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">6</span>Γενικά σχόλια και προτάσεις</h2>
+    <label class="f">Γενική εικόνα του τουρνουά<textarea data-k="general"></textarea></label>
+    <label class="f" style="margin-top:10px">Προτάσεις για βελτίωση<textarea data-k="suggestions"></textarea></label>
+  </section>
+
+  <div style="margin-top:16px">
+    <button class="btn big" type="button" id="printBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg>
+      Εκτύπωση / PDF</button>
+    <p class="msg" style="text-align:center">Στο παράθυρο εκτύπωσης διάλεξε «Αποθήκευση ως PDF».</p>
+  </div>
+  <footer>Η αναφορά μένει μόνο σε αυτή τη συσκευή μέχρι να την τυπώσεις ή να τη στείλεις σε PDF.</footer>
+</main>
+<div class="doc" id="doc"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const RATES = [
+  ['courts','Γήπεδα και άμμος'], ['equipment','Φιλέ, κεραίες και εξοπλισμός'], ['medical','Ιατρική κάλυψη'],
+  ['refs','Διαιτησία'], ['office','Γραμματεία και αποτελέσματα'], ['athletes','Χώροι αθλητών (WC, σκιά, νερό)'], ['schedule','Τήρηση προγράμματος'],
+];
+const RATE_LABEL = { good:'Καλή', ok:'Επαρκής', bad:'Ανεπαρκής' };
+const INC_TYPES = ['Τραυματισμός','Ένσταση','Πειθαρχικό','Καθυστέρηση / διακοπή','Άλλο'];
+const KEY = 'supervisorReport_v1';
+let R = { reports:[], current:null };
+try{ const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if(s) R = Object.assign(R, s); }catch(e){}
+const $ = id => document.getElementById(id);
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600); }
+let saveT;
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(R)); $('saved').textContent = '✓ Αποθηκεύτηκε'; clearTimeout(saveT); saveT = setTimeout(() => $('saved').textContent = '', 1500); }catch(e){} }
+function newReport(name){
+  const r = { id: uid(), name: name || '', created: Date.now(), f:{ name: name || '', incPay:true }, rates:{}, weather:[], incidents:[] };
+  R.reports.unshift(r); R.current = r.id; save(); return r;
+}
+function entryList(){ try{ return JSON.parse(localStorage.getItem('entryListSeeded_v1') || 'null'); }catch(e){ return null; } }
+if(!R.reports.length){ const d = entryList(); newReport(d && d.tName || ''); }
+const cur = () => R.reports.find(r => r.id === R.current) || R.reports[0];
+
+/* ---- πληρωμές (ίδιοι υπολογισμοί με τη σελίδα Πληρωμές) ---- */
+function paySummary(){
+  let S; try{ S = JSON.parse(localStorage.getItem('payments_v1') || 'null'); }catch(e){}
+  if(!S || !S.teams) return null;
+  const regFee = Number(S.regFee) || 0, base = (Number(S.fee) || 0) * (S.per === 'athlete' ? 2 : 1);
+  const all = (S.teams.MEN || []).concat(S.teams.WOMEN || []);
+  if(!all.length) return null;
+  const entry = t => t.exempt || t.status === 'exempt' ? 0 : (t.custom !== '' && t.custom != null ? Number(t.custom) || 0 : base);
+  const reg = t => regFee ? (t.reg || []).filter(v => v === 'owes' || v === true).length * regFee : 0;
+  const due = t => entry(t) + reg(t);
+  const paid = t => (t.status === 'cash' || t.status === 'bank') ? (t.paid !== '' && t.paid != null ? Number(t.paid) || 0 : due(t)) : 0;
+  const sum = f => all.reduce((a, t) => a + f(t), 0);
+  return { tName: S.tName, teams: all.length, entry: sum(entry), reg: sum(reg), expected: sum(due),
+           cash: sum(t => t.status === 'cash' ? paid(t) : 0), bank: sum(t => t.status === 'bank' ? paid(t) : 0),
+           owing: all.filter(t => paid(t) < due(t)).length, balance: sum(t => Math.max(0, due(t) - paid(t))) };
+}
+const EUR = new Intl.NumberFormat('el-GR', { minimumFractionDigits:0, maximumFractionDigits:2 });
+const eur = v => EUR.format(Math.round((Number(v) || 0) * 100) / 100) + ' €';
+function payText(p){ return p ? `Συμμετοχές ${eur(p.entry)}${p.reg ? ' · Μητρώο ' + eur(p.reg) : ''} · Αναμενόμενα ${eur(p.expected)} · Εισπράχθηκαν ${eur(p.cash + p.bank)} (μετρητά ${eur(p.cash)}, κατάθεση ${eur(p.bank)}) · Υπόλοιπο ${eur(p.balance)} από ${p.owing} ${p.owing === 1 ? 'ομάδα' : 'ομάδες'}` : ''; }
+
+/* ---- εμφάνιση ---- */
+function render(){
+  const r = cur();
+  $('tSel').innerHTML = R.reports.map(x => `<option value="${x.id}" ${x.id === r.id ? 'selected' : ''}>${esc(x.f.name || 'Χωρίς όνομα')}</option>`).join('');
+  document.querySelectorAll('[data-k]').forEach(el => { const v = r.f[el.dataset.k]; if(el.type === 'checkbox') el.checked = !!v; else el.value = v == null ? '' : v; });
+  $('rates').innerHTML = RATES.map(([k, l]) => { const v = r.rates[k] || {};
+    return `<div class="rate" data-r="${k}"><div class="rate-top"><b>${l}</b>
+      <div class="seg">${Object.keys(RATE_LABEL).map(o => `<button type="button" data-v="${o}" class="${v.v === o ? 'on' : ''}">${RATE_LABEL[o]}</button>`).join('')}</div></div>
+      <input type="text" data-rc="${k}" value="${esc(v.c || '')}" placeholder="Σχόλιο (προαιρετικό)"></div>`; }).join('');
+  $('weather').innerHTML = r.weather.map((w, i) => `<div class="wx" data-w="${i}">
+      <input type="text" data-wf="day" value="${esc(w.day)}" placeholder="${i + 1}η">
+      <input type="text" data-wf="cond" value="${esc(w.cond)}" placeholder="π.χ. ηλιοφάνεια">
+      <input type="text" data-wf="temp" value="${esc(w.temp)}" inputmode="decimal" placeholder="°C">
+      <input type="text" class="wind" data-wf="wind" value="${esc(w.wind)}" placeholder="π.χ. Β 4 μποφόρ">
+      <button class="x" type="button" data-wdel aria-label="Διαγραφή">×</button></div>`).join('');
+  $('incCount').textContent = r.incidents.length ? '(' + r.incidents.length + ')' : '';
+  $('incidents').innerHTML = r.incidents.map((n, i) => `<div class="entry" data-i="${i}">
+      <div class="entry-top"><b>Περιστατικό ${i + 1}</b><button class="link danger" type="button" data-idel>Διαγραφή</button></div>
+      <div class="grid">
+        <label class="f">Τύπος<select data-if="type">${INC_TYPES.map(t => `<option ${t === n.type ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+        <label class="f">Ημέρα / ώρα<input type="text" data-if="when" value="${esc(n.when)}" placeholder="π.χ. Σάβ. 14:20"></label>
+        <label class="f full">Αγώνας / πρόσωπα<input type="text" data-if="who" value="${esc(n.who)}" placeholder="π.χ. Αγώνας #12, Γήπεδο 2"></label>
+        <label class="f full">Περιγραφή<textarea data-if="desc">${esc(n.desc)}</textarea></label>
+        <label class="f full">Ενέργειες / απόφαση<textarea data-if="action">${esc(n.action)}</textarea></label>
+      </div></div>`).join('');
+  const p = paySummary();
+  $('payBox').textContent = p ? payText(p) + (p.tName ? ` (Πληρωμές: «${p.tName}»)` : '') : 'Δεν υπάρχουν στοιχεία στις Πληρωμές σε αυτή τη συσκευή.';
+}
+
+/* ---- ενέργειες ---- */
+document.addEventListener('input', e => {
+  const r = cur(), el = e.target;
+  if(el.dataset.k){ r.f[el.dataset.k] = el.type === 'checkbox' ? el.checked : el.value; if(el.dataset.k === 'name'){ r.name = el.value; const o = $('tSel').selectedOptions[0]; if(o) o.textContent = el.value || 'Χωρίς όνομα'; } save(); return; }
+  if(el.dataset.rc){ (r.rates[el.dataset.rc] = r.rates[el.dataset.rc] || {}).c = el.value; save(); return; }
+  if(el.dataset.wf){ r.weather[Number(el.closest('[data-w]').dataset.w)][el.dataset.wf] = el.value; save(); return; }
+  if(el.dataset.if){ r.incidents[Number(el.closest('[data-i]').dataset.i)][el.dataset.if] = el.value; save(); return; }
+});
+document.addEventListener('change', e => { const el = e.target; if(el.dataset.k && el.type === 'checkbox'){ cur().f[el.dataset.k] = el.checked; save(); } if(el.dataset.if){ cur().incidents[Number(el.closest('[data-i]').dataset.i)][el.dataset.if] = el.value; save(); } });
+$('rates').addEventListener('click', e => { const b = e.target.closest('.seg button'); if(!b) return;
+  const k = b.closest('[data-r]').dataset.r, r = cur(); const v = (r.rates[k] = r.rates[k] || {});
+  v.v = v.v === b.dataset.v ? '' : b.dataset.v; save(); render(); });
+$('wxAdd').addEventListener('click', () => { cur().weather.push({ day:'', cond:'', temp:'', wind:'' }); save(); render(); });
+$('weather').addEventListener('click', e => { if(!e.target.closest('[data-wdel]')) return; cur().weather.splice(Number(e.target.closest('[data-w]').dataset.w), 1); save(); render(); });
+$('incAdd').addEventListener('click', () => { cur().incidents.push({ type:INC_TYPES[0], when:'', who:'', desc:'', action:'' }); save(); render();
+  const last = document.querySelector('#incidents .entry:last-child textarea'); last && last.focus(); });
+$('incidents').addEventListener('click', e => { if(!e.target.closest('[data-idel]')) return; if(!confirm('Να διαγραφεί αυτό το περιστατικό;')) return;
+  cur().incidents.splice(Number(e.target.closest('[data-i]').dataset.i), 1); save(); render(); });
+$('fillBtn').addEventListener('click', () => {
+  const d = entryList(); if(!d){ toast('Δεν βρέθηκε Αρχική Λίστα σε αυτή τη συσκευή'); return; }
+  const r = cur(); if(d.tName && !r.f.name){ r.f.name = d.tName; r.name = d.tName; }
+  r.f.teamsMen = (d.MEN || []).length; r.f.teamsWomen = (d.WOMEN || []).length; save(); render(); toast('Συμπληρώθηκαν όνομα και αριθμός ομάδων');
+});
+$('tSel').addEventListener('change', e => { R.current = e.target.value; save(); render(); });
+$('newBtn').addEventListener('click', () => { $('newBox').classList.toggle('show'); $('newName').focus(); });
+$('newOk').addEventListener('click', () => { const v = $('newName').value.trim(); if(!v){ $('newName').focus(); return; }
+  const prev = cur(); const r = newReport(v); if(prev && prev.f.supervisor) r.f.supervisor = prev.f.supervisor; // ο επόπτης μένει ίδιος
+  $('newName').value = ''; $('newBox').classList.remove('show'); save(); render(); });
+$('delBtn').addEventListener('click', () => { const r = cur(); if(!confirm('Να διαγραφεί η αναφορά «' + (r.f.name || 'Χωρίς όνομα') + '»;')) return;
+  R.reports = R.reports.filter(x => x.id !== r.id); if(!R.reports.length) newReport(''); else R.current = R.reports[0].id; save(); render(); });
+
+/* ---- PDF ---- */
+function buildDoc(){
+  const r = cur(), f = r.f;
+  const row = (l, v) => v ? `<tr><th>${l}</th><td>${esc(v)}</td></tr>` : '';
+  const info = [row('Τουρνουά', f.name), row('Τόπος', f.place), row('Ημερομηνίες', f.dates), row('Επόπτης', f.supervisor), row('Διοργανωτής', f.organizer),
+    row('Γήπεδα', f.courts), row('Ομάδες', [f.teamsMen ? f.teamsMen + ' ανδρών' : '', f.teamsWomen ? f.teamsWomen + ' γυναικών' : ''].filter(Boolean).join(' · ')),
+    row('Ιατρός / διασώστης', f.medic)].join('');
+  const rates = RATES.filter(([k]) => r.rates[k] && (r.rates[k].v || r.rates[k].c))
+    .map(([k, l]) => `<tr><td>${l}</td><td class="badge">${RATE_LABEL[r.rates[k].v] || '—'}</td><td>${esc(r.rates[k].c || '')}</td></tr>`).join('');
+  const wx = r.weather.filter(w => w.day || w.cond || w.temp || w.wind)
+    .map((w, i) => `<tr><td>${esc(w.day || (i + 1) + 'η')}</td><td>${esc(w.cond)}</td><td>${esc(w.temp)}${w.temp && !/°/.test(w.temp) ? ' °C' : ''}</td><td>${esc(w.wind)}</td></tr>`).join('');
+  const inc = r.incidents.map((n, i) => `<tr><td>${i + 1}</td><td><b>${esc(n.type)}</b><br>${esc(n.when)}</td><td>${esc(n.who)}</td><td class="pre">${esc(n.desc)}</td><td class="pre">${esc(n.action)}</td></tr>`).join('');
+  const p = f.incPay ? paySummary() : null;
+  const today = new Date().toLocaleDateString('el-GR');
+  $('doc').innerHTML = `
+    <h1>Αναφορά Επόπτη</h1>
+    <p class="sub">${esc(f.name || '')}${f.place ? ' · ' + esc(f.place) : ''}${f.dates ? ' · ' + esc(f.dates) : ''}</p>
+    <h2>1. Στοιχεία τουρνουά</h2><table>${info || '<tr><td>—</td></tr>'}</table>
+    ${f.referees ? `<p><b>Διαιτητές:</b> ${esc(f.referees.split('\n').map(x => x.trim()).filter(Boolean).join(', '))}</p>` : ''}
+    <h2>2. Εγκαταστάσεις και οργάνωση</h2>${rates ? `<table class="rt"><thead><tr><th>Τομέας</th><th>Αξιολόγηση</th><th>Σχόλιο</th></tr></thead><tbody>${rates}</tbody></table>` : '<p>—</p>'}
+    <h2>3. Καιρός</h2>${wx ? `<table><thead><tr><th>Ημέρα</th><th>Συνθήκες</th><th>Θερμοκρασία</th><th>Άνεμος</th></tr></thead><tbody>${wx}</tbody></table>` : '<p>—</p>'}
+    <h2>4. Περιστατικά</h2>${inc ? `<table><thead><tr><th>#</th><th>Τύπος / ώρα</th><th>Αγώνας / πρόσωπα</th><th>Περιγραφή</th><th>Ενέργειες</th></tr></thead><tbody>${inc}</tbody></table>` : '<p>Δεν υπήρξαν περιστατικά.</p>'}
+    <h2>5. Οικονομικά</h2>${p ? `<p>${esc(payText(p))}</p>` : ''}${f.finNotes ? `<p class="pre">${esc(f.finNotes)}</p>` : (p ? '' : '<p>—</p>')}
+    <h2>6. Γενικά σχόλια και προτάσεις</h2>
+    ${f.general ? `<p class="pre">${esc(f.general)}</p>` : ''}${f.suggestions ? `<p><b>Προτάσεις:</b></p><p class="pre">${esc(f.suggestions)}</p>` : ''}${!f.general && !f.suggestions ? '<p>—</p>' : ''}
+    <div class="sign"><div>Ημερομηνία: ${today}</div><div>Ο/Η Επόπτης${f.supervisor ? '<br>' + esc(f.supervisor) : ''}</div></div>`;
+}
+$('printBtn').addEventListener('click', () => { buildDoc(); window.print(); });
+window.addEventListener('beforeprint', buildDoc);
+render();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>

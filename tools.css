@@ -1,0 +1,77 @@
+/* BV Supervisor Tools — κοινά στοιχεία για τις σελίδες-φόρμες
+   (Φύλλο πληρωμής, Αναφορά επόπτη, Ημερολόγιο σεζόν). */
+:root{
+  --navy:#0b3150; --navy-2:#155a8a; --accent:#1f7fc4; --accent-bg:#e3f0fa;
+  --sky:#eaf4fb; --sky-2:#f6fafd; --paper:#fff;
+  --ink:#0f2438; --ink-soft:rgba(15,36,56,0.80); --line:rgba(15,36,56,0.12);
+  --men:#155a8a; --men-bg:#e4effa; --women:#b0185a; --women-bg:#fbe7f0;
+  --ok:#22764a; --ok-bg:#e5f4ec; --warn:#a85a00; --warn-bg:#fff2dc; --bad:#b6402f; --bad-bg:#fdeceb;
+}
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{margin:0; min-height:100vh; background:linear-gradient(180deg,#fff 0%,var(--sky-2) 40%,var(--sky) 100%);
+     color:var(--ink); font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:15.5px;}
+button,input,select,textarea{font-family:inherit; font-size:inherit; color:inherit;}
+.wrap{max-width:860px; margin:0 auto; padding:0 16px;}
+
+header.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%); color:#fff; border-radius:0 0 22px 22px; padding:20px 0 22px;}
+.hero h1{font-family:'Space Grotesk',sans-serif; font-size:clamp(26px,7vw,36px); line-height:1.08; margin:0 0 6px;}
+.hero p{margin:0; color:rgba(255,255,255,0.86); font-size:14.5px; line-height:1.45;}
+
+.card{background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:16px; margin-top:16px; box-shadow:0 4px 14px rgba(18,86,138,0.06);}
+.card > h2{display:flex; align-items:center; flex-wrap:wrap; column-gap:10px; row-gap:2px; margin:0 0 12px; font-family:'Space Grotesk',sans-serif; font-size:18px;}
+.card > h2 small{font-family:'IBM Plex Sans',sans-serif; font-weight:600; font-size:13px; color:var(--ink-soft);}
+.num{width:26px; height:26px; flex:none; border-radius:50%; background:var(--navy); color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:14px;}
+
+.grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; align-items:end;}
+@media (min-width:640px){ .grid.g3{grid-template-columns:repeat(3,minmax(0,1fr));} }
+.full{grid-column:1/-1;}
+label.f{display:flex; flex-direction:column; gap:5px; font-size:13px; font-weight:700; color:var(--ink-soft);}
+label.f small{font-weight:500; font-size:12px;}
+input[type=number], input[type=text], input[type=date], input[type=time], select, textarea{
+  width:100%; min-height:46px; border:1.5px solid var(--line); border-radius:11px; padding:9px 12px; background:#fff;
+  font-size:16px; font-weight:600; color:var(--ink);
+}
+textarea{min-height:90px; font-weight:500; font-size:15px; line-height:1.45; resize:vertical;}
+input:focus, select:focus, textarea:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(31,127,196,0.18);}
+
+.seg{display:flex; background:#eef3f7; border-radius:11px; padding:3px; gap:3px; min-height:46px;}
+.seg button{flex:1; border:none; background:transparent; border-radius:9px; font-weight:700; font-size:14.5px; color:var(--ink-soft); cursor:pointer; padding:0 6px; min-height:40px;}
+.seg button.on{background:#fff; color:var(--navy); box-shadow:0 1px 4px rgba(15,36,56,0.15);}
+
+.btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:44px; padding:0 14px; border-radius:11px; font-weight:700; font-size:14.5px; cursor:pointer; border:1.5px solid var(--navy-2); background:#fff; color:var(--navy-2); text-decoration:none;}
+.btn.primary{background:var(--navy-2); color:#fff;}
+.btn.ghost{border-color:var(--line); color:var(--ink-soft);}
+.btn.big{min-height:54px; font-size:17px; font-family:'Space Grotesk',sans-serif; width:100%; background:var(--navy); border-color:var(--navy); color:#fff; border-radius:14px;}
+.btn svg{width:17px; height:17px;}
+.link{border:none; background:none; color:var(--navy-2); font-weight:700; font-size:13.5px; padding:6px 2px; cursor:pointer; text-decoration:underline; text-underline-offset:3px;}
+.link.danger{color:var(--bad);}
+
+.msg{font-size:13.5px; color:var(--ink-soft); margin:10px 0 0; line-height:1.45;}
+.note{border-radius:12px; padding:10px 13px; font-size:14px; line-height:1.45; background:var(--warn-bg); color:#6b3d00; font-weight:600; margin-top:12px;}
+.empty{text-align:center; padding:26px 16px; color:var(--ink-soft); font-size:14.5px; line-height:1.5;}
+.toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--navy); color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; font-weight:600; display:none; z-index:70; max-width:90vw; text-align:center;}
+.toast.show{display:block;}
+footer{margin:28px 0 40px; color:var(--ink-soft); font-size:13px; line-height:1.6;}
+
+/* Έγγραφο για εκτύπωση / PDF: κρυφό στην οθόνη, μόνο αυτό τυπώνεται */
+.doc{display:none;}
+@media print{
+  @page{size:A4; margin:14mm 12mm;}
+  body{background:#fff !important; font-size:11pt;}
+  body > *:not(.doc){display:none !important;}
+  .doc{display:block !important; color:#000; font-family:'IBM Plex Sans',Arial,sans-serif;}
+  .doc h1{font-family:'Space Grotesk',Arial,sans-serif; font-size:17pt; margin:0 0 2mm;}
+  .doc h2{font-family:'Space Grotesk',Arial,sans-serif; font-size:12.5pt; margin:6mm 0 2mm; border-bottom:0.4mm solid #000; padding-bottom:1mm;}
+  .doc .sub{font-size:10pt; color:#333; margin:0 0 4mm;}
+  .doc table{width:100%; border-collapse:collapse; font-size:10pt;}
+  .doc th, .doc td{border:0.3mm solid #555; padding:2mm 2.5mm; text-align:left; vertical-align:top;}
+  .doc th{background:#eee;}
+  .doc tr{break-inside:avoid;}
+  .doc .r{text-align:right; white-space:nowrap;}
+  .doc .sign{display:flex; gap:12mm; margin-top:14mm;}
+  .doc .sign div{flex:1; border-top:0.3mm solid #000; padding-top:1.5mm; font-size:10pt; text-align:center;}
+  .doc p{margin:1.5mm 0; line-height:1.4;}
+  .doc .pre{white-space:pre-wrap;}
+}
