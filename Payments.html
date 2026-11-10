@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Συμμετοχές & Πληρωμές — BV Supervisor Tools</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d3a5c">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Supervisor Tools">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="vendor/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --navy:#0b3150; --navy-2:#155a8a; --accent:#1f7fc4;
+    --sky:#eaf4fb; --sky-2:#f6fafd; --paper:#fff;
+    --ink:#0f2438; --ink-soft:rgba(15,36,56,0.80); --line:rgba(15,36,56,0.12);
+    --men:#155a8a; --men-bg:#e4effa; --women:#b0185a; --women-bg:#fbe7f0;
+    --ok:#22764a; --ok-bg:#e5f4ec; --due:#b6402f; --due-bg:#fdeceb; --ex:#6b5b95; --ex-bg:#efecf7;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{margin:0; min-height:100vh; background:linear-gradient(180deg,#fff 0%,var(--sky-2) 40%,var(--sky) 100%);
+       color:var(--ink); font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:15.5px;}
+  button,input,select,textarea{font-family:inherit; font-size:inherit; color:inherit;}
+  .wrap{max-width:820px; margin:0 auto; padding:0 16px;}
+  header.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%); color:#fff; border-radius:0 0 22px 22px; padding:20px 0 22px;}
+  .hero h1{font-family:'Space Grotesk',sans-serif; font-size:clamp(26px,7vw,36px); line-height:1.08; margin:0 0 6px;}
+  .hero p{margin:0; color:rgba(255,255,255,0.86); font-size:14.5px; line-height:1.45;}
+
+  .card{background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:14px; margin-top:16px; box-shadow:0 4px 14px rgba(18,86,138,0.06);}
+  .grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; align-items:end;}
+  .full{grid-column:1/-1;}
+  label.f{display:flex; flex-direction:column; gap:5px; font-size:13px; font-weight:700; color:var(--ink-soft);}
+  input[type=number], input[type=text], select{width:100%; min-height:46px; border:1.5px solid var(--line); border-radius:11px; padding:0 12px; background:#fff; font-size:16px; font-weight:600;}
+  input:focus, select:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(31,127,196,0.18);}
+  .seg{display:flex; background:#eef3f7; border-radius:11px; padding:3px; gap:3px; min-height:46px;}
+  .seg button{flex:1; border:none; background:transparent; border-radius:9px; font-weight:700; font-size:14.5px; color:var(--ink-soft); cursor:pointer;}
+  .seg button.on{background:#fff; color:var(--navy); box-shadow:0 1px 4px rgba(15,36,56,0.15);}
+  .btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+  .btn{display:inline-flex; align-items:center; gap:7px; min-height:44px; padding:0 14px; border-radius:11px; font-weight:700; font-size:14.5px; cursor:pointer; border:1.5px solid var(--navy-2); background:#fff; color:var(--navy-2);}
+  .btn.primary{background:var(--navy-2); color:#fff;}
+  .btn.ghost{border-color:var(--line); color:var(--ink-soft);}
+  .btn svg{width:17px; height:17px;}
+  .msg{font-size:13.5px; color:var(--ink-soft); margin:10px 0 0; line-height:1.45;}
+
+  /* σύνοψη */
+  .sum{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:16px;}
+  @media (min-width:640px){ .sum{grid-template-columns:repeat(4,minmax(0,1fr));} }
+  .kpi{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:12px;}
+  .kpi .v{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; line-height:1.1; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .kpi .l{font-size:12.5px; font-weight:700; color:var(--ink-soft); margin-top:3px;}
+  .kpi.ok .v{color:var(--ok);} .kpi.due .v{color:var(--due);}
+  .kpi .s{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .meter{height:8px; border-radius:8px; background:#e3ebf2; overflow:hidden; margin-top:12px;}
+  .meter i{display:block; height:100%; background:var(--ok);}
+
+  .tabs{display:flex; gap:8px; margin-top:18px;}
+  .tab{flex:1; min-height:46px; border-radius:11px; border:1.5px solid var(--line); background:#fff; font-weight:700; font-size:15px; cursor:pointer; color:var(--ink-soft);}
+  .tab.on.men{background:var(--men); border-color:var(--men); color:#fff;}
+  .tab.on.women{background:var(--women); border-color:var(--women); color:#fff;}
+  .filters{display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;}
+  .filters button{min-height:36px; padding:0 12px; border-radius:18px; border:1.5px solid var(--line); background:#fff; font-weight:700; font-size:13.5px; cursor:pointer; color:var(--ink-soft);}
+  .filters button.on{background:var(--navy); border-color:var(--navy); color:#fff;}
+
+  .team{background:var(--paper); border:1px solid var(--line); border-left:5px solid var(--st); border-radius:14px; padding:12px; margin-top:8px;}
+  .team.due{--st:var(--due);} .team.cash, .team.bank{--st:var(--ok);} .team.exempt{--st:var(--ex);}
+  .t-top{display:flex; gap:10px; align-items:flex-start;}
+  .seed{font-family:'Space Grotesk',sans-serif; font-weight:700; color:var(--ink-soft); min-width:24px;}
+  .names{flex:1; min-width:0; font-weight:700; font-size:15px; line-height:1.35;}
+  .names small{display:block; font-weight:500; font-size:13px; color:var(--ink-soft);}
+  .amt{text-align:right; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px; white-space:nowrap; font-variant-numeric:tabular-nums;}
+  .amt small{display:block; font-family:'IBM Plex Sans',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:.03em; color:var(--st);}
+  .status{display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:10px;}
+  .status button{min-height:40px; border-radius:9px; border:1.5px solid var(--line); background:#fff; font-weight:700; font-size:13px; cursor:pointer; color:var(--ink-soft); padding:0 4px;}
+  .status button.on[data-s=due]{background:var(--due-bg); border-color:var(--due); color:var(--due);}
+  .status button.on[data-s=cash], .status button.on[data-s=bank]{background:var(--ok-bg); border-color:var(--ok); color:var(--ok);}
+  .status button.on[data-s=exempt]{background:var(--ex-bg); border-color:var(--ex); color:var(--ex);}
+  .more{display:flex; gap:8px; margin-top:8px; align-items:center; flex-wrap:wrap;}
+  .more input{flex:1; min-width:120px; min-height:40px; border:1.5px solid var(--line); border-radius:9px; padding:0 10px; font-size:14.5px; font-weight:500;}
+  .more .paid{flex:0 0 100px; min-width:0;}
+  .more .pl{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; color:var(--ink-soft);}
+  .more .pl .paid{width:100px; flex:none;}
+  .opts{margin-top:6px;}
+  .opts summary{cursor:pointer; font-size:13px; font-weight:700; color:var(--ink-soft); list-style:none; padding:4px 0;}
+  .opts summary::-webkit-details-marker{display:none;}
+  .opts summary::before{content:"› "; }
+  .opts[open] summary::before{content:"⌄ ";}
+  .more .x{border:none; background:none; color:var(--ink-soft); font-size:13px; font-weight:700; cursor:pointer; text-decoration:underline; padding:4px;}
+  .empty{text-align:center; padding:30px 16px; color:var(--ink-soft); font-size:14.5px; line-height:1.5;}
+  .add-row{display:grid; grid-template-columns:1fr 1fr auto; gap:8px; margin-top:12px;}
+  @media (max-width:480px){ .add-row{grid-template-columns:1fr;} }
+  footer{margin:28px 0 40px; color:var(--ink-soft); font-size:13px; line-height:1.6;}
+  .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--navy); color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; font-weight:600; display:none; z-index:70; max-width:90vw; text-align:center;}
+  .toast.show{display:block;}
+</style>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+<nav class="bv-topbar" aria-label="Πλοήγηση"><a class="bv-home" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Αρχική</a><a class="bv-brand" href="index.html"><img src="icons/logo.png" alt="">Supervisor Tools</a></nav>
+<header class="hero">
+  <div class="wrap">
+    <h1>Συμμετοχές & Πληρωμές</h1>
+    <p>Ποιες ομάδες πλήρωσαν παράβολο, πόσα μαζεύτηκαν, ποιοι χρωστάνε. Οι ομάδες έρχονται από την Αρχική Λίστα.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <div class="grid">
+      <label class="f full">Τουρνουά<input type="text" id="tName" placeholder="π.χ. Athens Open"></label>
+      <label class="f">Παράβολο (€)<input type="number" id="fee" min="0" step="1" inputmode="decimal" value="40"></label>
+      <div><div style="font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:5px">Ανά</div>
+        <div class="seg" id="perSeg"><button type="button" data-v="team">ομάδα</button><button type="button" data-v="athlete">αθλητή</button></div></div>
+    </div>
+    <div class="btns">
+      <button class="btn primary" type="button" id="importBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></svg>Από την Αρχική Λίστα</button>
+      <button class="btn" type="button" id="xlsBtn">Excel</button>
+      <button class="btn ghost" type="button" id="clearBtn">Νέο τουρνουά</button>
+    </div>
+    <p class="msg" id="msg"></p>
+  </section>
+
+  <div class="sum" id="sum"></div>
+  <div class="meter"><i id="meter" style="width:0"></i></div>
+
+  <div class="tabs">
+    <button class="tab men on" type="button" data-g="MEN" id="tabMEN">Άνδρες</button>
+    <button class="tab women" type="button" data-g="WOMEN" id="tabWOMEN">Γυναίκες</button>
+  </div>
+  <div class="filters" id="filters">
+    <button type="button" data-f="all" class="on">Όλες</button>
+    <button type="button" data-f="due">Χρωστάνε</button>
+    <button type="button" data-f="paid">Πλήρωσαν</button>
+    <button type="button" data-f="exempt">Απαλλαγή</button>
+  </div>
+  <div id="list"></div>
+
+  <section class="card">
+    <div style="font-weight:700;font-size:14px;color:var(--ink-soft)">Πρόσθεσε ομάδα με το χέρι</div>
+    <div class="add-row">
+      <input type="text" id="a1" placeholder="Αθλητής 1">
+      <input type="text" id="a2" placeholder="Αθλητής 2">
+      <button class="btn primary" type="button" id="addBtn">+ Ομάδα</button>
+    </div>
+  </section>
+
+  <footer>Τα στοιχεία μένουν μόνο σε αυτή τη συσκευή. Πάτα «Από την Αρχική Λίστα» ξανά όποτε αλλάξει η λίστα: προστίθενται οι νέες ομάδες και οι πληρωμές που έχεις ήδη σημειώσει μένουν ως έχουν.</footer>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'payments_v1';
+const STATUS = { due:'Χρωστάει', cash:'Μετρητά', bank:'Κατάθεση', exempt:'Απαλλαγή' };
+let S = { tName:'', fee:40, per:'team', teams:{ MEN:[], WOMEN:[] } };
+try{ const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if(s) S = Object.assign(S, s); }catch(e){}
+let tab = 'MEN', filter = 'all';
+const $ = id => document.getElementById(id);
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+const EUR = new Intl.NumberFormat('el-GR', { minimumFractionDigits:0, maximumFractionDigits:2 });
+function eur(v){ return EUR.format(Math.round((Number(v) || 0) * 100) / 100) + ' €'; }
+function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 3000); }
+function key(a, b){ const n = x => String(x).toLocaleUpperCase('el-GR').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim(); return [n(a), n(b)].sort().join('|'); }
+
+// οφειλόμενο ποσό ομάδας (με προσαρμογή ανά ομάδα)
+function dueOf(t){ if(t.status === 'exempt') return 0; if(t.custom != null && t.custom !== '') return Number(t.custom) || 0; return (Number(S.fee) || 0) * (S.per === 'athlete' ? 2 : 1); }
+function paidOf(t){ if(t.status === 'cash' || t.status === 'bank') return t.paid != null && t.paid !== '' ? Number(t.paid) || 0 : dueOf(t); return 0; }
+
+/* ---- εισαγωγή από την Αρχική Λίστα ---- */
+function importEntryList(){
+  let d = null; try{ d = JSON.parse(localStorage.getItem('entryListSeeded_v1') || 'null'); }catch(e){}
+  if(!d || (!(d.MEN || []).length && !(d.WOMEN || []).length)){ $('msg').textContent = 'Δεν βρέθηκε Αρχική Λίστα σε αυτή τη συσκευή. Άνοιξε πρώτα την «Αρχική Λίστα» και πρόσθεσε τις ομάδες.'; return; }
+  let added = 0;
+  ['MEN','WOMEN'].forEach(g => {
+    const full = d[g + '_FULL'] || (d[g] || []).map(s => s.split(' / '));
+    const have = new Map(S.teams[g].map(t => [key(t.a, t.b), t]));
+    full.forEach(([a, b], i) => {
+      const k = key(a, b);
+      if(have.has(k)){ have.get(k).seed = i + 1; return; }
+      S.teams[g].push({ id: uid(), a, b, seed: i + 1, status:'due', paid:'', custom:'', note:'' }); added++;
+    });
+    S.teams[g].sort((x, y) => (x.seed || 999) - (y.seed || 999));
+  });
+  if(d.tName && !S.tName){ S.tName = d.tName; $('tName').value = d.tName; }
+  save(); render();
+  $('msg').textContent = added ? `Προστέθηκαν ${added} ομάδες από την Αρχική Λίστα${d.tName ? ' «' + d.tName + '»' : ''}.` : 'Όλες οι ομάδες της Αρχικής Λίστας υπάρχουν ήδη.';
+}
+
+/* ---- εμφάνιση ---- */
+function totals(){
+  const all = S.teams.MEN.concat(S.teams.WOMEN);
+  const expected = all.reduce((a, t) => a + dueOf(t), 0);
+  const cash = all.filter(t => t.status === 'cash').reduce((a, t) => a + paidOf(t), 0);
+  const bank = all.filter(t => t.status === 'bank').reduce((a, t) => a + paidOf(t), 0);
+  const owing = all.filter(t => t.status !== 'exempt' && paidOf(t) < dueOf(t));
+  const balance = owing.reduce((a, t) => a + (dueOf(t) - paidOf(t)), 0);
+  return { all, expected, cash, bank, collected: cash + bank, owing, balance };
+}
+function render(){
+  $('tName').value = S.tName; $('fee').value = S.fee;
+  document.querySelectorAll('#perSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === S.per));
+  const T = totals();
+  $('sum').innerHTML = `
+    <div class="kpi ok"><div class="v">${eur(T.collected)}</div><div class="l">Εισπράχθηκαν</div><div class="s">Μετρητά ${eur(T.cash)} · Κατάθεση ${eur(T.bank)}</div></div>
+    <div class="kpi due"><div class="v">${eur(T.balance)}</div><div class="l">Υπόλοιπο</div><div class="s">${T.owing.length} ${T.owing.length === 1 ? 'ομάδα χρωστάει' : 'ομάδες χρωστάνε'}</div></div>
+    <div class="kpi"><div class="v">${eur(T.expected)}</div><div class="l">Αναμενόμενα</div><div class="s">${T.all.length} ομάδες</div></div>
+    <div class="kpi"><div class="v">${T.all.filter(t => t.status === 'exempt').length}</div><div class="l">Απαλλαγές</div><div class="s">χωρίς παράβολο</div></div>`;
+  $('meter').style.width = (T.expected ? Math.min(100, T.collected / T.expected * 100) : 0) + '%';
+  ['MEN','WOMEN'].forEach(g => {
+    const n = S.teams[g].length, d = S.teams[g].filter(t => t.status !== 'exempt' && paidOf(t) < dueOf(t)).length;
+    $('tab' + g).innerHTML = (g === 'MEN' ? 'Άνδρες' : 'Γυναίκες') + (n ? ` <small style="opacity:.8">(${n}${d ? ' · ' + d + ' χρωστ.' : ''})</small>` : '');
+    $('tab' + g).classList.toggle('on', g === tab);
+  });
+  document.querySelectorAll('#filters button').forEach(b => b.classList.toggle('on', b.dataset.f === filter));
+  const list = S.teams[tab].filter(t => {
+    const owes = t.status !== 'exempt' && paidOf(t) < dueOf(t);
+    return filter === 'all' || (filter === 'due' && owes) || (filter === 'paid' && (t.status === 'cash' || t.status === 'bank') && !owes) || (filter === 'exempt' && t.status === 'exempt');
+  });
+  $('list').innerHTML = !S.teams[tab].length
+    ? `<div class="empty">Δεν υπάρχουν ομάδες ακόμα.<br>Πάτα «Από την Αρχική Λίστα» ή πρόσθεσε ομάδα με το χέρι.</div>`
+    : !list.length ? '<div class="empty">Καμία ομάδα σε αυτό το φίλτρο.</div>'
+    : list.map(t => {
+      const due = dueOf(t), paid = paidOf(t), owes = t.status !== 'exempt' && paid < due;
+      const right = t.status === 'exempt' ? `<span>—</span><small>ΑΠΑΛΛΑΓΗ</small>`
+        : owes && paid > 0 ? `${eur(due - paid)}<small>ΥΠΟΛΟΙΠΟ</small>`
+        : owes ? `${eur(due)}<small>ΧΡΩΣΤΑΕΙ</small>` : `${eur(paid)}<small>${STATUS[t.status].toLocaleUpperCase('el-GR').normalize('NFD').replace(/[\u0300-\u036f]/g,'')}</small>`;
+      const st = owes && paid > 0 ? 'due' : t.status;
+      return `<div class="team ${st}" data-id="${t.id}">
+        <div class="t-top"><span class="seed">${t.seed || ''}</span>
+          <div class="names">${esc(t.a)}<small>${esc(t.b)}</small></div>
+          <div class="amt">${right}</div></div>
+        <div class="status">${Object.keys(STATUS).map(s => `<button type="button" data-s="${s}" class="${t.status === s ? 'on' : ''}">${STATUS[s]}</button>`).join('')}</div>
+        <div class="more">
+          ${t.status === 'cash' || t.status === 'bank' ? `<label class="pl">Ποσό<input class="paid" type="number" inputmode="decimal" min="0" data-f="paid" value="${esc(t.paid)}" placeholder="${due}"></label>` : ''}
+          <input type="text" data-f="note" value="${esc(t.note)}" placeholder="Σημείωση">
+        </div>
+        <details class="opts"><summary>Περισσότερα</summary>
+          <div class="more">
+            <label class="pl">Άλλη οφειλή για αυτή την ομάδα (€)<input class="paid" type="number" inputmode="decimal" min="0" data-f="custom" value="${esc(t.custom)}" placeholder="${(Number(S.fee) || 0) * (S.per === 'athlete' ? 2 : 1)}"></label>
+            <button type="button" class="x" data-del="1">Διαγραφή ομάδας</button>
+          </div>
+        </details>
+      </div>`;
+    }).join('');
+}
+
+/* ---- ενέργειες ---- */
+$('list').addEventListener('click', e => {
+  const card = e.target.closest('.team'); if(!card) return;
+  const t = S.teams[tab].find(x => x.id === card.dataset.id); if(!t) return;
+  const b = e.target.closest('[data-s]');
+  if(b){ t.status = b.dataset.s; if(t.status === 'due' || t.status === 'exempt') t.paid = ''; t.when = Date.now(); save(); render(); return; }
+  if(e.target.closest('[data-del]')){ if(confirm('Να διαγραφεί η ομάδα «' + t.a + ' / ' + t.b + '»;')){ S.teams[tab] = S.teams[tab].filter(x => x !== t); save(); render(); } }
+});
+$('list').addEventListener('change', e => {
+  const inp = e.target.closest('[data-f]'); if(!inp) return;
+  const card = inp.closest('.team'); const t = S.teams[tab].find(x => x.id === card.dataset.id); if(!t) return;
+  t[inp.dataset.f] = inp.value.trim(); save(); render();
+});
+$('tName').addEventListener('input', e => { S.tName = e.target.value; save(); });
+$('fee').addEventListener('input', e => { S.fee = e.target.value === '' ? '' : Number(e.target.value); save(); renderKeepFocus(); });
+function renderKeepFocus(){ const a = document.activeElement && document.activeElement.id; render(); if(a){ const el = $(a); if(el){ el.focus(); const v = el.value; if(el.setSelectionRange && el.type === 'text') el.setSelectionRange(v.length, v.length); } } }
+$('perSeg').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; S.per = b.dataset.v; save(); render(); });
+document.querySelectorAll('.tabs .tab').forEach(b => b.addEventListener('click', () => { tab = b.dataset.g; render(); }));
+$('filters').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; filter = b.dataset.f; render(); });
+$('importBtn').addEventListener('click', importEntryList);
+$('addBtn').addEventListener('click', () => {
+  const a = $('a1').value.trim(), b = $('a2').value.trim();
+  if(!a || !b){ toast('Συμπλήρωσε και τους δύο αθλητές'); return; }
+  if(S.teams[tab].some(t => key(t.a, t.b) === key(a, b))){ toast('Η ομάδα υπάρχει ήδη'); return; }
+  S.teams[tab].push({ id: uid(), a, b, seed:'', status:'due', paid:'', custom:'', note:'' });
+  $('a1').value = ''; $('a2').value = ''; save(); render(); toast('Προστέθηκε στους ' + (tab === 'MEN' ? 'Άνδρες' : 'Γυναίκες'));
+});
+$('clearBtn').addEventListener('click', () => {
+  if(!S.teams.MEN.length && !S.teams.WOMEN.length) return;
+  if(!confirm('Να σβηστούν όλες οι ομάδες και οι πληρωμές για να ξεκινήσεις νέο τουρνουά; Κατέβασε πρώτα το Excel αν θες να τα κρατήσεις.')) return;
+  S.teams = { MEN:[], WOMEN:[] }; S.tName = ''; save(); render(); $('msg').textContent = '';
+});
+$('xlsBtn').addEventListener('click', () => {
+  const T = totals();
+  if(!T.all.length){ toast('Δεν υπάρχουν ομάδες'); return; }
+  const wb = XLSX.utils.book_new();
+  const sum = [
+    ['Συμμετοχές & Πληρωμές' + (S.tName ? ' — ' + S.tName : '')], [],
+    ['Παράβολο', (Number(S.fee) || 0) + ' € ανά ' + (S.per === 'athlete' ? 'αθλητή' : 'ομάδα')],
+    ['Ομάδες', T.all.length], ['Αναμενόμενα (€)', T.expected], ['Εισπράχθηκαν (€)', T.collected],
+    ['  Μετρητά (€)', T.cash], ['  Κατάθεση (€)', T.bank], ['Υπόλοιπο (€)', T.balance], ['Ομάδες που χρωστάνε', T.owing.length]
+  ];
+  const ws0 = XLSX.utils.aoa_to_sheet(sum); ws0['!cols'] = [{wch:24},{wch:28}];
+  XLSX.utils.book_append_sheet(wb, ws0, 'Σύνοψη');
+  [['MEN','Άνδρες'],['WOMEN','Γυναίκες']].forEach(([g, nm]) => {
+    const rows = [['#','Αθλητής 1','Αθλητής 2','Κατάσταση','Οφειλή (€)','Πληρώθηκε (€)','Υπόλοιπο (€)','Σημείωση']];
+    S.teams[g].forEach(t => { const d = dueOf(t), p = paidOf(t); rows.push([t.seed || '', t.a, t.b, (t.status !== 'exempt' && p > 0 && p < d) ? 'Μερική πληρωμή' : STATUS[t.status], d, p, t.status === 'exempt' ? 0 : Math.max(0, d - p), t.note || '']); });
+    const ws = XLSX.utils.aoa_to_sheet(rows); ws['!cols'] = [{wch:4},{wch:30},{wch:30},{wch:15},{wch:11},{wch:13},{wch:12},{wch:30}];
+    ws['!autofilter'] = { ref: 'A1:H' + rows.length };
+    XLSX.utils.book_append_sheet(wb, ws, nm);
+  });
+  XLSX.writeFile(wb, ((S.tName || 'Τουρνουά').replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '_')) + '_πληρωμές.xlsx');
+});
+render();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>

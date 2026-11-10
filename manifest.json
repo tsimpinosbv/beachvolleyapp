@@ -65,6 +65,17 @@
       ]
     },
     {
+      "name": "Λίστα Ελέγχου Επόπτη",
+      "short_name": "Checklist",
+      "url": "./Checklist.html",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
       "name": "Υπολογισμός Βαθμών",
       "short_name": "Βαθμοί",
       "url": "./PointSystem.html",

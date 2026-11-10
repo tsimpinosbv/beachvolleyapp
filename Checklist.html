@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Λίστα Ελέγχου Επόπτη — BV Supervisor Tools</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d3a5c">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Supervisor Tools">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0b3150; --navy-2:#155a8a; --accent:#1f7fc4;
+    --sky:#eaf4fb; --sky-2:#f6fafd; --paper:#fff;
+    --ink:#0f2438; --ink-soft:rgba(15,36,56,0.80); --line:rgba(15,36,56,0.12);
+    --ok:#22764a; --ok-bg:#e5f4ec; --bad:#b6402f;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{margin:0; min-height:100vh; background:linear-gradient(180deg,#fff 0%,var(--sky-2) 40%,var(--sky) 100%);
+       color:var(--ink); font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:15.5px;}
+  button,input,select,textarea{font-family:inherit; font-size:inherit; color:inherit;}
+  .wrap{max-width:820px; margin:0 auto; padding:0 16px;}
+
+  header.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%); color:#fff; border-radius:0 0 22px 22px; padding:20px 0 22px;}
+  .hero h1{font-family:'Space Grotesk',sans-serif; font-size:clamp(26px,7vw,36px); line-height:1.08; margin:0 0 6px;}
+  .hero p{margin:0; color:rgba(255,255,255,0.86); font-size:14.5px; line-height:1.45;}
+
+  .tbar{background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:14px; margin-top:16px; box-shadow:0 4px 14px rgba(18,86,138,0.06);}
+  .trow{display:flex; gap:8px; align-items:center;}
+  .trow select{flex:1; min-width:0; min-height:46px; border:1.5px solid var(--line); border-radius:11px; padding:0 12px; font-size:16px; font-weight:700; background:#fff;}
+  .ibtn{flex:none; min-height:46px; padding:0 14px; border-radius:11px; border:1.5px solid var(--navy-2); background:#fff; color:var(--navy-2); font-weight:700; font-size:14.5px; cursor:pointer;}
+  .ibtn.primary{background:var(--navy-2); color:#fff;}
+  .newbox{display:none; margin-top:10px; gap:8px;}
+  .newbox.show{display:flex;}
+  .newbox input{flex:1; min-width:0; min-height:46px; border:1.5px solid var(--line); border-radius:11px; padding:0 12px; font-size:16px;}
+  .prog{margin-top:14px;}
+  .prog-top{display:flex; justify-content:space-between; align-items:baseline; font-weight:700;}
+  .prog-top b{font-family:'Space Grotesk',sans-serif; font-size:22px; color:var(--navy);}
+  .prog-top span{font-size:13.5px; color:var(--ink-soft);}
+  .bar{height:10px; border-radius:10px; background:#e3ebf2; overflow:hidden; margin-top:6px;}
+  .bar i{display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--ok)); border-radius:10px; transition:width .25s;}
+  .tools{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+  .tbtn{border:none; background:none; color:var(--navy-2); font-weight:700; font-size:13.5px; padding:6px 2px; cursor:pointer; text-decoration:underline; text-underline-offset:3px;}
+  .tbtn.danger{color:var(--bad);}
+  .filter{display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; cursor:pointer; margin-left:auto;}
+  .filter input{width:20px; height:20px; accent-color:var(--navy-2);}
+
+  .phase{background:var(--paper); border:1px solid var(--line); border-radius:16px; margin-top:12px; overflow:hidden; box-shadow:0 4px 14px rgba(18,86,138,0.05);}
+  .ph-head{display:flex; align-items:center; gap:12px; width:100%; padding:14px; background:none; border:none; cursor:pointer; text-align:left;}
+  .ring{width:42px; height:42px; flex:none; position:relative;}
+  .ring svg{width:42px; height:42px; transform:rotate(-90deg);}
+  .ring span{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; color:var(--navy);}
+  .phase.done .ring span{color:var(--ok);}
+  .ph-txt{flex:1; min-width:0;}
+  .ph-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px; line-height:1.2;}
+  .ph-meta{font-size:13px; color:var(--ink-soft); margin-top:2px;}
+  .chev{width:20px; height:20px; flex:none; color:var(--ink-soft); transition:.2s;}
+  .phase.open .chev{transform:rotate(180deg);}
+  .ph-body{display:none; border-top:1px solid var(--line); padding:4px 8px 12px;}
+  .phase.open .ph-body{display:block;}
+
+  .item{display:flex; align-items:flex-start; gap:12px; padding:11px 8px; border-radius:10px; cursor:pointer; line-height:1.45;}
+  .item + .item{border-top:1px solid rgba(15,36,56,0.06);}
+  .item:hover{background:#f6fafd;}
+  .item input{width:24px; height:24px; flex:none; margin:0; accent-color:var(--ok); cursor:pointer;}
+  .item .txt{flex:1; min-width:0; font-size:15px;}
+  .item.checked .txt{color:var(--ink-soft); text-decoration:line-through; text-decoration-color:rgba(15,36,56,0.35);}
+  .item a{color:var(--navy-2); font-weight:700; text-decoration:none; white-space:nowrap;}
+  .item .del{border:none; background:none; color:var(--ink-soft); font-size:18px; line-height:1; padding:2px 6px; cursor:pointer;}
+  .mine{font-size:10.5px; font-weight:800; letter-spacing:.05em; color:var(--accent); background:#e3f0fa; border-radius:5px; padding:1px 5px; margin-left:4px; vertical-align:2px;}
+  .add{display:flex; gap:8px; padding:8px 8px 0;}
+  .add input{flex:1; min-width:0; min-height:44px; border:1.5px dashed var(--line); border-radius:10px; padding:0 12px; font-size:15px; background:#fbfdff;}
+  .add button{min-height:44px; padding:0 14px; border-radius:10px; border:none; background:var(--navy-2); color:#fff; font-weight:700; cursor:pointer;}
+  .notes{padding:10px 8px 0;}
+  .notes textarea{width:100%; min-height:70px; border:1.5px solid var(--line); border-radius:10px; padding:10px 12px; font-size:15px; resize:vertical; background:#fffef8;}
+  .notes label{font-size:12.5px; font-weight:700; color:var(--ink-soft); display:block; margin-bottom:4px;}
+  .empty{padding:14px 10px; color:var(--ink-soft); font-size:14px;}
+
+  footer{margin:28px 0 40px; color:var(--ink-soft); font-size:13px; line-height:1.6;}
+
+  @media print{
+    body{background:#fff; font-size:12px;}
+    .bv-topbar, header.hero, .tools, .add, .newbox, .trow .ibtn, footer, .chev, .del{display:none !important;}
+    .phase{box-shadow:none; break-inside:avoid-page;}
+    .ph-body{display:block !important;}
+    .item{padding:4px 6px;}
+  }
+</style>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+<nav class="bv-topbar" aria-label="Πλοήγηση"><a class="bv-home" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Αρχική</a><a class="bv-brand" href="index.html"><img src="icons/logo.png" alt="">Supervisor Tools</a></nav>
+<header class="hero">
+  <div class="wrap">
+    <h1>Λίστα Ελέγχου Επόπτη</h1>
+    <p>Όλα όσα ελέγχεις πριν, κατά και μετά το τουρνουά. Τα ✓ μένουν αποθηκευμένα ανά τουρνουά σε αυτή τη συσκευή.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="tbar">
+    <div class="trow">
+      <select id="tSel" aria-label="Τουρνουά"></select>
+      <button class="ibtn primary" type="button" id="newBtn">+ Νέο</button>
+    </div>
+    <div class="newbox" id="newBox">
+      <input id="newName" placeholder="Όνομα τουρνουά, π.χ. Athens Open" maxlength="60">
+      <button class="ibtn primary" type="button" id="newOk">Δημιουργία</button>
+    </div>
+    <div class="prog">
+      <div class="prog-top"><b id="pctTxt">0%</b><span id="cntTxt"></span></div>
+      <div class="bar"><i id="pctBar" style="width:0"></i></div>
+    </div>
+    <div class="tools">
+      <button class="tbtn" type="button" onclick="window.print()">Εκτύπωση</button>
+      <button class="tbtn" type="button" id="renameBtn">Μετονομασία</button>
+      <button class="tbtn danger" type="button" id="resetBtn">Ξεκίνα από την αρχή</button>
+      <button class="tbtn danger" type="button" id="delBtn">Διαγραφή τουρνουά</button>
+      <label class="filter"><input type="checkbox" id="onlyOpen"> Μόνο όσα μένουν</label>
+    </div>
+  </section>
+
+  <div id="phases"></div>
+
+  <footer>Πρόσθεσε δικούς σου ελέγχους στο τέλος κάθε φάσης: μένουν για όλα τα επόμενα τουρνουά. Τα βασικά στοιχεία (διαστάσεις, ύψος φιλέ, βάθος άμμου) είναι κατά τους Επίσημους Κανονισμούς Beach Volley της FIVB· η προκήρυξη του τουρνουά υπερισχύει.</footer>
+</main>
+
+<script>
+/* ============================= ΠΕΡΙΕΧΟΜΕΝΟ ============================= */
+const PHASES = [
+  { id:'pre', title:'Πριν το τουρνουά', meta:'Την εβδομάδα πριν', items:[
+    ['pre1','Επικοινωνία με τον διοργανωτή: υπεύθυνος, τηλέφωνο, ώρες πρόσβασης στον χώρο.'],
+    ['pre2','Έλεγχος προκήρυξης: ημερομηνίες, κατηγορίες, σύστημα, παράβολο, έπαθλα, προθεσμία δηλώσεων.'],
+    ['pre3','Λήψη και έλεγχος δηλώσεων συμμετοχής (διπλές, ελλιπείς, απορρίψεις).'],
+    ['pre4','Αρχική Λίστα με βαθμούς και σειρά ομάδων — αποστολή/ανάρτηση.','EntryList.html','Αρχική Λίστα'],
+    ['pre5','Πρόγραμμα αγώνων: γήπεδα, ώρες, ημέρες — έλεγχος ότι χωράει.','Schedules.html','Πρόγραμμα'],
+    ['pre6','Ορισμός διαιτητών: πόσοι, ποιες ημέρες και ώρες, ποιος είναι ο υπεύθυνος.'],
+    ['pre7','Ιατρική κάλυψη για όλες τις ώρες αγώνων (γιατρός ή διασώστης) και πρόσβαση ασθενοφόρου.'],
+    ['pre8','Γήπεδα: αριθμός, διαστάσεις, ελεύθερη ζώνη, κατάσταση άμμου.'],
+    ['pre9','Εξοπλισμός: μπάλες αγώνα, φιλέ, κεραίες, γραμμές, καρέκλες διαιτητών, πίνακες σκορ, τρόμπα και μανόμετρο.'],
+    ['pre10','Γραμματεία: φύλλα αγώνα, στυλό, εκτυπωτής, ρεύμα, internet.'],
+    ['pre11','Μετάλλια/κύπελλα και χρηματικά έπαθλα: τι, πόσα, ποιος τα φέρνει.','Prices.html','Έπαθλα'],
+    ['pre12','Αποστολή πρακτικών πληροφοριών στις ομάδες: ώρα προσέλευσης, technical meeting, πρόγραμμα.'],
+  ]},
+  { id:'arr', title:'Άφιξη — πριν τον πρώτο αγώνα', meta:'Την πρώτη ημέρα, νωρίς', items:[
+    ['arr1','Διαστάσεις γηπέδων 16 × 8 μ., γραμμές τεντωμένες και σταθερές, ελεύθερη ζώνη χωρίς εμπόδια.'],
+    ['arr2','Ύψος φιλέ: Άνδρες 2,43 μ. · Γυναίκες 2,24 μ. — μέτρηση στη μέση και στις δύο άκρες.'],
+    ['arr3','Κεραίες και πλαϊνές ταινίες στη σωστή θέση, πάνω από τις πλαϊνές γραμμές.'],
+    ['arr4','Άμμος ισοπεδωμένη, βάθος τουλάχιστον 40 εκ., χωρίς πέτρες, γυαλιά ή άλλα επικίνδυνα αντικείμενα.'],
+    ['arr5','Μπάλες: σωστή πίεση, αρκετές ανά γήπεδο, ίδιος τύπος σε όλα τα γήπεδα.'],
+    ['arr6','Σε κάθε γήπεδο: καρέκλα διαιτητή, πίνακας σκορ, πάγκοι ή σκιά για τις ομάδες, νερό.'],
+    ['arr7','Ιατρός/διασώστης παρών, πάγος και φαρμακείο, σημείο πρώτων βοηθειών γνωστό σε όλους.'],
+    ['arr8','Διαιτητές: παρουσία, ενημέρωση (briefing), κατανομή στους αγώνες της ημέρας.'],
+    ['arr9','Technical meeting: έλεγχος στοιχείων αθλητών, τηλέφωνα επικοινωνίας, κανόνες τουρνουά.'],
+    ['arr10','Check-in ομάδων και αντικαταστάσεις από τη λίστα αναμονής.'],
+    ['arr11','Είσπραξη παραβόλων.','Payments.html','Πληρωμές'],
+    ['arr12','Ανάρτηση προγράμματος στη γραμματεία (και online).'],
+    ['arr13','Χώροι αθλητών: τουαλέτες, αποδυτήρια, σκιά, πόσιμο νερό.'],
+    ['arr14','Καιρός: πρόγνωση για ζέστη, άνεμο, καταιγίδα — σχέδιο σε περίπτωση διακοπής.'],
+  ]},
+  { id:'day', title:'Κάθε ημέρα αγώνων', meta:'Κατά τη διάρκεια', items:[
+    ['day1','Έλεγχος γηπέδων πριν την έναρξη: φιλέ, γραμμές, ισοπέδωση άμμου.'],
+    ['day2','Σύντομη συνάντηση με διοργανωτή και διαιτητές για το πρόγραμμα της ημέρας.'],
+    ['day3','Τήρηση ωραρίου — ενημέρωση ομάδων για κάθε αλλαγή ώρας ή γηπέδου.'],
+    ['day4','Συλλογή και έλεγχος φύλλων αγώνα μετά από κάθε αγώνα (σκορ, υπογραφές).'],
+    ['day5','Ενημέρωση αποτελεσμάτων και ταμπλό.'],
+    ['day6','Καταγραφή περιστατικών: τραυματισμοί, ενστάσεις, πειθαρχικά, καθυστερήσεις.'],
+    ['day7','Παρακολούθηση ζέστης/ανέμου — νερό και διαλείμματα όταν χρειάζεται.'],
+    ['day8','Εμφάνιση αθλητών (στολή, αριθμοί) σύμφωνα με την προκήρυξη.'],
+  ]},
+  { id:'fin', title:'Τελικοί και απονομή', meta:'Τελευταία ημέρα', items:[
+    ['fin1','Επιβεβαίωση ώρας ημιτελικών, μικρού τελικού και τελικού — ενημέρωση ομάδων.'],
+    ['fin2','Τελική κατάταξη όλων των ομάδων (και των θέσεων που μοιράζονται).'],
+    ['fin3','Μετάλλια/κύπελλα έτοιμα, σειρά απονομής, παρουσία επισήμων.'],
+    ['fin4','Χρηματικά έπαθλα: ποσά ανά ομάδα και υπογραφές παραλαβής.','Prices.html','Έπαθλα'],
+  ]},
+  { id:'post', title:'Μετά το τουρνουά', meta:'Τις επόμενες ημέρες', items:[
+    ['post1','Αποστολή αποτελεσμάτων και τελικής κατάταξης στην ομοσπονδία.'],
+    ['post2','Αποστολή φύλλων αγώνα.'],
+    ['post3','Αναφορά επόπτη: οργάνωση, εγκαταστάσεις, περιστατικά, προτάσεις.'],
+    ['post4','Ενημέρωση βαθμολογίας (πόντοι και έπαθλα) και δημοσίευση.','Ranking.html','Βαθμολογία'],
+    ['post5','Εκκαθάριση παραβόλων και εξόδων με τον διοργανωτή.','Payments.html','Πληρωμές'],
+    ['post6','Επιστροφή εξοπλισμού που δανείστηκε.'],
+  ]},
+];
+
+/* ============================= ΚΑΤΑΣΤΑΣΗ ============================= */
+const KEY = 'checklist_v1';
+let S = { tournaments:[], current:null, custom:{} };
+try{ const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if(s) S = Object.assign(S, s); }catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+const $ = id => document.getElementById(id);
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function newTournament(name){
+  const t = { id: uid(), name: name || 'Τουρνουά', created: Date.now(), checks:{}, notes:{} };
+  S.tournaments.unshift(t); S.current = t.id; save(); return t;
+}
+if(!S.tournaments.length){
+  // πρόταση ονόματος από την Αρχική Λίστα, αν υπάρχει
+  let nm = ''; try{ nm = (JSON.parse(localStorage.getItem('entryListSeeded_v1') || '{}').tName || '').trim(); }catch(e){}
+  newTournament(nm || 'Το τουρνουά μου');
+}
+function cur(){ return S.tournaments.find(t => t.id === S.current) || S.tournaments[0]; }
+function itemsOf(ph){ return ph.items.map(([id, text, href, ln]) => ({ id, text, href, ln, mine:false }))
+  .concat((S.custom[ph.id] || []).map(c => ({ id:c.id, text:c.text, mine:true }))); }
+
+/* ============================= ΕΜΦΑΝΙΣΗ ============================= */
+const openState = {};
+function ring(p){
+  const r = 17, c = 2 * Math.PI * r;
+  return `<svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="${r}" fill="none" stroke="#e3ebf2" stroke-width="5"/>
+    <circle cx="21" cy="21" r="${r}" fill="none" stroke="${p >= 1 ? '#22764a' : '#1f7fc4'}" stroke-width="5" stroke-linecap="round"
+      stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - p)}"/></svg>`;
+}
+function render(){
+  const t = cur();
+  $('tSel').innerHTML = S.tournaments.map(x => `<option value="${x.id}" ${x.id === t.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('');
+  const onlyOpen = $('onlyOpen').checked;
+  let all = 0, done = 0;
+  $('phases').innerHTML = PHASES.map((ph, i) => {
+    const items = itemsOf(ph);
+    const d = items.filter(it => t.checks[it.id]).length;
+    all += items.length; done += d;
+    const p = items.length ? d / items.length : 0;
+    if(openState[ph.id] === undefined) openState[ph.id] = false;
+    const shown = onlyOpen ? items.filter(it => !t.checks[it.id]) : items;
+    return `<section class="phase ${openState[ph.id] ? 'open' : ''} ${p >= 1 ? 'done' : ''}" data-ph="${ph.id}">
+      <button class="ph-head" type="button" data-toggle="${ph.id}">
+        <span class="ring">${ring(p)}<span>${d}/${items.length}</span></span>
+        <span class="ph-txt"><span class="ph-title">${i + 1}. ${ph.title}</span><div class="ph-meta">${ph.meta}${p >= 1 ? ' · ✓ ολοκληρώθηκε' : ''}</div></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="ph-body">
+        ${shown.length ? shown.map(it => `<label class="item ${t.checks[it.id] ? 'checked' : ''}">
+            <input type="checkbox" data-id="${it.id}" ${t.checks[it.id] ? 'checked' : ''}>
+            <span class="txt">${esc(it.text)}${it.mine ? '<span class="mine">ΔΙΚΟ ΜΟΥ</span>' : ''}${it.href ? ` <a href="${it.href}">→ ${it.ln}</a>` : ''}</span>
+            ${it.mine ? `<button class="del" type="button" data-del="${ph.id}|${it.id}" aria-label="Διαγραφή">×</button>` : ''}
+          </label>`).join('') : '<div class="empty">Όλα έγιναν ✓</div>'}
+        <div class="add"><input placeholder="+ Πρόσθεσε δικό σου έλεγχο" data-addin="${ph.id}" maxlength="200"><button type="button" data-add="${ph.id}">Προσθήκη</button></div>
+        <div class="notes"><label>Σημειώσεις</label><textarea data-note="${ph.id}" placeholder="π.χ. τι λείπει, ποιος το αναλαμβάνει…">${esc(t.notes[ph.id] || '')}</textarea></div>
+      </div>
+    </section>`;
+  }).join('');
+  const pct = all ? Math.round(done / all * 100) : 0;
+  $('pctTxt').textContent = pct + '%';
+  $('pctBar').style.width = pct + '%';
+  $('cntTxt').textContent = done + ' από ' + all + ' έλεγχοι';
+}
+
+/* ============================= ΕΝΕΡΓΕΙΕΣ ============================= */
+$('phases').addEventListener('click', e => {
+  const tg = e.target.closest('[data-toggle]');
+  if(tg){ const id = tg.dataset.toggle; openState[id] = !openState[id]; tg.parentElement.classList.toggle('open', openState[id]); return; }
+  const del = e.target.closest('[data-del]');
+  if(del){ e.preventDefault(); const [ph, id] = del.dataset.del.split('|');
+    S.custom[ph] = (S.custom[ph] || []).filter(c => c.id !== id); S.tournaments.forEach(t => delete t.checks[id]); save(); render(); return; }
+  const add = e.target.closest('[data-add]');
+  if(add){ addCustom(add.dataset.add); }
+});
+$('phases').addEventListener('change', e => {
+  const cb = e.target.closest('input[type=checkbox][data-id]'); if(!cb) return;
+  const t = cur(); if(cb.checked) t.checks[cb.dataset.id] = Date.now(); else delete t.checks[cb.dataset.id];
+  save(); render();
+});
+$('phases').addEventListener('keydown', e => { const i = e.target.closest('[data-addin]'); if(i && e.key === 'Enter') addCustom(i.dataset.addin); });
+$('phases').addEventListener('input', e => { const n = e.target.closest('[data-note]'); if(n){ cur().notes[n.dataset.note] = n.value; save(); } });
+function addCustom(ph){
+  const inp = document.querySelector(`[data-addin="${ph}"]`); const v = inp.value.trim(); if(!v) return;
+  (S.custom[ph] = S.custom[ph] || []).push({ id: 'c' + uid(), text: v }); save(); render();
+  setTimeout(() => { const n = document.querySelector(`[data-addin="${ph}"]`); n && n.focus(); }, 0);
+}
+$('tSel').addEventListener('change', e => { S.current = e.target.value; save(); render(); });
+$('newBtn').addEventListener('click', () => { $('newBox').classList.toggle('show'); $('newName').focus(); });
+$('newOk').addEventListener('click', () => { const v = $('newName').value.trim(); if(!v){ $('newName').focus(); return; }
+  newTournament(v); $('newName').value = ''; $('newBox').classList.remove('show'); Object.keys(openState).forEach(k => openState[k] = false); render(); });
+$('newName').addEventListener('keydown', e => { if(e.key === 'Enter') $('newOk').click(); });
+$('renameBtn').addEventListener('click', () => { const t = cur(); const v = prompt('Νέο όνομα τουρνουά:', t.name); if(v && v.trim()){ t.name = v.trim(); save(); render(); } });
+$('resetBtn').addEventListener('click', () => { if(confirm('Να σβηστούν όλα τα ✓ και οι σημειώσεις του «' + cur().name + '»;')){ const t = cur(); t.checks = {}; t.notes = {}; save(); render(); } });
+$('delBtn').addEventListener('click', () => {
+  const t = cur(); if(!confirm('Να διαγραφεί το τουρνουά «' + t.name + '» από τη λίστα;')) return;
+  S.tournaments = S.tournaments.filter(x => x.id !== t.id);
+  if(!S.tournaments.length) newTournament('Το τουρνουά μου'); else S.current = S.tournaments[0].id;
+  save(); render();
+});
+$('onlyOpen').addEventListener('change', render);
+
+// άνοιξε την πρώτη φάση που δεν έχει ολοκληρωθεί
+(function(){ const t = cur(); const ph = PHASES.find(p => itemsOf(p).some(it => !t.checks[it.id])); if(ph) openState[ph.id] = true; })();
+render();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>

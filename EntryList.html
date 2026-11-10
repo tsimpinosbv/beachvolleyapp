@@ -528,7 +528,12 @@ function publishSeeded(){
   try{
     const sur = (m, raw) => String(m.p ? m.p.name : raw).trim().split(/\s+/)[0];
     const out = { tName: document.getElementById('tName').value.trim(), savedAt: Date.now() };
-    ['MEN','WOMEN'].forEach(g => { out[g] = computed(g).rows.map(r => sur(r.m1, r.t.n1) + ' / ' + sur(r.m2, r.t.n2)); });
+    const full = (m, raw) => String(m.p ? m.p.name : raw).trim();
+    ['MEN','WOMEN'].forEach(g => {
+      const rows = computed(g).rows;
+      out[g] = rows.map(r => sur(r.m1, r.t.n1) + ' / ' + sur(r.m2, r.t.n2));
+      out[g + '_FULL'] = rows.map(r => [full(r.m1, r.t.n1), full(r.m2, r.t.n2)]);
+    });
     localStorage.setItem('entryListSeeded_v1', JSON.stringify(out));
   }catch(e){}
 }
