@@ -272,7 +272,20 @@
 <li>Ανέβασέ το από την εφαρμογή με <strong>Δημοσίευση στο GitHub</strong> (ίδιο κλειδί με τη Βαθμολογία, ενότητα 3) ή χειροκίνητα με το όνομα <code>Calendar.xlsx</code>.</li>
 <li>Με <strong>.ics</strong> προσθέτεις ένα τουρνουά ή όλα τα επόμενα (μαζί με τις προθεσμίες) στο ημερολόγιο του κινητού.</li>
 </ol>
-<p>Οι αναφορές και τα φύλλα πληρωμής μένουν μόνο στη συσκευή σου.</p>
+<p><strong>Αρχείο Σεζόν (ιδιωτικό)</strong></p>
+<p>Οι αναφορές και τα φύλλα πληρωμής αποθηκεύονται αυτόματα στη συσκευή. Για να φυλάσσονται και ανά σεζόν, υπάρχει ξεχωριστό <strong>ιδιωτικό</strong> repository, γιατί το <code>beachvolleyapp</code> είναι δημόσιο και θα φαίνονταν τραυματισμοί, περιστατικά και ποσά.</p>
+<p>Ρύθμιση (μία φορά):</p>
+<ol>
+<li>Στο GitHub πάτα <strong>+ → New repository</strong>. Όνομα: <code>bv-supervisor-archive</code>, επίλεξε <strong>Private</strong>, τσέκαρε <strong>Add a README file</strong> και πάτα <strong>Create repository</strong>.</li>
+<li>Άνοιξε <a href="https://github.com/settings/personal-access-tokens," target="_blank" rel="noopener">github.com/settings/personal-access-tokens,</a> πάτα το κλειδί <strong>BV Supervisor Tools</strong> → <strong>Edit</strong>.</li>
+<li>Στο <strong>Repository access</strong> πρόσθεσε το <strong>bv-supervisor-archive</strong> (να μείνει και το beachvolleyapp) και πάτα <strong>Update</strong>. Το κλειδί δεν αλλάζει, δεν χρειάζεται να το ξαναβάλεις στην εφαρμογή.</li>
+</ol>
+<p>Χρήση:</p>
+<ol>
+<li>Στην <strong>Αναφορά Supervisor</strong> ή στο <strong>Φύλλο Πληρωμής Επάθλων</strong> έλεγξε τη <strong>Σεζόν</strong> (βγαίνει από την ημερομηνία) και πάτα <strong>Αποθήκευση στο αρχείο</strong>. Ανεβαίνουν τα δεδομένα και το Word, στον φάκελο <code>σεζόν/τουρνουά</code>.</li>
+<li>Στο <strong>Αρχείο Σεζόν</strong> διαλέγεις σεζόν και βλέπεις κάθε τουρνουά. <strong>Άνοιγμα</strong> το φέρνει στην εφαρμογή για διόρθωση, <strong>Word</strong> κατεβάζει το έγγραφο.</li>
+<li>Μετά από διόρθωση ξαναπάτα <strong>Αποθήκευση στο αρχείο</strong>: το αρχείο αντικαθίσταται (το GitHub κρατά και τις παλιές εκδόσεις στο History).</li>
+</ol>
 
 <h2 id="s8">8. Προσθήκη αρχείων στα «Αρχεία Τουρνουά» και «Διεθνείς Διοργανώσεις»</h2>
 <p>Τα αρχεία σε αυτούς τους φακέλους εμφανίζονται μόνα τους στην εφαρμογή. Δεν αλλάζεις καμία σελίδα.</p>
@@ -328,7 +341,7 @@
 <li>Πάτα <strong>Commit changes…</strong> → γράψε περιγραφή → <strong>Commit changes</strong>.</li>
 </ol>
 <p><strong>Αν αλλάξεις εικόνα ή εικονίδιο</strong> (φάκελος <code>icons/</code>), άνοιξε και το <code>service-worker.js</code> με το μολύβι και
-ανέβασε κατά ένα τον αριθμό στη γραμμή <code>const CACHE_VERSION = 'bv-tools-v18';</code> (π.χ. σε <code>v19</code>). Αλλιώς οι
+ανέβασε κατά ένα τον αριθμό στη γραμμή <code>const CACHE_VERSION = 'bv-tools-v19';</code> (π.χ. σε <code>v20</code>). Αλλιώς οι
 εγκατεστημένες εφαρμογές κρατούν την παλιά εικόνα. Για σελίδες HTML και το <code>Ranking.xlsx</code> δεν χρειάζεται.</p>
 
 <h2 id="s10">10. Διαγραφή ή μετονομασία αρχείου</h2>

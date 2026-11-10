@@ -3,9 +3,12 @@
  *
  *   BVPublish.publish({ path:'PointSystem.xlsx', bytes:Uint8Array, message:'…' })
  *     → Promise<{ ok:true } | { ok:false, error:'…' } | { ok:false, cancelled:true }>
+ *   Με repo: BVPublish.ARCHIVE γράφει στο ιδιωτικό αρχείο σεζόν.
+ *   BVPublish.tree(repo) → λίστα διαδρομών, BVPublish.getFile(repo, path) → Uint8Array
  */
 (function(){
   const OWNER = 'tsimpinosbv', REPO = 'beachvolleyapp', BRANCH = 'main';
+  const ARCHIVE = 'bv-supervisor-archive'; // ιδιωτικό repo για αναφορές & φύλλα πληρωμής
   const TOKEN_KEY = 'bvGithubToken';
   const TOKEN_URL = 'https://github.com/settings/personal-access-tokens/new?name=BV%20Supervisor%20Tools&description=%CE%94%CE%B7%CE%BC%CE%BF%CF%83%CE%AF%CE%B5%CF%85%CF%83%CE%B7%20%CE%B1%CF%81%CF%87%CE%B5%CE%AF%CF%89%CE%BD%20%CE%B1%CF%80%CF%8C%20%CF%84%CE%B7%CE%BD%20%CE%B5%CF%86%CE%B1%CF%81%CE%BC%CE%BF%CE%B3%CE%AE&contents=write';
 
@@ -54,13 +57,13 @@
         <ol>
           <li>Άνοιξε τη <a href="${TOKEN_URL}" target="_blank" rel="noopener">σελίδα δημιουργίας token</a> (συνδεδεμένος ως tsimpinosbv).</li>
           <li><b>Expiration</b>: διάλεξε διάρκεια, π.χ. 1 χρόνο.</li>
-          <li><b>Repository access</b>: <b>Only select repositories</b> → <b>beachvolleyapp</b>.</li>
+          <li><b>Repository access</b>: <b>Only select repositories</b> → <b>beachvolleyapp</b> και <b>bv-supervisor-archive</b> (αν το έχεις φτιάξει).</li>
           <li><b>Permissions</b>: το <b>Contents</b> να είναι <b>Read and write</b> (είναι ήδη επιλεγμένο).</li>
           <li><b>Generate token</b>, αντέγραψε το κλειδί (<code>github_pat_…</code>) και επικόλλησέ το εδώ:</li>
         </ol>
         <input type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
         <div class="bvp-err"></div>
-        <p class="bvp-note">Το κλειδί αποθηκεύεται μόνο σε αυτή τη συσκευή και επιτρέπει αλλαγές μόνο στο repository beachvolleyapp. Μην το δίνεις σε άλλους.</p>
+        <p class="bvp-note">Το κλειδί αποθηκεύεται μόνο σε αυτή τη συσκευή και επιτρέπει αλλαγές μόνο στα repositories που διάλεξες. Μην το δίνεις σε άλλους.</p>
         <div class="bvp-actions"><button type="button" data-a="cancel">Άκυρο</button><button type="button" class="primary" data-a="save">Αποθήκευση και δημοσίευση</button></div>
       </div>`;
     document.body.appendChild(modal);
@@ -68,7 +71,8 @@
   }
 
   // Ζητά κλειδί, το ελέγχει και επιστρέφει true/false
-  function askToken(msg){
+  function askToken(msg, repo){
+    repo = repo || REPO;
     return new Promise(resolve => {
       const m = ensureModal();
       const inp = m.querySelector('input'), err = m.querySelector('.bvp-err');
@@ -84,9 +88,9 @@
         save.disabled = true; err.textContent = 'Έλεγχος κλειδιού…';
         const prev = getToken(); setToken(t);
         try{
-          const r = await api('/repos/' + OWNER + '/' + REPO);
+          const r = await api('/repos/' + OWNER + '/' + repo);
           if(r.status === 401) throw new Error('Το κλειδί δεν είναι έγκυρο ή έχει λήξει.');
-          if(r.status === 404) throw new Error('Το κλειδί δεν έχει πρόσβαση στο beachvolleyapp. Στο Repository access διάλεξε beachvolleyapp.');
+          if(r.status === 404) throw new Error(repo === ARCHIVE ? 'Το κλειδί δεν βλέπει το ' + ARCHIVE + '. Είτε δεν έχεις φτιάξει ακόμα το ιδιωτικό repo, είτε πρέπει να το προσθέσεις στο Repository access του κλειδιού (δες Οδηγίες, ενότητα 7).' : 'Το κλειδί δεν έχει πρόσβαση στο beachvolleyapp. Στο Repository access διάλεξε beachvolleyapp.');
           if(!r.ok) throw new Error('Το GitHub απάντησε με σφάλμα ' + r.status + '.');
           const info = await r.json();
           if(info.permissions && info.permissions.push === false) throw new Error('Το κλειδί δεν έχει δικαίωμα εγγραφής. Στο Permissions → Contents διάλεξε Read and write.');
@@ -101,21 +105,24 @@
   }
 
   async function publish(opts){
-    if(!getToken()){ if(!(await askToken())) return { ok:false, cancelled:true }; }
-    const path = '/repos/' + OWNER + '/' + REPO + '/contents/' + encodeURIComponent(opts.path);
+    const repo = opts.repo || REPO;
+    if(!getToken()){ if(!(await askToken('', repo))) return { ok:false, cancelled:true }; }
+    const path = '/repos/' + OWNER + '/' + repo + '/contents/' + opts.path.split('/').map(encodeURIComponent).join('/');
     const content = b64(opts.bytes);
     for(let attempt = 0; attempt < 3; attempt++){
       try{
         const cur = await api(path + '?ref=' + BRANCH + '&_=' + Date.now());
-        if(cur.status === 401){ clearToken(); if(!(await askToken('Το κλειδί δεν είναι πλέον έγκυρο (ίσως έληξε). Φτιάξε νέο.'))) return { ok:false, cancelled:true }; continue; }
+        if(cur.status === 401){ clearToken(); if(!(await askToken('Το κλειδί δεν είναι πλέον έγκυρο (ίσως έληξε). Φτιάξε νέο.', repo))) return { ok:false, cancelled:true }; continue; }
         let sha; if(cur.ok) sha = (await cur.json()).sha; else if(cur.status !== 404) return { ok:false, error:'Το GitHub απάντησε με σφάλμα (' + cur.status + '). Δοκίμασε ξανά σε λίγο.' };
         const body = { message: opts.message || ('Ενημέρωση ' + opts.path + ' από την εφαρμογή'), content, branch: BRANCH };
         if(sha) body.sha = sha;
         const res = await api(path, { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) });
         if(res.ok) return { ok:true };
-        if(res.status === 401){ clearToken(); if(!(await askToken('Το κλειδί δεν είναι πλέον έγκυρο (ίσως έληξε). Φτιάξε νέο.'))) return { ok:false, cancelled:true }; continue; }
+        if(res.status === 401){ clearToken(); if(!(await askToken('Το κλειδί δεν είναι πλέον έγκυρο (ίσως έληξε). Φτιάξε νέο.', repo))) return { ok:false, cancelled:true }; continue; }
         if(res.status === 409) continue; // άλλαξε στο μεταξύ
-        if(res.status === 403 || res.status === 404) return { ok:false, error:'Το κλειδί δεν έχει δικαίωμα εγγραφής στο beachvolleyapp (Contents: Read and write).' };
+        if(res.status === 403 || res.status === 404) return { ok:false, error: repo === ARCHIVE
+          ? 'Το κλειδί δεν μπορεί να γράψει στο ' + ARCHIVE + '. Φτιάξε το ιδιωτικό repo και πρόσθεσέ το στο κλειδί (Οδηγίες, ενότητα 7).'
+          : 'Το κλειδί δεν έχει δικαίωμα εγγραφής στο beachvolleyapp (Contents: Read and write).' };
         return { ok:false, error:'Το GitHub απάντησε με σφάλμα (' + res.status + '). Δοκίμασε ξανά σε λίγο.' };
       }catch(e){
         return { ok:false, error:'Έλεγξε τη σύνδεση στο internet και δοκίμασε ξανά.' };
@@ -124,5 +131,32 @@
     return { ok:false, error:'Η δημοσίευση απέτυχε. Δοκίμασε ξανά σε λίγο.' };
   }
 
-  window.BVPublish = { publish, hasToken: () => !!getToken() };
+  // Όλες οι διαδρομές αρχείων ενός repo (μία κλήση). Άδειο repo → []
+  async function tree(repo){
+    if(!getToken()){ if(!(await askToken('', repo))) return { ok:false, cancelled:true }; }
+    for(let attempt = 0; attempt < 2; attempt++){
+      try{
+        const r = await api('/repos/' + OWNER + '/' + repo + '/git/trees/' + BRANCH + '?recursive=1&_=' + Date.now());
+        if(r.status === 401){
+          clearToken(); if(!(await askToken('Το κλειδί δεν είναι πλέον έγκυρο (ίσως έληξε). Φτιάξε νέο.', repo))) return { ok:false, cancelled:true }; continue;
+        }
+        if((r.status === 404 || r.status === 403) && !(await repoVisible(repo)))
+          return { ok:false, noAccess:true, error:'Το κλειδί δεν βλέπει το ιδιωτικό repo ' + repo + '. Φτιάξε το repo και πρόσθεσέ το στο κλειδί (Οδηγίες, ενότητα 7).' };
+        if(r.status === 404 || r.status === 409) return { ok:true, paths:[] }; // άδειο repo
+        if(!r.ok) return { ok:false, error:'Το GitHub απάντησε με σφάλμα (' + r.status + ').' };
+        const j = await r.json();
+        return { ok:true, paths: j.tree.filter(x => x.type === 'blob').map(x => x.path) };
+      }catch(e){ return { ok:false, error:'Έλεγξε τη σύνδεση στο internet και δοκίμασε ξανά.' }; }
+    }
+    return { ok:false, error:'Δεν ήταν δυνατή η ανάγνωση του αρχείου.' };
+  }
+  async function repoVisible(repo){ try{ return (await api('/repos/' + OWNER + '/' + repo)).ok; }catch(e){ return true; } }
+  async function getFile(repo, filePath){
+    const r = await api('/repos/' + OWNER + '/' + repo + '/contents/' + filePath.split('/').map(encodeURIComponent).join('/') + '?ref=' + BRANCH,
+      { headers:{ 'Accept':'application/vnd.github.raw' } });
+    if(!r.ok) throw new Error('Σφάλμα ' + r.status);
+    return new Uint8Array(await r.arrayBuffer());
+  }
+
+  window.BVPublish = { publish, tree, getFile, ARCHIVE, hasToken: () => !!getToken() };
 })();

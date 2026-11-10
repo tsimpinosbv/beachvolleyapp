@@ -49,12 +49,15 @@
     return box.innerHTML;
   }
 
-  function download(inner, filename){
-    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+  function html(inner, filename){
+    return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
 <head><meta charset="utf-8"><title>${filename}</title>
 <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
 <style>${CSS}</style></head><body>${toWordHtml(inner)}</body></html>`;
-    const blob = new Blob(['﻿', html], { type: 'application/msword' });
+  }
+
+  function download(inner, filename){
+    const blob = new Blob(['\ufeff', html(inner, filename)], { type: 'application/msword' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = filename.replace(/[\\/:*?"<>|]+/g, ' ').trim() + '.doc';
@@ -62,5 +65,5 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   }
 
-  window.BVWord = { download };
+  window.BVWord = { download, html };
 })();

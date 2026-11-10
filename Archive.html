@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Αρχείο Σεζόν — BV Supervisor Tools</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d3a5c">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Supervisor Tools">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tools.css">
+<style>
+  .seasons{display:flex; gap:6px; flex-wrap:wrap;}
+  .seasons button{border:1.5px solid var(--line); background:#fff; border-radius:999px; padding:0 16px; min-height:40px; font-weight:700; font-size:15px; color:var(--ink-soft); cursor:pointer;}
+  .seasons button.on{background:var(--navy); border-color:var(--navy); color:#fff;}
+  .tour{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:14px; margin-top:12px; box-shadow:0 2px 8px rgba(18,86,138,0.05);}
+  .tour h3{margin:0 0 8px; font-family:'Space Grotesk',sans-serif; font-size:17px;}
+  .item{display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid rgba(15,36,56,0.08);}
+  .item:first-of-type{border-top:none;}
+  .item .lbl{flex:1; min-width:0; font-weight:700; font-size:14.5px;}
+  .item .lbl small{display:block; font-weight:500; font-size:12.5px; color:var(--ink-soft);}
+  .item .btn{min-height:38px; padding:0 11px; font-size:13.5px;}
+  .setup ol{margin:8px 0 0; padding-left:20px; font-size:14px; line-height:1.55;}
+  .setup code{background:#eef3f7; border-radius:5px; padding:1px 5px;}
+  .loading{color:var(--ink-soft); font-size:14px; padding:14px 2px;}
+</style>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+<nav class="bv-topbar" aria-label="Πλοήγηση"><a class="bv-home" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Αρχική</a><a class="bv-brand" href="index.html"><img src="icons/logo.png" alt="">Supervisor Tools</a></nav>
+<header class="hero">
+  <div class="wrap">
+    <h1>Αρχείο Σεζόν</h1>
+    <p>Οι αναφορές και τα φύλλα πληρωμής κάθε τουρνουά, ανά σεζόν. Φυλάσσονται στο ιδιωτικό σου αρχείο στο GitHub και τα βλέπεις μόνο εσύ.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <h2>Σεζόν</h2>
+    <div class="seasons" id="seasons"></div>
+    <div class="btns"><button class="btn ghost" type="button" id="reload">↻ Ανανέωση</button></div>
+    <p class="msg" id="msg"></p>
+  </section>
+
+  <div id="list"><p class="loading">Φόρτωση…</p></div>
+
+  <section class="card setup" id="setup" style="display:none">
+    <h2>Ρύθμιση αρχείου (μία φορά)</h2>
+    <ol>
+      <li>Στο GitHub πάτα <b>+ → New repository</b>.</li>
+      <li>Όνομα: <code>bv-supervisor-archive</code>, επίλεξε <b>Private</b> και τσέκαρε <b>Add a README file</b>. Πάτα <b>Create repository</b>.</li>
+      <li>Άνοιξε <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">τα κλειδιά σου (tokens)</a>, πάτα το κλειδί <b>BV Supervisor Tools</b> → <b>Edit</b>.</li>
+      <li>Στο <b>Repository access</b> πρόσθεσε και το <b>bv-supervisor-archive</b> και πάτα <b>Update</b>. Το κλειδί μένει ίδιο, δεν χρειάζεται να το ξαναβάλεις.</li>
+      <li>Γύρνα εδώ και πάτα <b>↻ Ανανέωση</b>.</li>
+    </ol>
+  </section>
+
+  <footer>Για να μπει κάτι στο αρχείο, πάτα «Αποθήκευση στο αρχείο» στην Αναφορά Supervisor ή στο Φύλλο Πληρωμής Επάθλων. «Άνοιγμα» το φέρνει στην εφαρμογή για διόρθωση· μετά ξαναπάτα «Αποθήκευση στο αρχείο» για να ενημερωθεί.</footer>
+</main>
+<div class="toast" id="toast"></div>
+
+<script src="gh-publish.js"></script>
+<script src="word-export.js"></script>
+<script src="archive.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2800); }
+const KIND_BY_FILE = {}; Object.entries(BVArchive.KINDS).forEach(([k, v]) => KIND_BY_FILE[v.file] = k);
+const ICON = { report:'📝', prize:'🏆' };
+let TREE = {}, season = null;
+
+async function load(){
+  $('list').innerHTML = '<p class="loading">Φόρτωση…</p>'; $('msg').textContent = ''; $('setup').style.display = 'none';
+  const res = await BVPublish.tree(BVPublish.ARCHIVE);
+  if(!res.ok){
+    $('list').innerHTML = '';
+    if(res.cancelled){ $('msg').textContent = 'Χρειάζεται το κλειδί GitHub για να δεις το αρχείο.'; return; }
+    $('msg').textContent = res.error; if(res.noAccess) $('setup').style.display = ''; return;
+  }
+  // <σεζόν>/<τουρνουά>/<είδος>.json|.doc
+  TREE = {};
+  res.paths.forEach(p => {
+    const m = p.match(/^(20\d\d)\/([^/]+)\/([^/]+)\.(json|doc)$/); if(!m) return;
+    const kind = KIND_BY_FILE[m[3]]; if(!kind) return;
+    const t = ((TREE[m[1]] = TREE[m[1]] || {})[m[2]] = TREE[m[1]][m[2]] || {});
+    (t[kind] = t[kind] || {})[m[4]] = p;
+  });
+  const seasons = Object.keys(TREE).sort().reverse();
+  if(!seasons.includes(season)) season = seasons[0] || null;
+  render();
+}
+function render(){
+  const seasons = Object.keys(TREE).sort().reverse();
+  $('seasons').innerHTML = seasons.length ? seasons.map(s => `<button type="button" data-s="${s}" class="${s === season ? 'on' : ''}">${s}</button>`).join('')
+    : '<span class="msg" style="margin:0">Δεν υπάρχει ακόμα τίποτα στο αρχείο.</span>';
+  if(!season){ $('list').innerHTML = ''; return; }
+  const tours = Object.keys(TREE[season]).sort((a, b) => a.localeCompare(b, 'el'));
+  $('list').innerHTML = tours.map(t => {
+    const items = Object.entries(BVArchive.KINDS).filter(([k]) => TREE[season][t][k]).map(([k, v]) => {
+      const f = TREE[season][t][k];
+      return `<div class="item"><div class="lbl">${ICON[k]} ${esc(v.file)}</div>
+        ${f.json ? `<button class="btn" type="button" data-open="${esc(f.json)}" data-k="${k}">Άνοιγμα</button>` : ''}
+        ${f.doc ? `<button class="btn ghost" type="button" data-doc="${esc(f.doc)}">Word</button>` : ''}</div>`;
+    }).join('');
+    return `<div class="tour"><h3>${esc(t)}</h3>${items}</div>`;
+  }).join('');
+}
+
+$('seasons').addEventListener('click', e => { const b = e.target.closest('[data-s]'); if(!b) return; season = b.dataset.s; render(); });
+$('reload').addEventListener('click', load);
+$('list').addEventListener('click', async e => {
+  const b = e.target.closest('[data-open],[data-doc]'); if(!b) return;
+  b.disabled = true;
+  try{
+    if(b.dataset.doc){
+      const bytes = await BVPublish.getFile(BVPublish.ARCHIVE, b.dataset.doc);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([bytes], { type:'application/msword' }));
+      a.download = b.dataset.doc.split('/').slice(1).join(' - ');
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    } else {
+      const j = JSON.parse(new TextDecoder().decode(await BVPublish.getFile(BVPublish.ARCHIVE, b.dataset.open)));
+      openInApp(b.dataset.k, j);
+    }
+  }catch(err){ toast('Δεν ήταν δυνατή η λήψη. Έλεγξε τη σύνδεση και δοκίμασε ξανά.'); }
+  b.disabled = false;
+});
+
+function openInApp(kind, j){
+  const d = j.data || {};
+  if(kind === 'report'){
+    let R = { reports:[], current:null };
+    try{ R = Object.assign(R, JSON.parse(localStorage.getItem('supervisorReport_v1') || 'null') || {}); }catch(e){}
+    const i = R.reports.findIndex(r => r.id === d.id);
+    if(i >= 0){ if(!confirm('Η αναφορά υπάρχει ήδη σε αυτή τη συσκευή. Να αντικατασταθεί με αυτή του αρχείου;')) return; R.reports[i] = d; }
+    else R.reports.unshift(d);
+    R.current = d.id;
+    localStorage.setItem('supervisorReport_v1', JSON.stringify(R));
+    location.href = 'Report.html';
+  } else {
+    let S = null; try{ S = JSON.parse(localStorage.getItem('prizeSheet_v1') || 'null'); }catch(e){}
+    const has = S && S.cats && (S.cats.MEN.teams.length || S.cats.WOMEN.teams.length);
+    if(has && S.tName !== d.tName && !confirm('Το φύλλο πληρωμής «' + (S.tName || 'χωρίς όνομα') + '» που είναι ανοιχτό θα αντικατασταθεί. Συνέχεια;')) return;
+    d.season = j.season; d.archivedAt = Date.parse(j.savedAt) || Date.now(); d.archivedFolder = j.season + ' / ' + j.tournament;
+    localStorage.setItem('prizeSheet_v1', JSON.stringify(d));
+    location.href = 'PrizeSheet.html';
+  }
+}
+load();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>
