@@ -23,13 +23,14 @@
 }
 .bv-topbar a{color:#fff; text-decoration:none;}
 .bv-home{
-  display:inline-flex; align-items:center; gap:6px;
-  min-height:40px; padding:0 13px 0 10px; border-radius:10px;
+  display:inline-flex; align-items:center; justify-content:center;
+  width:44px; height:44px; border-radius:12px;
   background:rgba(255,255,255,0.13); border:1px solid rgba(255,255,255,0.24);
   font-weight:700; font-size:14.5px; line-height:1;
 }
 .bv-home:active{background:rgba(255,255,255,0.24);}
-.bv-home svg{width:17px; height:17px; flex:none;}
+.bv-home svg{width:23px; height:23px; flex:none;}
+.bv-home:focus-visible{outline:2px solid #fff; outline-offset:2px;}
 .bv-brand{
   margin-left:auto; display:flex; align-items:center; gap:9px;
   font-family:'Space Grotesk','IBM Plex Sans',sans-serif; font-weight:700; font-size:15px; letter-spacing:0.01em;
