@@ -1,6 +1,6 @@
 // BV Supervisor Tools — service worker
 // Bump CACHE_VERSION any time app-shell files change, so clients pick up the update.
-const CACHE_VERSION = 'bv-tools-v20';
+const CACHE_VERSION = 'bv-tools-v21';
 const SHELL_CACHE = CACHE_VERSION + '-shell';
 const DATA_CACHE = CACHE_VERSION + '-data';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
@@ -20,6 +20,10 @@ const APP_SHELL = [
   './tools.css',
   './word-export.js',
   './archive.js',
+  './Tournament.html',
+  './tournament.js',
+  './calendar-data.js',
+  './bv-admin.js',
   './Archive.html',
   './Odigies.html',
   './gh-publish.js',

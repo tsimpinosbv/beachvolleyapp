@@ -148,6 +148,7 @@
     .print-only{display:block !important; font-family:'Space Grotesk',sans-serif; margin:0 0 6px;}
   }
 </style>
+<script src="bv-admin.js"></script>
 <link rel="stylesheet" href="ui.css">
 </head>
 <body>
@@ -1008,5 +1009,6 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
 }
 </script>
+<script src="tournament.js" data-bar></script>
 </body>
 </html>

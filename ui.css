@@ -39,3 +39,19 @@
 .bv-brand img{width:32px; height:32px; border-radius:50%; background:#fff; display:block;}
 
 @media print{ .bv-topbar{display:none !important;} }
+
+/* Λειτουργίες διαχειριστή: κρυφές σε όσους δεν έχουν ενεργοποιήσει τη Διαχείριση */
+html:not(.bv-admin) .bv-admin-only{display:none !important;}
+
+/* Λωρίδα ενεργού τουρνουά κάτω από τη μπάρα */
+.bv-tour{
+  display:flex; align-items:center; gap:8px; flex-wrap:nowrap;
+  padding:8px 14px; background:#e4effa; color:#0b3150; text-decoration:none;
+  border-bottom:1px solid rgba(15,36,56,0.10); font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:14px;
+  position:sticky; top:calc(60px + env(safe-area-inset-top, 0px)); z-index:59;
+}
+.bv-tour b{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.bv-tour-k{font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:rgba(11,49,80,.65); flex:none;}
+.bv-tour-d{color:rgba(11,49,80,.75); white-space:nowrap; flex:none;}
+.bv-tour-c{margin-left:auto; font-weight:700; color:#155a8a; white-space:nowrap; flex:none;}
+@media print{ .bv-tour{display:none !important;} }

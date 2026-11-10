@@ -38,6 +38,7 @@
 .arch label.f{width:96px; flex:none;}
 .arch .btn{flex:1; min-height:46px;}
 </style>
+<script src="bv-admin.js"></script>
 <link rel="stylesheet" href="ui.css">
 </head>
 <body>
@@ -98,13 +99,13 @@
     <button class="btn" type="button" id="wordBtn" style="width:100%;margin-top:10px;min-height:50px">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
       Word (επεξεργάσιμο)</button>
-    <div class="arch">
+    <div class="arch bv-admin-only">
       <label class="f">Σεζόν<input type="number" id="arSeason" inputmode="numeric" min="2020" max="2099"></label>
       <button class="btn primary" type="button" id="arBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-1.4-8.8A6 6 0 0 0 4.5 13 3.5 3.5 0 0 0 6 19z"/><path d="M12 16v-5M9.5 13.5 12 11l2.5 2.5"/></svg>
         Αποθήκευση στο αρχείο</button>
     </div>
-    <p class="msg" id="arMsg" style="text-align:center"></p>
+    <p class="msg bv-admin-only" id="arMsg" style="text-align:center"></p>
     <p class="msg" style="text-align:center">PDF: στο παράθυρο εκτύπωσης διάλεξε «Αποθήκευση ως PDF». Word: ανοίγει σε Word, Google Docs ή Pages για αλλαγές.</p>
   </div>
 
@@ -281,5 +282,6 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
 }
 </script>
+<script src="tournament.js" data-bar></script>
 </body>
 </html>

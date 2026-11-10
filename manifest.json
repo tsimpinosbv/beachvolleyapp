@@ -43,6 +43,18 @@
   ],
   "shortcuts": [
     {
+      "name": "Τουρνουά",
+      "short_name": "Τουρνουά",
+      "url": "./Tournament.html",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ],
+      "description": "Ενεργό τουρνουά και πρόοδος"
+    },
+    {
       "name": "Ατομική Βαθμολογία",
       "short_name": "Βαθμολογία",
       "url": "./Ranking.html",

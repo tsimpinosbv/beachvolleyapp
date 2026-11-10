@@ -16,6 +16,8 @@
 <link rel="stylesheet" href="tools.css">
 <script src="vendor/xlsx.full.min.js"></script>
 <script src="gh-publish.js"></script>
+<script src="calendar-data.js"></script>
+<script src="tournament.js"></script>
 <style>
   .next{background:linear-gradient(135deg,#0f3d63,#1f7fc4); color:#fff; border-radius:18px; padding:16px; margin-top:16px; box-shadow:0 10px 24px rgba(11,49,80,0.22);}
   .next .k{font-size:12px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; opacity:.85;}
@@ -46,7 +48,11 @@
   .check{display:none; margin-top:12px; border-radius:12px; padding:11px 13px; font-size:14px; line-height:1.5;}
   .check.show{display:block;} .check.ok{background:var(--accent-bg);} .check.bad{background:var(--bad-bg); color:var(--bad);}
   .check ul{margin:4px 0 0; padding-left:18px;}
+.pickb{display:inline-flex; align-items:center; margin-top:8px; min-height:34px; padding:0 12px; border-radius:9px; border:1.5px solid var(--navy-2); background:#fff; color:var(--navy-2); font-weight:700; font-size:13px; cursor:pointer; text-decoration:none;}
+.pickb.on{border-color:var(--ok); color:var(--ok); background:var(--ok-bg);}
+.next .pickb{margin-top:0; min-height:44px; padding:0 14px; font-size:14.5px;}
 </style>
+<script src="bv-admin.js"></script>
 <link rel="stylesheet" href="ui.css">
 </head>
 <body>
@@ -68,7 +74,7 @@
   </div>
   <div id="list"></div>
 
-  <section class="card">
+  <section class="card bv-admin-only" id="admin">
     <h2>Αλλαγή ημερολογίου <small>— για τον διαχειριστή</small></h2>
     <p class="msg" style="margin-top:0" id="src">Φόρτωση…</p>
     <div class="btns">
@@ -113,37 +119,12 @@ function fmtRange(a, b){
 function inDays(n){ return n === 0 ? 'σήμερα' : n === 1 ? 'αύριο' : 'σε ' + n + ' ημέρες'; }
 
 /* ---- ανάγνωση αρχείου ---- */
-function parseCalendar(wb){
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'', raw:true });
-  const hi = rows.findIndex(r => r.some(c => norm(c) === 'ΤΟΥΡΝΟΥΑ'));
-  if(hi === -1) return { events:[], errors:['Δεν βρέθηκε η γραμμή επικεφαλίδων (ΤΟΥΡΝΟΥΑ, ΑΠΟ, …).'], title:'' };
-  const h = rows[hi].map(norm);
-  const col = (...names) => h.findIndex(x => names.some(n => x.startsWith(n)));
-  const c = { name: col('ΤΟΥΡΝΟΥΑ'), place: col('ΤΟΠΟΣ'), from: col('ΑΠΟ'), to: col('ΕΩΣ'), coef: col('ΣΥΝΤΕΛΕΣΤ'),
-              cats: col('ΚΑΤΗΓΟΡΙ'), dl: col('ΠΡΟΘΕΣΜΙΑ'), fee: col('ΠΑΡΑΒΟΛ'), prize: col('ΕΠΑΘΛ'), notes: col('ΣΗΜΕΙΩΣ') };
-  const events = [], errors = [];
-  rows.slice(hi + 1).forEach((r, i) => {
-    const name = String(r[c.name] || '').trim(); if(!name) return;
-    const from = toDate(r[c.from]), to = c.to >= 0 ? toDate(r[c.to]) : null;
-    if(!from){ errors.push(`Γραμμή ${hi + 2 + i} (${name}): λείπει ή δεν διαβάζεται η ημερομηνία ΑΠΟ.`); return; }
-    const coefRaw = c.coef >= 0 ? r[c.coef] : '';
-    const coef = coefRaw === '' ? null : (typeof coefRaw === 'number' ? coefRaw : parseFloat(String(coefRaw).replace(',', '.')));
-    events.push({ name, place: c.place >= 0 ? String(r[c.place] || '').trim() : '', from, to: to || from,
-      coef: isNaN(coef) ? null : coef, cats: c.cats >= 0 ? String(r[c.cats] || '').trim() : '',
-      dl: c.dl >= 0 ? toDate(r[c.dl]) : null, fee: c.fee >= 0 ? r[c.fee] : '', prize: c.prize >= 0 ? r[c.prize] : '',
-      notes: c.notes >= 0 ? String(r[c.notes] || '').trim() : '' });
-  });
-  events.sort((a, b) => a.from - b.from);
-  const title = String((rows[0] || [])[0] || '').trim();
-  if(!events.length && !errors.length) errors.push('Δεν βρέθηκε κανένα τουρνουά κάτω από τις επικεφαλίδες.');
-  return { events, errors, title };
-}
+const parseCalendar = wb => BVCal.parse(wb);
 async function load(){
   try{
     const r = await fetch(FILE + '?t=' + Date.now()); if(!r.ok) throw new Error('http');
     const res = parseCalendar(XLSX.read(new Uint8Array(await r.arrayBuffer()), { type:'array' }));
-    EVENTS = res.events; TITLE = res.title;
+    EVENTS = res.events; TITLE = res.title; BVCal.cache(EVENTS);
     $('src').textContent = `Από το ${FILE} (online) · ${EVENTS.length} τουρνουά${TITLE ? ' · ' + TITLE : ''}`;
   }catch(e){ $('src').textContent = 'Δεν βρέθηκε το ' + FILE + '.'; EVENTS = []; }
   render();
@@ -160,6 +141,9 @@ function evMeta(e){
   if(e.prize !== '' && e.prize != null) chips.push(`<span class="chip">Έπαθλα ${esc(e.prize)} €</span>`);
   return chips.join('');
 }
+function evTour(e){ return BVTour.makeMeta({ name:e.name, place:e.place, from:BVCal.iso(e.from), to:BVCal.iso(e.to), coef:e.coef, cats:e.cats }); }
+function pickBtn(e){ const a = BVTour.get(), on = a && a.id === evTour(e).id;
+  return on ? '<a class="pickb on" href="Tournament.html">✓ Ενεργό τουρνουά ›</a>' : `<button class="pickb" type="button" data-pick="${EVENTS.indexOf(e)}">Ορισμός ως ενεργό</button>`; }
 function render(){
   const t = today();
   const upcoming = EVENTS.filter(e => e.to >= t);
@@ -171,7 +155,7 @@ function render(){
       <h2>${esc(next.name)}</h2><div class="d">${fmtRange(next.from, next.to)} ${next.from.getFullYear()}${next.place ? ' · ' + esc(next.place) : ''}${next.coef != null ? ' · συντελεστής ' + String(next.coef).replace('.', ',') : ''}</div>
       <div class="cd">${live ? '<div><b>Τώρα</b><span>παίζεται</span></div>' : `<div><b>${n}</b><span>${n === 1 ? 'ημέρα' : 'ημέρες'} ως την έναρξη</span></div>`}
       ${dln != null ? `<div class="${dln >= 0 && dln <= 7 ? 'urgent' : ''}"><b>${dln >= 0 ? dln : '—'}</b><span>${dln >= 0 ? (dln === 1 ? 'ημέρα' : 'ημέρες') + ' για δηλώσεις' : 'οι δηλώσεις έκλεισαν'}</span></div>` : ''}</div>
-      <button class="btn" type="button" data-ics="${EVENTS.indexOf(next)}">Προσθήκη στο ημερολόγιο</button></div>`;
+      <div class="btns" style="margin-top:10px"><button class="btn" type="button" data-ics="${EVENTS.indexOf(next)}">Προσθήκη στο ημερολόγιο</button>${pickBtn(next)}</div></div>`;
   } else {
     $('nextBox').innerHTML = EVENTS.length ? `<div class="next"><div class="k">Η σεζόν ολοκληρώθηκε</div><h2>Δεν υπάρχουν επερχόμενα τουρνουά</h2>
       <div class="d">Το τελευταίο ήταν το ${esc(EVENTS[EVENTS.length - 1].name)} (${fmtRange(EVENTS[EVENTS.length - 1].from, EVENTS[EVENTS.length - 1].to)}). Ανέβασε το ημερολόγιο της νέας σεζόν από κάτω.</div></div>` : '';
@@ -186,7 +170,7 @@ function render(){
     const past = e.to < t, now = e.from <= t && e.to >= t;
     html += `<div class="ev ${past ? 'past' : ''} ${now ? 'now' : ''}">
       <div class="day"><b>${e.from.getDate()}${+e.to !== +e.from && e.to.getMonth() === e.from.getMonth() ? '-' + e.to.getDate() : ''}</b><span>${MON3[e.from.getMonth()]}</span></div>
-      <div><div class="t">${esc(e.name)}</div><div class="m">${[e.place, e.notes].filter(Boolean).map(esc).join(' · ')}</div><div>${evMeta(e)}</div></div>
+      <div><div class="t">${esc(e.name)}</div><div class="m">${[e.place, e.notes].filter(Boolean).map(esc).join(' · ')}</div><div>${evMeta(e)}</div>${past ? '' : pickBtn(e)}</div>
       <button class="ics" type="button" data-ics="${EVENTS.indexOf(e)}" aria-label="Προσθήκη στο ημερολόγιο" title="Προσθήκη στο ημερολόγιο">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M12 14v4M10 16h4"/></svg></button>
     </div>`;
@@ -194,6 +178,12 @@ function render(){
   $('list').innerHTML = html || `<div class="empty">${EVENTS.length ? 'Δεν υπάρχουν επερχόμενα τουρνουά.' : 'Το ημερολόγιο είναι κενό.'}</div>`;
 }
 
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-pick]'); if(!b) return;
+  const ev = EVENTS[+b.dataset.pick], cur = BVTour.get();
+  if(cur && !confirm('Να γίνει ενεργό το «' + ev.name + '»; Τα δεδομένα του «' + cur.name + '» φυλάγονται και ξαναφορτώνονται όταν το ξαναδιαλέξεις.')) return;
+  BVTour.switchTo(evTour(ev)); toast('Ενεργό τουρνουά: ' + ev.name); render();
+});
 /* ---- .ics (ημερολόγιο κινητού) ---- */
 function icsDate(d){ return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); }
 function icsEsc(s){ return String(s || '').replace(/\\/g, '\\\\').replace(/[,;]/g, m => '\\' + m).replace(/\n/g, '\\n'); }

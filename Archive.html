@@ -29,6 +29,7 @@
   .setup code{background:#eef3f7; border-radius:5px; padding:1px 5px;}
   .loading{color:var(--ink-soft); font-size:14px; padding:14px 2px;}
 </style>
+<script src="bv-admin.js"></script>
 <link rel="stylesheet" href="ui.css">
 </head>
 <body>
@@ -61,19 +62,20 @@
     </ol>
   </section>
 
-  <footer>Για να μπει κάτι στο αρχείο, πάτα «Αποθήκευση στο αρχείο» στην Αναφορά Supervisor ή στο Φύλλο Πληρωμής Επάθλων. «Άνοιγμα» το φέρνει στην εφαρμογή για διόρθωση· μετά ξαναπάτα «Αποθήκευση στο αρχείο» για να ενημερωθεί.</footer>
+  <footer>Για να μπει κάτι στο αρχείο, πάτα «Κλείσιμο τουρνουά» στη σελίδα Τουρνουά, ή «Αποθήκευση στο αρχείο» στην Αναφορά Supervisor ή στο Φύλλο Πληρωμής Επάθλων. «Επαναφορά» φέρνει ολόκληρο το τουρνουά πίσω στη συσκευή. «Άνοιγμα» το φέρνει στην εφαρμογή για διόρθωση· μετά ξαναπάτα «Αποθήκευση στο αρχείο» για να ενημερωθεί.</footer>
 </main>
 <div class="toast" id="toast"></div>
 
 <script src="gh-publish.js"></script>
 <script src="word-export.js"></script>
 <script src="archive.js"></script>
+<script src="tournament.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2800); }
 const KIND_BY_FILE = {}; Object.entries(BVArchive.KINDS).forEach(([k, v]) => KIND_BY_FILE[v.file] = k);
-const ICON = { report:'📝', prize:'🏆' };
+const ICON = { report:'📝', prize:'🏆', tournament:'🗂️', summary:'📊' };
 let TREE = {}, season = null;
 
 async function load(){
@@ -87,7 +89,7 @@ async function load(){
   // <σεζόν>/<τουρνουά>/<είδος>.json|.doc
   TREE = {};
   res.paths.forEach(p => {
-    const m = p.match(/^(20\d\d)\/([^/]+)\/([^/]+)\.(json|doc)$/); if(!m) return;
+    const m = p.match(/^(20\d\d)\/([^/]+)\/([^/]+)\.(json|doc|xlsx)$/); if(!m) return;
     const kind = KIND_BY_FILE[m[3]]; if(!kind) return;
     const t = ((TREE[m[1]] = TREE[m[1]] || {})[m[2]] = TREE[m[1]][m[2]] || {});
     (t[kind] = t[kind] || {})[m[4]] = p;
@@ -106,8 +108,9 @@ function render(){
     const items = Object.entries(BVArchive.KINDS).filter(([k]) => TREE[season][t][k]).map(([k, v]) => {
       const f = TREE[season][t][k];
       return `<div class="item"><div class="lbl">${ICON[k]} ${esc(v.file)}</div>
-        ${f.json ? `<button class="btn" type="button" data-open="${esc(f.json)}" data-k="${k}">Άνοιγμα</button>` : ''}
-        ${f.doc ? `<button class="btn ghost" type="button" data-doc="${esc(f.doc)}">Word</button>` : ''}</div>`;
+        ${f.json ? `<button class="btn" type="button" data-open="${esc(f.json)}" data-k="${k}">${k === 'tournament' ? 'Επαναφορά' : 'Άνοιγμα'}</button>` : ''}
+        ${f.doc ? `<button class="btn ghost" type="button" data-doc="${esc(f.doc)}">Word</button>` : ''}
+        ${f.xlsx ? `<button class="btn ghost" type="button" data-doc="${esc(f.xlsx)}">Excel</button>` : ''}</div>`;
     }).join('');
     return `<div class="tour"><h3>${esc(t)}</h3>${items}</div>`;
   }).join('');
@@ -122,7 +125,7 @@ $('list').addEventListener('click', async e => {
     if(b.dataset.doc){
       const bytes = await BVPublish.getFile(BVPublish.ARCHIVE, b.dataset.doc);
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([bytes], { type:'application/msword' }));
+      a.href = URL.createObjectURL(new Blob([bytes], { type: /\.xlsx$/.test(b.dataset.doc) ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/msword' }));
       a.download = b.dataset.doc.split('/').slice(1).join(' - ');
       document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     } else {
@@ -134,6 +137,11 @@ $('list').addEventListener('click', async e => {
 });
 
 function openInApp(kind, j){
+  if(kind === 'tournament'){
+    const cur = BVTour.get();
+    if(!confirm('Να γίνει ενεργό το «' + (j.meta && j.meta.name) + '» με τα δεδομένα του αρχείου;' + (cur ? ' Το «' + cur.name + '» φυλάγεται στη συσκευή.' : ''))) return;
+    BVTour.restoreBundle(j); location.href = 'Tournament.html'; return;
+  }
   const d = j.data || {};
   if(kind === 'report'){
     let R = { reports:[], current:null };

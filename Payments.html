@@ -107,6 +107,7 @@
   .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--navy); color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; font-weight:600; display:none; z-index:70; max-width:90vw; text-align:center;}
   .toast.show{display:block;}
 </style>
+<script src="bv-admin.js"></script>
 <link rel="stylesheet" href="ui.css">
 </head>
 <body>
@@ -417,5 +418,6 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
 }
 </script>
+<script src="tournament.js" data-bar></script>
 </body>
 </html>

@@ -6,7 +6,9 @@
 (function(){
   const KINDS = {
     report: { file:'Αναφορά Supervisor', page:'Report.html' },
-    prize:  { file:'Φύλλο Πληρωμής Επάθλων', page:'PrizeSheet.html' }
+    prize:  { file:'Φύλλο Πληρωμής Επάθλων', page:'PrizeSheet.html' },
+    tournament: { file:'Τουρνουά (όλα τα δεδομένα)', page:'Tournament.html' },
+    summary: { file:'Σύνοψη τουρνουά', page:'' }
   };
   // Σεζόν από το κείμενο ημερομηνιών/ονόματος (π.χ. «24-26/7/2026»), αλλιώς το τρέχον έτος
   function seasonOf(){
@@ -33,5 +35,13 @@
     return { ok:true, folder: season + ' / ' + folder };
   }
 
-  window.BVArchive = { save, seasonOf, KINDS };
+  // Οποιοδήποτε αρχείο στον φάκελο του τουρνουά
+  async function put(season, tournament, fileName, bytes, message){
+    const folder = folderName(tournament);
+    if(!folder) return { ok:false, error:'Λείπει το όνομα του τουρνουά.' };
+    const r = await BVPublish.publish({ repo:BVPublish.ARCHIVE, path: season + '/' + folder + '/' + fileName, bytes, message: message || fileName + ' — ' + tournament + ' (' + season + ')' });
+    return r.ok ? { ok:true, folder: season + ' / ' + folder } : r;
+  }
+
+  window.BVArchive = { save, put, seasonOf, folderName, KINDS };
 })();

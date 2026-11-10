@@ -344,6 +344,7 @@
   .file-check ul{margin:4px 0 0; padding-left:18px;}
   .file-check .btns{margin-top:10px;}
 </style>
+<script src="bv-admin.js"></script>
 <link rel="stylesheet" href="ui.css">
 </head>
 <body>
@@ -417,7 +418,7 @@
     <button class="btn btn-secondary" id="copyTsv">⧉ Αντιγραφή για Excel</button>
   </div>
 
-  <div class="panel file-panel">
+  <div class="panel file-panel bv-admin-only" id="psFile">
     <h2>Πίνακες βαθμολογίας (αρχείο)</h2>
     <div class="src" id="psSource">Φόρτωση πινάκων…</div>
     <div class="btns">

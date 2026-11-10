@@ -95,6 +95,7 @@
   .toast.show{display:block;}
   @media (max-width:420px){ .grid2{grid-template-columns:1fr;} .add-row{grid-template-columns:1fr;} }
 </style>
+<script src="bv-admin.js"></script>
 <link rel="stylesheet" href="ui.css">
 </head>
 <body>
@@ -679,5 +680,6 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
 }
 </script>
+<script src="tournament.js" data-bar></script>
 </body>
 </html>

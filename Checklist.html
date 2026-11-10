@@ -105,6 +105,7 @@
     .item{padding:4px 6px;}
   }
 </style>
+<script src="bv-admin.js"></script>
 <link rel="stylesheet" href="ui.css">
 </head>
 <body>
@@ -209,7 +210,12 @@ const PHASES = [
 const KEY = 'checklist_v1';
 let S = { tournaments:[], current:null, custom:{}, edits:{}, hidden:{} };
 try{ const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if(s) S = Object.assign(S, s); }catch(e){}
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function save(){
+  // πρόοδος για τον πίνακα τουρνουά της αρχικής
+  try{ const t = cur(); let done = 0, total = 0;
+    PHASES.forEach(ph => itemsOf(ph).forEach(it => { total++; if(t.checks[it.id]) done++; })); t.progress = { done, total }; }catch(e){}
+  try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+}
 const $ = id => document.getElementById(id);
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
@@ -358,12 +364,13 @@ $('onlyOpen').addEventListener('change', render);
 
 // άνοιξε την πρώτη φάση που δεν έχει ολοκληρωθεί
 (function(){ const t = cur(); const ph = PHASES.find(p => itemsOf(p).some(it => !t.checks[it.id])); if(ph) openState[ph.id] = true; })();
-render();
+render(); save();
 </script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
 }
 </script>
+<script src="tournament.js" data-bar></script>
 </body>
 </html>
