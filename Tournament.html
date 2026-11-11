@@ -55,6 +55,12 @@
   .settings[open] summary::after{transform:rotate(-90deg);}
   .settings summary small{font-family:'IBM Plex Sans',sans-serif; font-weight:600; font-size:13px; color:var(--ink-soft);}
   .sh{font-size:15px; margin:18px 0 6px;}
+  .pre{margin:4px 0 12px;}
+  .pre .pc{display:flex; gap:9px; align-items:flex-start; font-size:14px; line-height:1.4; padding:5px 0;}
+  .pre .pc i{font-style:normal; flex:none; width:20px; text-align:center; font-weight:800;}
+  .pre .pc.w i{color:var(--warn);} .pre .pc.ok i{color:var(--ok);}
+  .pre .pc a{color:var(--navy-2); font-weight:700; white-space:nowrap;}
+  .pre .pc.allok{color:var(--ok); font-weight:700;}
 </style>
 <link rel="stylesheet" href="ui.css">
 </head>
@@ -94,6 +100,7 @@
   <section class="card bv-admin-only" id="closeCard">
     <h2>Κλείσιμο τουρνουά</h2>
     <p class="msg" style="margin-top:0">Όταν τελειώσει το τουρνουά: όλα στο αρχείο σεζόν με ένα πάτημα.</p>
+    <div class="pre" id="preClose"></div>
     <button class="btn big" type="button" id="closeBtn">Κλείσιμο τουρνουά</button>
     <div class="log" id="closeLog"></div>
   </section>
@@ -246,8 +253,34 @@ function archiveVia(page){
     document.body.appendChild(f);
   });
 }
+/* ---- τι λείπει πριν το κλείσιμο ---- */
+function missing(){
+  const out = [], rd = k => { try{ return JSON.parse(localStorage.getItem(k) || 'null'); }catch(e){ return null; } };
+  const t = BVTour.get(); if(!t) return out;
+  const p = rd('payments_v1');
+  if(p && p.teams){ const all = p.teams.MEN.concat(p.teams.WOMEN), owe = all.filter(x => !(x.status === 'cash' || x.status === 'bank' || x.exempt)).length;
+    if(owe) out.push({ t: owe + (owe === 1 ? ' ομάδα χρωστάει' : ' ομάδες χρωστάνε') + ' συμμετοχή', href:'Payments.html' });
+    const regOwe = all.reduce((a, x) => a + (x.reg || []).filter(r => r === 'owes').length, 0);
+    if(regOwe) out.push({ t: regOwe + ' αθλητ' + (regOwe === 1 ? 'ής χρωστάει' : 'ές χρωστάνε') + ' παράβολο μητρώου', href:'Payments.html' }); }
+  const R = rd('supervisorReport_v1'), r = R && R.reports.find(x => x.tourId === t.id);
+  if(!r || !(r.weather || []).length) out.push({ t:'Η αναφορά δεν έχει καιρό', href:'Report.html' });
+  if(!r || !Object.keys(r.rates || {}).length) out.push({ t:'Η αναφορά δεν έχει αξιολόγηση εγκαταστάσεων', href:'Report.html' });
+  const prz = BVTour.progress().find(x => x.k === 'prize');
+  if(prz && prz.state === 'todo') out.push({ t:'Το Φύλλο Πληρωμής Επάθλων δεν έχει θέσεις', href:'PrizeSheet.html' });
+  const res = BVTour.progress().find(x => x.k === 'results');
+  if(res && res.state !== 'done') out.push({ t:'Τα αποτελέσματα δεν έχουν δημοσιευτεί στη βαθμολογία', href:'Results.html' });
+  BVTour.steps().filter(s => !['tour','close'].includes(s.k) && s.state !== 'done').forEach(s => { if(!out.some(o => o.href === s.href)) out.push({ t:'Βήμα ' + s.num + ' (' + s.n + ') δεν έχει ολοκληρωθεί', href:s.href }); });
+  return out;
+}
+function renderPre(){
+  const m = missing();
+  $('preClose').innerHTML = m.length ? '<div class="sub-h" style="margin-top:0">Πριν κλείσεις</div>' + m.map(x => `<div class="pc w"><i>!</i><span>${esc(x.t)} · <a href="${x.href}">Άνοιγμα ›</a></span></div>`).join('')
+    : '<div class="pc allok"><i>✓</i><span>Όλα έτοιμα για κλείσιμο.</span></div>';
+}
 $('closeBtn').addEventListener('click', async () => {
   const t = BVTour.get(); if(!t) return;
+  const miss = missing();
+  if(miss.length && !confirm('Λείπουν ακόμα:\n• ' + miss.map(x => x.t).join('\n• ') + '\n\nΝα κλείσει το τουρνουά έτσι; (Μπορείς να το ξανακλείσεις αργότερα για να ενημερωθεί το αρχείο.)')) return;
   const btn = $('closeBtn'); btn.disabled = true; $('closeLog').innerHTML = '';
   try{
     const chk = await BVPublish.tree(BVPublish.ARCHIVE);
@@ -312,7 +345,7 @@ function renderAdmin(){
 $('admTgl').addEventListener('change', e => { BVAdmin.set(e.target.checked); renderAdmin(); renderActive(); });
 $('tokDel').addEventListener('click', () => { if(!confirm('Να αφαιρεθεί το κλειδί GitHub από αυτή τη συσκευή;')) return; try{ localStorage.removeItem('bvGithubToken'); }catch(e){} renderAdmin(); toast('Το κλειδί αφαιρέθηκε'); });
 
-function renderAll(){ renderActive(); renderCal(); renderPrev(); renderAdmin(); }
+function renderAll(){ renderActive(); if(BVTour.get()) renderPre(); renderCal(); renderPrev(); renderAdmin(); }
 renderAll();
 BVCal.load().then(ev => { EVENTS = ev; renderCal(); }).catch(() => { if(!EVENTS.length) $('pickCal').innerHTML = '<p class="msg">Το ημερολόγιο δεν φορτώθηκε. Φτιάξε το τουρνουά από το «Νέο».</p>'; });
 if(location.hash === '#new'){ $('pickCard').hidden = false; setPick('new'); }

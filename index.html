@@ -121,6 +121,15 @@
   .stp .tx{flex:1; min-width:0;} .stp .tx b{display:block; font-size:15px;} .stp .tx span{display:block; font-size:12.5px; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .stp li.done .tx b{color:var(--ink-soft);}
   .stp .ar{color:rgba(15,36,56,0.3); font-size:20px;}
+  .ph{border-top:1px solid var(--line); margin-top:10px;}
+  .ph summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:10px; padding:12px 2px 4px; font-weight:700;}
+  .ph summary::-webkit-details-marker{display:none;}
+  .ph summary::after{content:'›'; margin-left:6px; color:rgba(15,36,56,.4); transform:rotate(90deg); font-size:18px;}
+  .ph[open] summary::after{transform:rotate(-90deg);}
+  .ph-n{font-size:12.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-soft);}
+  .ph-c{margin-left:auto; font-size:12.5px; color:var(--ink-soft); background:#eef3f7; border-radius:999px; padding:2px 9px;}
+  .ph-c.ok{background:#e5f4ec; color:#22764a;}
+  .ph .stp{margin-top:4px;}
 </style>
 <script src="bv-admin.js"></script>
 </head>
@@ -288,9 +297,16 @@ if ('serviceWorker' in navigator) {
   const bar = `<div class="sbar" role="progressbar" aria-valuemin="0" aria-valuemax="${all.length}" aria-valuenow="${doneN}" aria-label="Πρόοδος βημάτων"><i style="width:${Math.round(doneN * 100 / all.length)}%"></i></div>`;
   const go = next ? `<a class="go-next" href="${next.href}"><span>Βήμα ${next.num} από ${all.length}</span><b>${esc(next.n)}</b><em>Συνέχεια ›</em></a>`
     : `<div class="go-next done"><b>✓ Όλα τα βήματα ολοκληρώθηκαν</b></div>`;
-  const list = all.map(s => `<li class="${s.state}${s.next ? ' now' : ''}"><a href="${s.href}"><span class="num">${s.state === 'done' ? '✓' : s.num}</span>
-      <span class="tx"><b>${esc(s.n)}</b><span>${esc(s.text)}</span></span><span class="ar">›</span></a></li>`).join('');
-  box.innerHTML = `<div class="tour">${head}${bar}${go}<ol class="stp">${list}</ol>
+  const li = s => `<li class="${s.state}${s.next ? ' now' : ''}"><a href="${s.href}"><span class="num">${s.state === 'done' ? '✓' : s.num}</span>
+      <span class="tx"><b>${esc(s.n)}</b><span>${esc(s.text)}</span></span><span class="ar">›</span></a></li>`;
+  // Φάσεις: ανοιχτή μόνο αυτή με το επόμενο βήμα, οι άλλες μαζεμένες
+  const PH = [['Πριν το τουρνουά', ['tour','entry','draw','sched']], ['Στο τουρνουά', ['pay','check']], ['Μετά το τουρνουά', ['prize','results','report','close']]];
+  const list = PH.map(([name, keys]) => {
+    const ss = all.filter(s => keys.includes(s.k)); if(!ss.length) return '';
+    const d = ss.filter(s => s.state === 'done').length, open = ss.some(s => s.next) || (!next && name === PH[2][0]);
+    return `<details class="ph"${open ? ' open' : ''}><summary><span class="ph-n">${name}</span><span class="ph-c${d === ss.length ? ' ok' : ''}">${d === ss.length ? '✓ ' : ''}${d}/${ss.length}</span></summary><ol class="stp">${ss.map(li).join('')}</ol></details>`;
+  }).join('');
+  box.innerHTML = `<div class="tour">${head}${bar}${go}${list}
     ${t ? '<div class="tour-f"><a href="Tournament.html">Αλλαγή τουρνουά ›</a></div>' : ''}</div>`;
 })();
 </script>

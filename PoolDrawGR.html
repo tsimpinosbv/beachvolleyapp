@@ -112,10 +112,16 @@ function fromEntryList(cat){
   const pts = el && el[cat + '_PTS'] || [], drw = el && el[cat + '_DRAW'] || [];
   const hasMD = drw.some(d => d === 'MD');
   const teams = full.map((t, i) => ({ id: 't' + i, name: t[0] + ' / ' + t[1], pts: pts[i] != null ? pts[i] : null, out: hasMD && drw[i] !== 'MD' }));
-  return { tName: el && el.tName || '', teams, pools: null, nPools: defPools(teams.filter(x => !x.out).length) };
+  return { tName: el && el.tName || '', teams, pools: null, nPools: defPools(teams.filter(x => !x.out).length), sig: sigOf(cat) };
 }
 function defPools(n){ return n <= 5 ? 1 : n <= 12 ? Math.max(2, Math.round(n / 4)) : Math.round(n / 4); }
-function ensure(){ if(!C()){ S[S.cat] = fromEntryList(S.cat); save(); } }
+function sigOf(cat){ const el = read('entryListSeeded_v1'); return el ? JSON.stringify([el[cat + '_FULL'] || [], el[cat + '_PTS'] || [], el[cat + '_DRAW'] || []]) : ''; }
+function ensure(){
+  const c = C(), sig = sigOf(S.cat);
+  // πρώτη φορά, ή η Αρχική Λίστα άλλαξε και δεν έχει γίνει ακόμα κλήρωση: παίρνουμε τις ομάδες ξανά
+  if(!c || (!c.pools && sig && sig !== c.sig && !c.teams.some(t => t.ph))){ S[S.cat] = fromEntryList(S.cat); save(); }
+}
+function listChanged(){ const c = C(), sig = sigOf(S.cat); return !!(c && c.pools && sig && c.sig && sig !== c.sig); }
 
 function active(){ const c = C(); return c.teams.filter(t => !t.out); }
 // σειρά seeding: η σειρά της λίστας (ήδη ταξινομημένη κατά πόντους), κενές θέσεις στο τέλος
@@ -140,7 +146,8 @@ function render(){
   ensure();
   const c = C();
   document.querySelectorAll('#catSeg button').forEach(b => b.classList.toggle('on', b.dataset.c === S.cat));
-  $('src').textContent = c.teams.length ? `Από την Αρχική Λίστα${c.tName ? ' «' + c.tName + '»' : ''}: ${c.teams.length} ομάδες${c.teams.some(t => t.out && !t.removed) ? ' (μόνο όσες είναι στο κυρίως ταμπλό)' : ''}.` : '';
+  $('src').innerHTML = listChanged() ? '<b style="color:var(--warn)">Η Αρχική Λίστα άλλαξε μετά την κλήρωση.</b> Πάτα ↺ Reset για να ξαναπάρεις τις ομάδες.' : '';
+  if(!listChanged()) $('src').textContent = c.teams.length ? `Από την Αρχική Λίστα${c.tName ? ' «' + c.tName + '»' : ''}: ${c.teams.length} ομάδες${c.teams.some(t => t.out && !t.removed) ? ' (μόνο όσες είναι στο κυρίως ταμπλό)' : ''}.` : '';
   const ptsCount = {}; active().forEach(t => { if(t.pts != null && !t.ph) ptsCount[t.pts] = (ptsCount[t.pts] || 0) + 1; });
   let seed = 0;
   $('teams').innerHTML = c.teams.length ? c.teams.map(t => {

@@ -220,7 +220,7 @@
     const sc = read('schedulesState_v2');
     const pd = read('poolDrawGR_v1'), pdc = pd ? ['MEN','WOMEN'].filter(c => pd[c] && pd[c].pools) : [];
     out.push({ k:'draw', label:'Κλήρωση Ομίλων', href:'PoolDrawGR.html', state: pdc.length ? 'done' : 'todo',
-      text: pdc.length ? pdc.map(c => (c === 'MEN' ? 'Άνδρες' : 'Γυναίκες') + ': ' + pd[c].pools.length + ' όμιλοι').join(' · ') : 'Δεν έχει γίνει κλήρωση' });
+      text: pdc.length ? pdc.map(c => (c === 'MEN' ? 'Άνδρες' : 'Γυναίκες') + ': ' + pd[c].pools.length + (pd[c].pools.length === 1 ? ' όμιλος' : ' όμιλοι')).join(' · ') : 'Δεν έχει γίνει κλήρωση' });
     out.push({ k:'sched', label:'Πρόγραμμα Αγώνων', href:'Schedules.html', state: 'info',
       text: sc && sc.courts ? `${sc.courts} γήπεδα · ${sc.days || 1} ${sc.days === 1 ? 'ημέρα' : 'ημέρες'}` : 'Δεν έχει ρυθμιστεί' });
     const p = read('payments_v1');
@@ -298,6 +298,92 @@
 
   const escH = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   // Πάνω λωρίδα: «Βήμα 3 από 9 · Κλήρωση Ομίλων» + τουρνουά. Κάτω: Προηγούμενο / Ολοκληρώθηκε → Επόμενο
+  // ---- «Τι κάνεις εδώ»: εργασίες ανά βήμα (✓ μόνες τους από τα δεδομένα ή όταν πατηθεί το κουμπί) ----
+  const cnt = o => o ? (o.MEN || []).length + (o.WOMEN || []).length : 0;
+  const entryTeams = () => { const d = read('entryListDraft_v1'), s = read('entryListSeeded_v1'); return (d && d.TEAMS ? cnt(d.TEAMS) : 0) || (s ? (s.MEN || []).length + (s.WOMEN || []).length : 0); };
+  const ticked = k => { const t = get(); return !!(t && t.ticks && t.ticks[k]); };
+  function tick(k){ const t = get(); if(!t) return; t.ticks = t.ticks || {}; if(!t.ticks[k]){ t.ticks[k] = Date.now(); write(ACTIVE, t); } }
+  const GUIDE = {
+    entry: { tasks: [
+      { t:'Ανέβασε το Excel δηλώσεων ή πρόσθεσε ομάδες', ok: () => entryTeams() > 0 },
+      { t:'Δες τα ονόματα με «0 / ΝΕΟΣ;» ή «≈» και διόρθωσέ τα αν χρειάζεται', hint:true },
+      { t:'Κατέβασε την Αρχική Λίστα σε Excel', ok: () => ticked('entry.xls'), tick:'entry.xls', sel:'[onclick^="exportXlsx"]' } ] },
+    draw: { needs:'entry', tasks: [
+      { t:'Διάλεξε κατηγορία και αριθμό ομίλων', hint:true },
+      { t:'Πάτα «Κλήρωση»', ok: () => { const d = read('poolDrawGR_v1'); return !!(d && ((d.MEN && d.MEN.pools) || (d.WOMEN && d.WOMEN.pools))); } },
+      { t:'Κατέβασε Excel ή PDF', ok: () => ticked('draw.out'), tick:'draw.out', sel:'#xlsBtn,#pdfBtn' } ] },
+    sched: { tasks: [
+      { t:'Βάλε γήπεδα, ημέρες και ώρες', ok: () => { const v = read('schedulesState_v2'); return !!(v && v.courts); } },
+      { t:'Πάτα «Δημιουργία προγράμματος»', ok: () => ticked('sched.go'), tick:'sched.go', sel:'#goBtn' },
+      { t:'Κατέβασε το πρόγραμμα σε Excel', ok: () => ticked('sched.xls'), tick:'sched.xls', sel:'#xlsBtn' } ] },
+    pay: { needs:'entry', tasks: [
+      { t:'Οι ομάδες έρχονται μόνες τους από την Αρχική Λίστα', ok: () => { const p = read('payments_v1'); return !!(p && p.teams && cnt(p.teams)); } },
+      { t:'Σημείωσε ποιος πλήρωσε (μετρητά ή κατάθεση)', ok: () => { const x = progress().find(q => q.k === 'pay'); return x && x.state === 'done'; } },
+      { t:'Κατέβασε το Excel για το ταμείο', ok: () => ticked('pay.xls'), tick:'pay.xls', sel:'#xlsBtn' } ] },
+    check: { tasks: [
+      { t:'Τσέκαρε κάθε έλεγχο όταν γίνεται (πριν, στο τουρνουά, μετά)', ok: () => { const x = progress().find(q => q.k === 'check'); return x && x.state === 'done'; } } ] },
+    prize: { needs:'entry', tasks: [
+      { t:'Γράψε το χρηματικό έπαθλο κάθε κατηγορίας', ok: () => { const z = read('prizeSheet_v1'); return !!(z && z.cats && ((+z.cats.MEN.prize) || (+z.cats.WOMEN.prize))); } },
+      { t:'Διάλεξε την τελική θέση των ομάδων με έπαθλο', ok: () => { const x = progress().find(q => q.k === 'prize'); return x && x.state !== 'todo' && /^(\d+)\/\1 /.test(x.text) || (x && x.state === 'done'); } },
+      { t:'Βγάλε PDF ή Word για τις υπογραφές', ok: () => ticked('prize.out'), tick:'prize.out', sel:'#printBtn,#wordBtn' } ] },
+    results: { needs:'entry', tasks: [
+      { t:'Οι θέσεις έρχονται από το Φύλλο Πληρωμής· συμπλήρωσε όσες λείπουν', ok: () => { const x = progress().find(q => q.k === 'results'); return x && x.state !== 'todo'; } },
+      { t:'Πάτα «Έλεγχος αλλαγών»', ok: () => ticked('res.check'), tick:'res.check', sel:'#checkBtn' },
+      { t:'Κατέβασε ή δημοσίευσε το Ranking.xlsx', ok: () => ticked('res.out') || (progress().find(q => q.k === 'results') || {}).state === 'done', tick:'res.out', sel:'#dlBtn,#pubBtn' } ] },
+    report: { tasks: [
+      { t:'Συμπλήρωσε στοιχεία, καιρό και εγκαταστάσεις', ok: () => { const R = read('supervisorReport_v1'), t = get(), r = R && t && R.reports.find(x => x.tourId === t.id); return !!(r && (r.weather || []).length && Object.keys(r.rates || {}).length); } },
+      { t:'Πρόσθεσε περιστατικά, ενστάσεις ή τραυματισμούς (αν υπήρξαν)', hint:true },
+      { t:'Βγάλε PDF ή Word για την ομοσπονδία', ok: () => ticked('report.out'), tick:'report.out', sel:'#printBtn,#wordBtn' } ] }
+  };
+  function guideState(k){
+    const g = GUIDE[k]; if(!g) return null;
+    const tasks = g.tasks.map(x => Object.assign({}, x, { done: x.ok ? !!x.ok() : false }));
+    const real = tasks.filter(x => !x.hint);
+    return { tasks, done: real.filter(x => x.done).length, total: real.length, blocked: g.needs === 'entry' && !entryTeams() };
+  }
+
+  // Όταν υπάρχει ενεργό τουρνουά, τα πεδία «όνομα τουρνουά» και τα κουμπιά «νέο τουρνουά» των εργαλείων περισσεύουν
+  const HIDE = {
+    'EntryList.html': ['#tName', '#tDates'],
+    'Schedules.html': ['#tName'],
+    'Payments.html':  ['#tName', '#clearBtn', '#importBtn'],
+    'PrizeSheet.html':['#tName', '#tDate', '#tPlace', '#clearBtn', '#importBtn'],
+    'Results.html':   ['#importBtn'],
+    'Checklist.html': ['.trow', '#newBox', '#renameBtn', '#delBtn'],
+    'Report.html':    ['.trow', '#newBox', '#delBtn', '#fillBtn']
+  };
+  // Αυτόματη μεταφορά ομάδων: τα κουμπιά εισαγωγής μόνο προσθέτουν ό,τι λείπει, άρα τρέχουν με ασφάλεια
+  const SYNC = { 'Payments.html':['#importBtn'], 'PrizeSheet.html':['#importBtn'], 'Results.html':['#importBtn', '#prizeImportBtn'], 'Report.html':['#fillBtn'] };
+
+  function pageName(){ return location.pathname.split('/').pop() || 'index.html'; }
+  function cleanup(){
+    if(!get()) return;
+    (HIDE[pageName()] || []).forEach(sel => document.querySelectorAll(sel).forEach(el => {
+      const box = el.closest('label.f, label') || el; box.hidden = true; box.style.display = 'none';
+    }));
+  }
+  function autoSync(){
+    const t = get(); if(!t) return;
+    const list = SYNC[pageName()]; if(!list) return;
+    const el = read('entryListSeeded_v1'), stamp = el && el.savedAt || 0, z = read('prizeSheet_v1');
+    const key = pageName(), last = (t.sync || {})[key] || 0;
+    const src = Math.max(stamp, z && z.archivedAt || 0, z ? 1 : 0);
+    if(!entryTeams() && !(z && z.cats)) return;
+    if(last && last >= stamp && pageName() !== 'Results.html') return;
+    list.forEach(sel => { const b = document.querySelector(sel); if(b) try{ b.click(); }catch(e){} });
+    const tt = get(); tt.sync = tt.sync || {}; tt.sync[key] = Date.now(); write(ACTIVE, tt);
+  }
+
+  function guideHTML(cur){
+    const gs = guideState(cur.k); if(!gs) return '';
+    const items = gs.tasks.map(x => `<li class="${x.hint ? 'hint' : x.done ? 'ok' : ''}"><span class="bv-g-i">${x.hint ? '•' : x.done ? '✓' : ''}</span>${escH(x.t)}</li>`).join('');
+    const blocked = gs.blocked ? `<div class="bv-g-need">Πρώτα χρειάζεται η Αρχική Λίστα (βήμα 2). <a href="EntryList.html">Πήγαινε στο βήμα 2 ›</a></div>` : '';
+    const all = gs.total && gs.done === gs.total;
+    return `<div class="bv-g-h"><b>Βήμα ${cur.num} · Τι κάνεις εδώ</b><span>${gs.total ? gs.done + '/' + gs.total : ''}</span></div>${blocked}<ol>${items}</ol>
+      ${all ? `<div class="bv-g-all">✓ Έτοιμο. Πάτα «Ολοκλήρωσα» κάτω για το επόμενο βήμα.</div>` : ''}`;
+  }
+
+  // Πάνω λωρίδα (βήμα + τουρνουά), οδηγός, και σταθερή μπάρα κάτω: ‹ Προηγούμενο | ✓ Ολοκλήρωσα → Επόμενο
   function bar(mode){
     const nav = document.querySelector('.bv-topbar'); if(!nav || document.querySelector('.bv-tour')) return;
     const t = get(), all = steps(), me = pageStep(), cur = me && all.find(s => s.k === me.k);
@@ -310,19 +396,35 @@
         + '<span class="bv-tour-c">Βήματα ›</span>';
       if(!t) a.href = 'Tournament.html';
       nav.insertAdjacentElement('afterend', a);
+      cleanup();
+      autoSync();
+      // οδηγός κάτω από την κεφαλίδα
+      if(cur && GUIDE[cur.k]){
+        const head = document.querySelector('body > header') || a;
+        const wrap = document.createElement('div'); wrap.className = 'wrap bv-guide-wrap'; wrap.lang = 'el';
+        const box = document.createElement('section'); box.className = 'bv-guide'; wrap.appendChild(box);
+        head.insertAdjacentElement('afterend', wrap);
+        const paint = () => { box.innerHTML = guideHTML(cur); };
+        paint();
+        GUIDE[cur.k].tasks.forEach(x => { if(x.tick && x.sel) document.addEventListener('click', e => { if(e.target.closest(x.sel)){ tick(x.tick); setTimeout(paint, 50); } }, true); });
+        // οι σελίδες αποθηκεύουν σε localStorage: ξαναζωγραφίζουμε τον οδηγό μετά από κάθε αποθήκευση
+        let tm = 0; const orig = Storage.prototype.setItem;
+        Storage.prototype.setItem = function(k, v){ orig.call(this, k, v); clearTimeout(tm); tm = setTimeout(paint, 120); };
+      }
     }
     if(cur){
+      document.body.classList.add('bv-has-steps');
       const box = document.createElement('nav'); box.className = 'bv-steps'; box.lang = 'el'; box.setAttribute('aria-label', 'Βήματα τουρνουά');
       const nextHref = nxt ? nxt.href : 'index.html';
+      const canMark = t && cur.k !== 'tour' && cur.k !== 'close' && cur.state !== 'done';
+      const main = canMark
+        ? `<button type="button" class="bv-main bv-mark">✓ Ολοκλήρωσα${nxt ? ' · Επόμενο ›' : ''}</button>`
+        : `<a class="bv-main" href="${nextHref}">${nxt ? `Επόμενο: ${escH(nxt.n)} ›` : 'Τέλος · Αρχική ›'}</a>`;
       box.innerHTML = `<div class="bv-steps-in">
-        ${t && cur.k !== 'tour' && cur.k !== 'close' ? (cur.state === 'done'
-          ? `<div class="bv-steps-done">✓ Το βήμα ${cur.num} ολοκληρώθηκε${cur.manualDone ? ' · <button type="button" class="bv-undo">Αναίρεση</button>' : ''}</div>`
-          : `<button type="button" class="bv-mark">✓ Ολοκλήρωσα το βήμα ${cur.num}</button>`) : ''}
-        <div class="bv-steps-row">
-          ${prev ? `<a class="bv-prev" href="${prev.href}">‹ ${escH(prev.n)}</a>` : '<span></span>'}
-          ${nxt ? `<a class="bv-next" href="${nextHref}">Βήμα ${nxt.num}: ${escH(nxt.n)} ›</a>` : '<a class="bv-next" href="index.html">Τέλος ›</a>'}
-        </div></div>`;
-      (document.querySelector('main') || document.body).appendChild(box);
+        ${prev ? `<a class="bv-prev" href="${prev.href}" aria-label="Προηγούμενο: ${escH(prev.n)}" title="${escH(prev.n)}">‹</a>` : '<a class="bv-prev" href="index.html" aria-label="Βήματα">‹</a>'}
+        <div class="bv-mid">${cur.state === 'done' ? `<span class="bv-done">✓ Βήμα ${cur.num} ολοκληρώθηκε${cur.manualDone ? ' · <button type="button" class="bv-undo">Αναίρεση</button>' : ''}</span>` : `<span class="bv-done muted">Βήμα ${cur.num} από ${all.length}</span>`}${main}</div>
+      </div>`;
+      document.body.appendChild(box);
       const m = box.querySelector('.bv-mark');
       if(m) m.onclick = () => { markDone(cur.k, true); location.href = nextHref; };
       const u = box.querySelector('.bv-undo');
@@ -357,5 +459,5 @@
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
   }
 
-  window.BVTour = { resetActive, steps, markDone, STEPS, get, switchTo, update, propagate, list, forget, bundle, restoreBundle, progress, backup, restore, makeMeta, datesText, rangeShort, daysTo, iso, SWAP };
+  window.BVTour = { guideState, tick, resetActive, steps, markDone, STEPS, get, switchTo, update, propagate, list, forget, bundle, restoreBundle, progress, backup, restore, makeMeta, datesText, rangeShort, daysTo, iso, SWAP };
 })();
