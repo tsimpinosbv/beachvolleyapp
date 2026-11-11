@@ -534,6 +534,8 @@ function publishSeeded(){
       const rows = computed(g).rows;
       out[g] = rows.map(r => sur(r.m1, r.t.n1) + ' / ' + sur(r.m2, r.t.n2));
       out[g + '_FULL'] = rows.map(r => [full(r.m1, r.t.n1), full(r.m2, r.t.n2)]);
+      out[g + '_PTS'] = rows.map(r => r.total);   // για την Κλήρωση Ομίλων
+      out[g + '_DRAW'] = rows.map(r => r.draw || '');
     });
     localStorage.setItem('entryListSeeded_v1', JSON.stringify(out));
   }catch(e){}

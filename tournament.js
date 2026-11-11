@@ -13,7 +13,7 @@
  */
 (function(){
   const ACTIVE = 'activeTournament_v1', BUCKETS = 'tourBuckets_v1';
-  const SWAP = ['entryListSeeded_v1', 'entryListDraft_v1', 'schedulesState_v2', 'payments_v1', 'prizeSheet_v1', 'results_v1'];
+  const SWAP = ['entryListSeeded_v1', 'entryListDraft_v1', 'schedulesState_v2', 'payments_v1', 'prizeSheet_v1', 'results_v1', 'poolDrawGR_v1'];
   const NEVER_BACKUP = ['bvGithubToken'];
   const MSH = ['Ιαν','Φεβ','Μαρ','Απρ','Μαΐ','Ιουν','Ιουλ','Αυγ','Σεπ','Οκτ','Νοε','Δεκ'];
 
@@ -176,6 +176,9 @@
       state: seeded && ((seeded.MEN || []).length + (seeded.WOMEN || []).length) ? 'done' : (nM + nW ? 'doing' : 'todo'),
       text: nM + nW ? `${nM} ανδρών · ${nW} γυναικών` : 'Καμία ομάδα ακόμα' });
     const sc = read('schedulesState_v2');
+    const pd = read('poolDrawGR_v1'), pdc = pd ? ['MEN','WOMEN'].filter(c => pd[c] && pd[c].pools) : [];
+    out.push({ k:'draw', label:'Κλήρωση Ομίλων', href:'PoolDrawGR.html', state: pdc.length ? 'done' : 'todo',
+      text: pdc.length ? pdc.map(c => (c === 'MEN' ? 'Άνδρες' : 'Γυναίκες') + ': ' + pd[c].pools.length + ' όμιλοι').join(' · ') : 'Δεν έχει γίνει κλήρωση' });
     out.push({ k:'sched', label:'Πρόγραμμα Αγώνων', href:'Schedules.html', state: 'info',
       text: sc && sc.courts ? `${sc.courts} γήπεδα · ${sc.days || 1} ${sc.days === 1 ? 'ημέρα' : 'ημέρες'}` : 'Δεν έχει ρυθμιστεί' });
     const p = read('payments_v1');
@@ -217,7 +220,7 @@
   const STEPS = [
     { k:'tour',   n:'Τουρνουά',              href:'Tournament.html',   d:'Διάλεξε το τουρνουά που δουλεύεις' },
     { k:'entry',  n:'Αρχική Λίστα',          href:'EntryList.html',    d:'Δηλώσεις και seeding από τη βαθμολογία' },
-    { k:'draw',   n:'Κλήρωση Ομίλων',        href:'PoolDraw.html',     d:'Όμιλοι με seeding', manual:true },
+    { k:'draw',   n:'Κλήρωση Ομίλων',        href:'PoolDrawGR.html',   d:'Όμιλοι από την Αρχική Λίστα' },
     { k:'sched',  n:'Πρόγραμμα Αγώνων',      href:'Schedules.html',    d:'Γήπεδα, ώρες και αγώνες', manual:true },
     { k:'pay',    n:'Συμμετοχές & Πληρωμές', href:'Payments.html',     d:'Ποιος πλήρωσε συμμετοχή και μητρώο' },
     { k:'check',  n:'Λίστα Ελέγχου',         href:'Checklist.html',    d:'Όλοι οι έλεγχοι του supervisor' },
@@ -235,7 +238,6 @@
       const p = P[s.k] || {};
       let state = p.state === 'info' ? 'todo' : (p.state || 'todo'), text = p.text || s.d;
       if(s.k === 'tour'){ state = t ? 'done' : 'todo'; text = t ? t.name + (t.from ? ' · ' + rangeShort(t) : '') : s.d; }
-      if(s.k === 'draw'){ text = s.d; }
       if(s.k === 'close'){ state = t && t.closedAt ? 'done' : 'todo'; text = t && t.closedAt ? 'Στο αρχείο σεζόν' : s.d; }
       if(done[s.k] && state !== 'done'){ state = 'done'; }
       return Object.assign({}, s, { num: 0, state, text, manualDone: !!done[s.k] });

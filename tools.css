@@ -74,5 +74,6 @@ footer{margin:28px 0 40px; color:var(--ink-soft); font-size:13px; line-height:1.
   .doc .sign div{flex:1; border-top:0.3mm solid #000; padding-top:1.5mm; font-size:10pt; text-align:center;}
   .doc p{margin:1.5mm 0; line-height:1.4;}
   .doc .pre{white-space:pre-wrap;}
+  .doc .page + .page{break-before:page;}
 }
 [hidden]{display:none !important;}

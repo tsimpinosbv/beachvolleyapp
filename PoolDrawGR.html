@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Κλήρωση Ομίλων — BV Supervisor Tools</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d3a5c">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Supervisor Tools">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tools.css">
+<style>
+  .teams{margin-top:10px; border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+  .tm{display:flex; align-items:center; gap:10px; padding:8px 10px; border-bottom:1px solid rgba(15,36,56,0.07); background:#fff;}
+  .tm:last-child{border-bottom:none;}
+  .tm .sd{width:30px; flex:none; text-align:center; font-weight:800; color:var(--navy-2); font-variant-numeric:tabular-nums;}
+  .tm .nm{flex:1; min-width:0; font-weight:600; font-size:14.5px;}
+  .tm .nm input{min-height:38px; font-size:14.5px; padding:6px 9px;}
+  .tm .pt{width:62px; flex:none; text-align:right; font-weight:700; font-size:13.5px; color:var(--ink-soft); font-variant-numeric:tabular-nums;}
+  .tm .tie{font-size:11px; font-weight:800; color:var(--warn); background:var(--warn-bg); border-radius:6px; padding:1px 5px; margin-left:6px;}
+  .tm .ph{font-size:11px; font-weight:800; color:var(--navy-2); background:var(--accent-bg); border-radius:6px; padding:1px 5px; margin-left:6px;}
+  .tm .x{border:none; background:none; color:var(--bad); font-size:20px; line-height:1; cursor:pointer; padding:4px 6px;}
+  .tm.out{opacity:.45;} .tm.out .nm{text-decoration:line-through;}
+  .sizes{font-size:14px; font-weight:600; color:var(--navy); margin-top:10px;}
+  .pools{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; margin-top:12px;}
+  .pool{border:1px solid var(--line); border-radius:14px; overflow:hidden; background:#fff;}
+  .pool h3{margin:0; padding:9px 12px; background:var(--navy); color:#fff; font-family:'Space Grotesk',sans-serif; font-size:16px; display:flex; justify-content:space-between;}
+  .pool h3 small{font-family:'IBM Plex Sans',sans-serif; font-weight:600; font-size:12.5px; opacity:.8;}
+  .pool .r{display:flex; gap:10px; padding:8px 12px; border-bottom:1px solid rgba(15,36,56,0.07); font-size:14px;}
+  .pool .r:last-child{border-bottom:none;}
+  .pool .r b{width:34px; flex:none; color:var(--navy-2);} .pool .r span{flex:1; min-width:0;} .pool .r em{font-style:normal; color:var(--ink-soft); font-size:13px;}
+  .src{font-size:13.5px; color:var(--ink-soft); margin:0;}
+</style>
+<script src="bv-admin.js"></script>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+<nav class="bv-topbar" aria-label="Πλοήγηση"><a class="bv-home" href="index.html" aria-label="Αρχική" title="Αρχική"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9v11h13V9"/><path d="M10 20v-6h4v6"/></svg></a><a class="bv-brand" href="index.html"><img src="icons/logo.png" alt="">Supervisor Tools</a></nav>
+<header class="hero">
+  <div class="wrap">
+    <h1>Κλήρωση Ομίλων</h1>
+    <p>Πρωτάθλημα ΕΟΠΕ. Οι ομάδες και η σειρά τους έρχονται από την Αρχική Λίστα και μοιράζονται στους ομίλους φιδωτά (1→Α, 2→Β… και αντίστροφα).</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <h2><span class="num">1</span> Ομάδες</h2>
+    <div class="seg" id="catSeg">
+      <button type="button" data-c="MEN" class="on">Άνδρες</button>
+      <button type="button" data-c="WOMEN">Γυναίκες</button>
+    </div>
+    <p class="src" id="src" style="margin-top:10px"></p>
+    <div class="teams" id="teams"></div>
+    <div class="btns">
+      <button class="btn" type="button" id="reload">↻ Ξανά από την Αρχική Λίστα</button>
+      <button class="btn ghost" type="button" id="addPh">+ Κενή θέση</button>
+    </div>
+    <p class="msg">Πάτα ✕ για να βγει μια ομάδα από την κλήρωση. Η «Κενή θέση» είναι για ομάδα που θα έρθει από προκριματικά ή wild card (μπαίνει στο τέλος).</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">2</span> Όμιλοι</h2>
+    <div class="grid">
+      <label class="f">Αριθμός ομίλων<input type="number" id="nPools" min="1" max="16" inputmode="numeric"></label>
+      <label class="f">Ισοβαθμίες
+        <select id="ties"><option value="list">Σειρά λίστας</option><option value="lots">Κλήρωση</option></select></label>
+    </div>
+    <div class="sizes" id="sizes"></div>
+    <button class="btn big" type="button" id="drawBtn" style="margin-top:14px">Κλήρωση</button>
+  </section>
+
+  <section class="card" id="resCard" hidden>
+    <h2><span class="num">3</span> Αποτέλεσμα <small id="resWhen"></small></h2>
+    <div class="pools" id="pools"></div>
+    <div class="btns">
+      <button class="btn primary" type="button" id="xlsBtn">⬇ Excel</button>
+      <button class="btn" type="button" id="pdfBtn">PDF</button>
+      <button class="btn ghost" type="button" id="redrawBtn" hidden>Νέα κλήρωση ισοβαθμιών</button>
+    </div>
+  </section>
+
+  <footer>Για διεθνή τουρνουά με αρχείο CEV υπάρχει το <a href="PoolDraw.html">Pool Draw (CEV)</a>.</footer>
+</main>
+<div class="toast" id="toast"></div>
+<div class="doc" id="doc"></div>
+
+<script src="vendor/xlsx.full.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600); }
+const KEY = 'poolDrawGR_v1', CAT = { MEN:'Άνδρες', WOMEN:'Γυναίκες' };
+const read = k => { try{ return JSON.parse(localStorage.getItem(k) || 'null'); }catch(e){ return null; } };
+let S = read(KEY) || {};
+S.cat = S.cat || 'MEN';
+['MEN','WOMEN'].forEach(c => S[c] = S[c] || null);
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+const C = () => S[S.cat];
+const GL = 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠ', letter = i => GL[i] || String(i + 1);
+
+/* ---- ομάδες από την Αρχική Λίστα ---- */
+function fromEntryList(cat){
+  const el = read('entryListSeeded_v1');
+  const full = el && el[cat + '_FULL'] || [];
+  const pts = el && el[cat + '_PTS'] || [], drw = el && el[cat + '_DRAW'] || [];
+  const hasMD = drw.some(d => d === 'MD');
+  const teams = full.map((t, i) => ({ id: 't' + i, name: t[0] + ' / ' + t[1], pts: pts[i] != null ? pts[i] : null, out: hasMD && drw[i] !== 'MD' }));
+  return { tName: el && el.tName || '', teams, pools: null, nPools: defPools(teams.filter(x => !x.out).length) };
+}
+function defPools(n){ return n <= 5 ? 1 : n <= 12 ? Math.max(2, Math.round(n / 4)) : Math.round(n / 4); }
+function ensure(){ if(!C()){ S[S.cat] = fromEntryList(S.cat); save(); } }
+
+function active(){ const c = C(); return c.teams.filter(t => !t.out); }
+// σειρά seeding: η σειρά της λίστας (ήδη ταξινομημένη κατά πόντους), κενές θέσεις στο τέλος
+function ranked(lots){
+  const c = C(), real = active().filter(t => !t.ph), ph = active().filter(t => t.ph);
+  let out = real.slice();
+  if(lots){ // κλήρωση μόνο ανάμεσα σε ομάδες με ίδιους πόντους
+    const groups = []; out.forEach(t => { const g = groups[groups.length - 1]; if(g && g[0].pts === t.pts && t.pts != null) g.push(t); else groups.push([t]); });
+    groups.forEach(g => { for(let i = g.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [g[i], g[j]] = [g[j], g[i]]; } });
+    out = groups.flat();
+  }
+  return out.concat(ph);
+}
+function snake(list, n){
+  const pools = Array.from({ length:n }, () => []);
+  list.forEach((t, i) => { const band = Math.floor(i / n), k = i % n; pools[band % 2 ? n - 1 - k : k].push(Object.assign({ seed: i + 1 }, t)); });
+  return pools;
+}
+
+/* ---- εμφάνιση ---- */
+function render(){
+  ensure();
+  const c = C();
+  document.querySelectorAll('#catSeg button').forEach(b => b.classList.toggle('on', b.dataset.c === S.cat));
+  $('src').textContent = c.teams.length ? `Από την Αρχική Λίστα${c.tName ? ' «' + c.tName + '»' : ''}: ${c.teams.length} ομάδες${c.teams.some(t => t.out && !t.removed) ? ' (μόνο όσες είναι στο κυρίως ταμπλό)' : ''}.` : '';
+  const ptsCount = {}; active().forEach(t => { if(t.pts != null && !t.ph) ptsCount[t.pts] = (ptsCount[t.pts] || 0) + 1; });
+  let seed = 0;
+  $('teams').innerHTML = c.teams.length ? c.teams.map(t => {
+    const sd = t.out ? '–' : ++seed;
+    return `<div class="tm ${t.out ? 'out' : ''}"><span class="sd">${sd}</span>
+      <span class="nm">${t.ph ? `<input type="text" value="${esc(t.name)}" data-ph="${t.id}" aria-label="Όνομα θέσης">` : esc(t.name)}${!t.ph && !t.out && ptsCount[t.pts] > 1 ? '<span class="tie">ΙΣΟΒ.</span>' : ''}${t.ph ? '<span class="ph">ΘΕΣΗ</span>' : ''}</span>
+      <span class="pt">${t.pts != null && !t.ph ? t.pts + ' π.' : ''}</span>
+      <button class="x" type="button" data-x="${t.id}" aria-label="${t.out ? 'Επαναφορά' : 'Έξω από την κλήρωση'}">${t.out ? '↺' : '✕'}</button></div>`;
+  }).join('') : '<div class="empty">Δεν υπάρχουν ομάδες. Φτιάξε πρώτα την <a href="EntryList.html">Αρχική Λίστα</a> για ' + CAT[S.cat] + '.</div>';
+  $('nPools').value = c.nPools || 1;
+  const n = active().length, p = Math.max(1, Math.min(c.nPools || 1, n || 1)), base = Math.floor(n / p), rem = n % p;
+  $('sizes').textContent = n < 2 ? '' : rem ? `${rem} όμιλοι των ${base + 1} και ${p - rem} των ${base} ομάδων` : `${p} ${p === 1 ? 'όμιλος' : 'όμιλοι'} των ${base} ομάδων`;
+  $('ties').value = c.ties || 'list';
+  renderPools();
+}
+function renderPools(){
+  const c = C();
+  if(!c.pools){ $('resCard').hidden = true; return; }
+  $('resCard').hidden = false;
+  $('resWhen').textContent = c.drawnAt ? new Date(c.drawnAt).toLocaleString('el-GR', { dateStyle:'short', timeStyle:'short' }) : '';
+  $('pools').innerHTML = c.pools.map((p, i) => `<div class="pool"><h3>Όμιλος ${letter(i)} <small>${p.length} ομάδες</small></h3>
+    ${p.map(t => `<div class="r"><b>#${t.seed}</b><span>${esc(t.name)}</span><em>${t.pts != null && !t.ph ? t.pts : ''}</em></div>`).join('')}</div>`).join('');
+  $('redrawBtn').hidden = c.ties !== 'lots';
+}
+
+/* ---- ενέργειες ---- */
+$('catSeg').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; S.cat = b.dataset.c; save(); render(); });
+$('teams').addEventListener('click', e => {
+  const b = e.target.closest('[data-x]'); if(!b) return;
+  const c = C(), t = c.teams.find(x => x.id === b.dataset.x);
+  if(t.ph){ c.teams = c.teams.filter(x => x !== t); } else t.out = !t.out;
+  c.pools = null; save(); render();
+});
+$('teams').addEventListener('input', e => { const i = e.target.closest('[data-ph]'); if(!i) return; const t = C().teams.find(x => x.id === i.dataset.ph); t.name = i.value; C().pools = null; save(); $('resCard').hidden = true; });
+$('reload').addEventListener('click', () => {
+  if(C() && C().pools && !confirm('Η κλήρωση θα σβηστεί και οι ομάδες θα ξαναφορτωθούν από την Αρχική Λίστα. Συνέχεια;')) return;
+  S[S.cat] = fromEntryList(S.cat); save(); render(); toast('Φορτώθηκαν ' + C().teams.length + ' ομάδες');
+});
+$('addPh').addEventListener('click', () => { const c = C(), k = c.teams.filter(t => t.ph).length + 1;
+  c.teams.push({ id: 'p' + Date.now(), name: 'Προκριματικά ' + k, pts: null, ph: true }); c.pools = null; save(); render(); });
+$('nPools').addEventListener('input', e => { C().nPools = Math.max(1, parseInt(e.target.value, 10) || 1); C().pools = null; save(); render(); });
+$('ties').addEventListener('change', e => { C().ties = e.target.value; C().pools = null; save(); render(); });
+function draw(){
+  const c = C(), list = ranked(c.ties === 'lots'), n = Math.min(c.nPools || 1, list.length);
+  if(list.length < 2){ toast('Χρειάζονται τουλάχιστον 2 ομάδες'); return; }
+  c.pools = snake(list, n); c.drawnAt = Date.now(); save(); renderPools();
+  $('resCard').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+$('drawBtn').addEventListener('click', draw);
+$('redrawBtn').addEventListener('click', draw);
+
+/* ---- Excel / PDF ---- */
+function title(){ const t = (window.BVTour && BVTour.get()) || {}; return (t.name || C().tName || 'Τουρνουά') + (t.dates ? ' (' + t.dates + ')' : ''); }
+$('xlsBtn').addEventListener('click', () => {
+  const wb = XLSX.utils.book_new();
+  ['MEN','WOMEN'].forEach(cat => {
+    const c = S[cat]; if(!c || !c.pools) return;
+    const max = Math.max(...c.pools.map(p => p.length)), rows = [['ΚΛΗΡΩΣΗ ΟΜΙΛΩΝ — ' + CAT[cat].toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') + ' — ' + title()], []];
+    rows.push(c.pools.flatMap((p, i) => ['ΟΜΙΛΟΣ ' + letter(i), 'Πόντοι', '']));
+    for(let r = 0; r < max; r++) rows.push(c.pools.flatMap(p => { const t = p[r]; return t ? ['#' + t.seed + ' ' + t.name, t.pts != null && !t.ph ? t.pts : '', ''] : ['', '', '']; }));
+    rows.push([]); rows.push(['Seed', 'Ομάδα', 'Πόντοι', 'Όμιλος']);
+    c.pools.flatMap((p, i) => p.map(t => [t.seed, t.name, t.pts != null && !t.ph ? t.pts : '', letter(i)])).sort((a, b) => a[0] - b[0]).forEach(x => rows.push(x));
+    const ws = XLSX.utils.aoa_to_sheet(rows); ws['!cols'] = c.pools.flatMap(() => [{ wch:38 }, { wch:8 }, { wch:2 }]);
+    XLSX.utils.book_append_sheet(wb, ws, CAT[cat]);
+  });
+  if(!wb.SheetNames.length){ toast('Κάνε πρώτα την κλήρωση'); return; }
+  XLSX.writeFile(wb, 'Κλήρωση Ομίλων - ' + title().replace(/[\\/:*?"<>|]+/g, ' ') + '.xlsx');
+});
+function buildDoc(){
+  let h = '';
+  ['MEN','WOMEN'].forEach(cat => { const c = S[cat]; if(!c || !c.pools) return;
+    h += `<div class="page"><h1>Κλήρωση Ομίλων — ${CAT[cat]}</h1><p class="sub">${esc(title())}</p>`;
+    c.pools.forEach((p, i) => { h += `<h2>Όμιλος ${letter(i)}</h2><table><tr><th style="width:14mm">Seed</th><th>Ομάδα</th><th class="r" style="width:22mm">Πόντοι</th></tr>${p.map(t => `<tr><td>${t.seed}</td><td>${esc(t.name)}</td><td class="r">${t.pts != null && !t.ph ? t.pts : ''}</td></tr>`).join('')}</table>`; });
+    h += '<div class="sign"><div>Ο/Η Supervisor</div></div></div>'; });
+  $('doc').innerHTML = h; return !!h;
+}
+$('pdfBtn').addEventListener('click', () => { if(buildDoc()) window.print(); else toast('Κάνε πρώτα την κλήρωση'); });
+window.addEventListener('beforeprint', buildDoc);
+render();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
+}
+</script>
+<script src="tournament.js" data-bar></script>
+</body>
+</html>
