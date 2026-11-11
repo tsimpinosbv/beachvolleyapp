@@ -222,6 +222,7 @@
     { k:'pay',    n:'Συμμετοχές & Πληρωμές', href:'Payments.html',     d:'Ποιος πλήρωσε συμμετοχή και μητρώο' },
     { k:'check',  n:'Λίστα Ελέγχου',         href:'Checklist.html',    d:'Όλοι οι έλεγχοι του supervisor' },
     { k:'prize',  n:'Φύλλο Πληρωμής Επάθλων', href:'PrizeSheet.html',  d:'Θέσεις, ποσά και υπογραφές' },
+    { k:'results', n:'Αποτελέσματα & Βαθμολογία', href:'Results.html', d:'Τελικές θέσεις → πόντοι και Ranking.xlsx' },
     { k:'report', n:'Αναφορά Supervisor',    href:'Report.html',       d:'Η αναφορά για την ομοσπονδία' },
     { k:'close',  n:'Κλείσιμο τουρνουά',     href:'Tournament.html#closeCard', d:'Όλα στο αρχείο σεζόν', admin:true }
   ];
