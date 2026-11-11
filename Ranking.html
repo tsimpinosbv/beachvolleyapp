@@ -1008,37 +1008,24 @@ function partnerIn(name, tname, v, prize){
   }
   return same.length === 1 ? same[0].name : '';
 }
-// Θέση στη γενική βαθμολογία μετά από κάθε τουρνουά (με ισοβαθμίες)
-function rankHistory(name){
-  const tours = tourList(), list = pointsList(), k = nameKey(name), out = [];
-  const me = list.find(p => nameKey(p.name) === k);
-  const cum = new Map(list.map(p => [p, 0]));
-  tours.forEach(t => {
-    list.forEach(p => { const v = valIn(p, t.name); if(v !== undefined) cum.set(p, cum.get(p) + v); });
-    const mine = me ? cum.get(me) : 0;
-    if(!mine){ out.push(null); return; }
-    let r = 1; cum.forEach(v => { if(v > mine) r++; });
-    out.push(r);
-  });
-  return out;
-}
-function chartSVG(ranks, tours){
-  const pts = ranks.map((r, i) => r ? { i, r } : null).filter(Boolean);
-  if(pts.length < 2) return '<p class="ac-foot" style="margin-top:0">Χρειάζονται τουλάχιστον δύο τουρνουά για το γράφημα.</p>';
-  const W = 380, H = 170, L = 36, R = 12, T = 22, B = 24;
-  const maxR = Math.max(...pts.map(p => p.r)), minR = Math.min(...pts.map(p => p.r));
-  const lo = Math.max(1, minR - 1), hi = Math.max(lo + 2, maxR + 1);
-  const x = i => L + (W - L - R) * (tours.length === 1 ? 0.5 : i / (tours.length - 1));
-  const y = r => T + (H - T - B) * (r - lo) / (hi - lo);
-  const ticks = [...new Set([lo, Math.round((lo + hi) / 2), hi])];
-  const path = pts.map((p, j) => (j ? 'L' : 'M') + x(p.i).toFixed(1) + ' ' + y(p.r).toFixed(1)).join(' ');
-  const last = pts[pts.length - 1];
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Εξέλιξη θέσης στη βαθμολογία, από #${pts[0].r} σε #${last.r}">
-    ${ticks.map(t => `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="rgba(15,36,56,0.10)"/><text x="${L - 8}" y="${y(t) + 4}" text-anchor="end" font-size="13" font-weight="600" fill="rgba(15,36,56,0.7)">#${t}</text>`).join('')}
-    ${tours.map((t, i) => `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="rgba(15,36,56,0.6)">${i + 1}</text>`).join('')}
-    <path d="${path}" fill="none" stroke="var(--navy-light)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-    ${pts.map(p => `<circle cx="${x(p.i)}" cy="${y(p.r)}" r="${p === last ? 5 : 3.2}" fill="${p === last ? 'var(--navy-deep)' : '#fff'}" stroke="var(--navy-light)" stroke-width="2"/>`).join('')}
-    <text x="${x(last.i)}" y="${y(last.r) - 12}" text-anchor="${last.i === tours.length - 1 ? 'end' : 'middle'}" font-size="14" font-weight="700" fill="var(--navy-deep)">#${last.r}</text>
+// Στήλες: η θέση του αθλητή σε κάθε τουρνουά (ψηλότερη στήλη = καλύτερη θέση)
+function placeBarsSVG(rows){
+  const played = rows.filter(x => !x.none);
+  if(!played.length) return '<p class="ac-foot" style="margin-top:0">Δεν έχει συμμετοχές ακόμα.</p>';
+  const W = 600, H = 210, L = 8, R = 8, T = 30, B = 26, n = rows.length;
+  const maxP = Math.max(4, ...played.map(x => x.pl.from));
+  const slot = (W - L - R) / n, bw = Math.min(30, slot * 0.62), base = H - B;
+  const col = p => p === 1 ? '#c99a06' : p === 2 ? '#8a96a3' : p === 3 ? '#b0653a' : 'var(--navy-light)';
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Θέση του αθλητή σε κάθε τουρνουά">
+    <line x1="${L}" x2="${W - R}" y1="${base}" y2="${base}" stroke="rgba(15,36,56,0.15)"/>
+    ${rows.map((x, i) => {
+      const cx = L + slot * i + slot / 2;
+      const lab = `<text x="${cx}" y="${H - 8}" text-anchor="middle" font-size="12" fill="rgba(15,36,56,0.55)">${i + 1}</text>`;
+      if(x.none) return lab + `<text x="${cx}" y="${base - 6}" text-anchor="middle" font-size="13" fill="rgba(15,36,56,0.3)">–</text>`;
+      const h = Math.max(8, (base - T) * (maxP + 1 - x.pl.from) / maxP);
+      return lab + `<rect x="${cx - bw / 2}" y="${base - h}" width="${bw}" height="${h}" rx="4" fill="${col(x.pl.from)}"/>`
+        + `<text x="${cx}" y="${base - h - 7}" text-anchor="middle" font-size="${x.pl.label.length > 2 ? 11 : 13}" font-weight="700" fill="var(--navy-deep)">${x.pl.label}η</text>`;
+    }).join('')}
   </svg>`;
 }
 function renderAthleteCard(name){
@@ -1060,7 +1047,7 @@ function renderAthleteCard(name){
     stat(hasPrizes() ? fmtEur(eur ? eur.total : 0) : '—', 'έπαθλα') +
     stat(played.length + '/' + tours.length, 'τουρνουά') +
     stat(r ? '#' + r : '—', 'ατομική θέση');
-  document.getElementById('acChart').innerHTML = chartSVG(rankHistory(name), tours);
+  document.getElementById('acChart').innerHTML = placeBarsSVG(rows);
   document.getElementById('acTours').innerHTML = rows.map((x, i) => {
     const meta = [x.t.date, x.t.coef != null ? 'συντ. ' + String(x.t.coef).replace('.', ',') : ''].filter(Boolean).join(' · ');
     if(x.none) return `<div class="ac-row none"><div><div class="tn">${i + 1}. ${x.t.name}</div><div class="tm">${meta}</div></div><div class="val">δεν συμμετείχε</div></div>`;
@@ -1165,7 +1152,7 @@ if ('serviceWorker' in navigator) {
     <div class="ac-head"><button class="x" type="button" onclick="closeAthleteCard()" aria-label="Κλείσιμο">×</button>
       <h3 id="acName"></h3><p id="acSub"></p></div>
     <div class="ac-stats" id="acStats"></div>
-    <h4>Θέση στη βαθμολογία μετά από κάθε τουρνουά</h4>
+    <h4>Θέση σε κάθε τουρνουά</h4>
     <div class="ac-chart" id="acChart"></div>
     <h4>Τουρνουά</h4>
     <div class="ac-t" id="acTours"></div>
