@@ -345,7 +345,7 @@
   // Όταν υπάρχει ενεργό τουρνουά, τα πεδία «όνομα τουρνουά» και τα κουμπιά «νέο τουρνουά» των εργαλείων περισσεύουν
   const HIDE = {
     'EntryList.html': ['#tName', '#tDates'],
-    'Schedules.html': ['#tName'],
+    'Schedules.html': ['#tName', '[data-import]'],
     'Payments.html':  ['#tName', '#clearBtn', '#importBtn'],
     'PrizeSheet.html':['#tName', '#tDate', '#tPlace', '#clearBtn', '#importBtn'],
     'Results.html':   ['#importBtn'],
@@ -353,8 +353,48 @@
     'Report.html':    ['.trow', '#newBox', '#delBtn', '#fillBtn']
   };
   // Αυτόματη μεταφορά ομάδων: τα κουμπιά εισαγωγής μόνο προσθέτουν ό,τι λείπει, άρα τρέχουν με ασφάλεια
-  const SYNC = { 'Payments.html':['#importBtn'], 'PrizeSheet.html':['#importBtn'], 'Results.html':['#importBtn', '#prizeImportBtn'], 'Report.html':['#fillBtn'] };
+  const SYNC = { 'Schedules.html':['[data-import="men"]', '[data-import="women"]'], 'Payments.html':['#importBtn'], 'PrizeSheet.html':['#importBtn'], 'Results.html':['#importBtn', '#prizeImportBtn'], 'Report.html':['#fillBtn'] };
 
+  // Κάρτες ρυθμίσεων που σπάνια αλλάζουν: μαζεύονται κάτω από «⚙» (ταιριάζουν με τον τίτλο της κάρτας)
+  const COLLAPSE = {
+    'EntryList.html': [[/Υπολογισμός βαθμών/, 'Ρυθμίσεις βαθμών και κυρίως ταμπλό']],
+    'Results.html':   [[/Πίνακας βαθμών/, 'Πίνακας βαθμών και συντελεστής']]
+  };
+  function collapseSettings(){
+    (COLLAPSE[pageName()] || []).forEach(([re, label]) => {
+      const h = [...document.querySelectorAll('main h2, main h3, body > .wrap h2')].find(x => re.test(x.textContent));
+      const card = h && (h.closest('section, .card, .panel') || h.parentElement); if(!card || card.closest('details.bv-set')) return;
+      const d = document.createElement('details'); d.className = 'bv-set'; d.lang = 'el';
+      d.innerHTML = `<summary><span>⚙ ${escH(label)}</span><small>Αλλαγή</small></summary>`;
+      const cs = getComputedStyle(card);
+      d.style.marginLeft = cs.marginLeft; d.style.marginRight = cs.marginRight; if(parseFloat(cs.marginTop)) d.style.marginTop = cs.marginTop;
+      card.parentNode.insertBefore(d, card); d.appendChild(card);
+    });
+  }
+  // Κάρτα που άδειασε επειδή κρύψαμε τα περιεχόμενά της: φεύγει κι αυτή
+  function hideEmptyCards(){
+    document.querySelectorAll('section, .card, .tbar, .panel').forEach(c => {
+      if(c.hidden || c.closest('[hidden], .bv-guide, .bv-steps, details.bv-set') || c.offsetParent === null) return;
+      const live = [...c.querySelectorAll('input, select, textarea, button, a, table, .team, li, svg, img')].some(e => e.offsetParent !== null);
+      let txt = c.innerText || '';
+      c.querySelectorAll('h2, h3, .saved, #saved').forEach(h => { txt = txt.replace(h.innerText || '', ''); });
+      if(!live && txt.trim().length < 3) c.style.display = 'none';
+    });
+  }
+  // Επεξηγήσεις: κρυμμένες μέχρι να πατηθεί «ⓘ Βοήθεια» (ο οδηγός του βήματος λέει ήδη τι κάνεις)
+  function helpTexts(){
+    const out = [];
+    document.querySelectorAll('header p, .hero > p, p.msg, p.hint, .help, main > footer, body > footer, .wrap > footer').forEach(e => {
+      if(e.id || e.closest('.bv-guide, .bv-steps, .bv-tour')) return;
+      const host = e.closest('[id]');
+      if(host && /^(DIV|UL|OL|TABLE|TBODY|SPAN)$/.test(host.tagName)) return; // περιεχόμενο που ζωγραφίζει η σελίδα
+      if(e.querySelector('input, select, button, textarea')) return;
+      if(e.textContent.trim().length < 60) return;
+      out.push(e);
+    });
+    out.forEach(e => e.classList.add('bv-help-text'));
+    return out.length;
+  }
   function pageName(){ return location.pathname.split('/').pop() || 'index.html'; }
   function cleanup(){
     if(!get()) return;
@@ -370,7 +410,9 @@
     const src = Math.max(stamp, z && z.archivedAt || 0, z ? 1 : 0);
     if(!entryTeams() && !(z && z.cats)) return;
     if(last && last >= stamp && pageName() !== 'Results.html') return;
+    const t0 = window.toast; window.toast = function(){};
     list.forEach(sel => { const b = document.querySelector(sel); if(b) try{ b.click(); }catch(e){} });
+    setTimeout(() => { window.toast = t0; }, 0);
     const tt = get(); tt.sync = tt.sync || {}; tt.sync[key] = Date.now(); write(ACTIVE, tt);
   }
 
@@ -398,13 +440,17 @@
       nav.insertAdjacentElement('afterend', a);
       cleanup();
       autoSync();
+      collapseSettings();
+      hideEmptyCards();
+      const helpN = helpTexts();
       // οδηγός κάτω από την κεφαλίδα
       if(cur && GUIDE[cur.k]){
-        const head = document.querySelector('body > header') || a;
+        const head = document.querySelector('body > header, header.hero, .hero') || a;
         const wrap = document.createElement('div'); wrap.className = 'wrap bv-guide-wrap'; wrap.lang = 'el';
         const box = document.createElement('section'); box.className = 'bv-guide'; wrap.appendChild(box);
         head.insertAdjacentElement('afterend', wrap);
-        const paint = () => { box.innerHTML = guideHTML(cur); };
+        const paint = () => { box.innerHTML = guideHTML(cur) + (helpN ? `<button type="button" class="bv-help-btn">${document.body.classList.contains('bv-help') ? 'Κρύψε τη βοήθεια' : 'ⓘ Βοήθεια: περισσότερες εξηγήσεις'}</button>` : '');
+          const hb = box.querySelector('.bv-help-btn'); if(hb) hb.onclick = () => { document.body.classList.toggle('bv-help'); paint(); }; };
         paint();
         GUIDE[cur.k].tasks.forEach(x => { if(x.tick && x.sel) document.addEventListener('click', e => { if(e.target.closest(x.sel)){ tick(x.tick); setTimeout(paint, 50); } }, true); });
         // οι σελίδες αποθηκεύουν σε localStorage: ξαναζωγραφίζουμε τον οδηγό μετά από κάθε αποθήκευση

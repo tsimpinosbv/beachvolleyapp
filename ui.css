@@ -87,3 +87,13 @@ html:not(.bv-admin) .bv-admin-only{display:none !important;}
 body.bv-has-steps{padding-bottom:calc(88px + env(safe-area-inset-bottom, 0px));}
 body.bv-has-steps .toast{bottom:calc(96px + env(safe-area-inset-bottom, 0px)) !important;}
 @media print{ .bv-guide-wrap{display:none !important;} body.bv-has-steps{padding-bottom:0;} }
+
+/* Απλοποίηση: επεξηγήσεις μόνο με «ⓘ Βοήθεια», ρυθμίσεις μαζεμένες */
+body:not(.bv-help) .bv-help-text{display:none !important;}
+.bv-help-btn{margin-top:8px; border:none; background:none; color:#155a8a; font-weight:700; font-size:13.5px; padding:4px 0; cursor:pointer; text-decoration:underline; text-underline-offset:3px; font-family:inherit;}
+details.bv-set{margin-top:16px; background:#fff; border:1px solid rgba(15,36,56,0.12); border-radius:16px; box-shadow:0 4px 14px rgba(18,86,138,0.06);}
+details.bv-set > summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:10px; padding:14px 16px; font-weight:700; font-size:15px; color:#0b3150;}
+details.bv-set > summary::-webkit-details-marker{display:none;}
+details.bv-set > summary small{margin-left:auto; color:#155a8a; font-size:13px;}
+details.bv-set[open] > summary small{visibility:hidden;}
+details.bv-set > section, details.bv-set > .card, details.bv-set > .panel{margin:0 !important; border:none !important; box-shadow:none !important; border-top:1px solid rgba(15,36,56,0.08) !important; border-radius:0 0 16px 16px !important;}

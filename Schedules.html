@@ -795,7 +795,11 @@ function importFromEntryList(k){
   const note = $(k + '_importNote');
   let d = null; try{ d = JSON.parse(localStorage.getItem('entryListSeeded_v1') || 'null'); }catch(e){}
   const list = d && d[CATS.find(c => c.key === k).EL];
-  if(!list || !list.length){ note.textContent = 'Δεν βρέθηκε λίστα. Φτιάξε πρώτα την Αρχική Λίστα σε αυτή τη συσκευή.'; return; }
+  if(!list || !list.length){
+    if(d && ((d.MEN || []).length + (d.WOMEN || []).length)){ // η άλλη κατηγορία έχει ομάδες: αυτή δεν παίζει
+      state[k].on = false; save(); syncCat(k); updateCapacity(); note.textContent = 'Η Αρχική Λίστα δεν έχει ομάδες σε αυτή την κατηγορία.'; return; }
+    note.textContent = 'Δεν βρέθηκε λίστα. Φτιάξε πρώτα την Αρχική Λίστα σε αυτή τη συσκευή.'; return; }
+  state[k].on = true;
   state[k].names = list.join('\n'); $(k + '_names').value = state[k].names;
   // προτείνουμε αριθμό ομάδων
   if(state[k].format === 'pool' && ![8,12,16].includes(list.length)){ state[k].format = 'de'; }
