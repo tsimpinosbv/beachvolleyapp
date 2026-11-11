@@ -158,7 +158,12 @@ function renderActive(){
   $('activeCard').innerHTML = `<h2>Ενεργό τουρνουά</h2><h3>${esc(t.name)}</h3><div class="meta">${meta || 'Χωρίς ημερομηνίες'}</div>${cd}
     <div class="prog">${prog}</div>
     <div class="btns"><button class="btn primary" type="button" id="chgBtn">Αλλαγή τουρνουά</button><button class="link" type="button" id="editBtn">Διόρθωση στοιχείων</button></div>
-    <div style="border-top:1px solid var(--line); margin-top:12px; padding-top:4px"><button class="link danger" type="button" id="resetBtn">↺ Reset τουρνουά</button></div>`;
+    <div style="border-top:1px solid var(--line); margin-top:12px; padding-top:4px"><button class="link danger" type="button" id="resetBtn">↺ Reset τουρνουά</button> &nbsp; <button class="link danger" type="button" id="delBtn">🗑 Διαγραφή τουρνουά</button></div>`;
+  $('delBtn').onclick = () => {
+    if(!confirm('Διαγραφή «' + t.name + '» από αυτή τη συσκευή, μαζί με όλα τα δεδομένα του (Αρχική Λίστα, κλήρωση, πρόγραμμα, πληρωμές, λίστα ελέγχου, φύλλο πληρωμής, αποτελέσματα, αναφορά).\n\nΜένουν η λίστα μητρώου και οι ρυθμίσεις συμμετοχής. Ό,τι υπάρχει στο αρχείο σεζόν δεν αλλάζει.')) return;
+    if(!confirm('Σίγουρα; Δεν αναιρείται.')) return;
+    BVTour.forget(t.id); toast('Το «' + t.name + '» διαγράφηκε'); renderAll(); window.scrollTo({ top:0, behavior:'smooth' });
+  };
   $('resetBtn').onclick = () => {
     if(!confirm('Reset «' + t.name + '»: σβήνονται ΟΛΑ τα δεδομένα του σε αυτή τη συσκευή (Αρχική Λίστα, κλήρωση, πρόγραμμα, πληρωμές, λίστα ελέγχου, φύλλο πληρωμής, αποτελέσματα, αναφορά) και τα βήματα ξεκινούν από την αρχή.\n\nΜένουν: το τουρνουά, η λίστα μητρώου και οι ρυθμίσεις συμμετοχής. Ό,τι υπάρχει στο αρχείο σεζόν δεν αλλάζει.')) return;
     if(!confirm('Σίγουρα; Δεν αναιρείται.')) return;
@@ -202,7 +207,7 @@ $('pickSeg').addEventListener('click', e => { const b = e.target.closest('button
 $('pickCal').addEventListener('click', e => { const b = e.target.closest('[data-ev]'); if(!b) return; doSwitch(evMeta(EVENTS[+b.dataset.ev])); });
 $('pickPrev').addEventListener('click', e => {
   const f = e.target.closest('[data-forget]');
-  if(f){ if(confirm('Να διαγραφούν από τη συσκευή τα δεδομένα αυτού του τουρνουά (Αρχική Λίστα, πρόγραμμα, πληρωμές, φύλλο πληρωμής);')){ BVTour.forget(f.dataset.forget); renderPrev(); } return; }
+  if(f){ if(confirm('Διαγραφή αυτού του τουρνουά από τη συσκευή, μαζί με όλα τα δεδομένα του (λίστα, πληρωμές, λίστα ελέγχου, αναφορά κ.λπ.); Δεν αναιρείται.')){ BVTour.forget(f.dataset.forget); renderPrev(); } return; }
   const b = e.target.closest('[data-prev]'); if(!b) return;
   const m = BVTour.list().find(x => x.id === b.dataset.prev); if(m) doSwitch(m);
 });

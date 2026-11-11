@@ -164,7 +164,30 @@
   }
 
   function list(){ const B = buckets(); return Object.values(B).map(b => Object.assign({}, b.meta, { savedAt: b.savedAt })).sort((a, b) => String(b.from).localeCompare(String(a.from)) || b.savedAt - a.savedAt); }
-  function forget(id){ const B = buckets(); delete B[id]; write(BUCKETS, B); }
+  // Διαγραφή τουρνουά από τη συσκευή (ενεργού ή προηγούμενου), με τη λίστα ελέγχου και την αναφορά του
+  function forget(id){
+    const B = buckets(); delete B[id]; write(BUCKETS, B);
+    const c = read('checklist_v1');
+    if(c && Array.isArray(c.tournaments)){
+      c.tournaments = c.tournaments.filter(x => x.tourId !== id);
+      if(!c.tournaments.some(x => x.id === c.current)) c.current = c.tournaments[0] ? c.tournaments[0].id : null;
+      write('checklist_v1', c);
+    }
+    const R = read('supervisorReport_v1');
+    if(R && Array.isArray(R.reports)){
+      R.reports = R.reports.filter(x => x.tourId !== id);
+      if(!R.reports.some(x => x.id === R.current)) R.current = R.reports[0] ? R.reports[0].id : null;
+      write('supervisorReport_v1', R);
+    }
+    const t = get();
+    if(t && t.id === id){
+      const pay = read('payments_v1') || {};
+      SWAP.forEach(k => localStorage.removeItem(k));
+      // ρυθμίσεις σεζόν μένουν για το επόμενο τουρνουά
+      write('payments_v1', { fee: pay.fee != null ? pay.fee : 40, per: pay.per || 'team', regFee: pay.regFee || '', regList: pay.regList || [], teams:{ MEN:[], WOMEN:[] } });
+      localStorage.removeItem(ACTIVE);
+    }
+  }
   // Όλα τα δεδομένα του ενεργού τουρνουά (για αρχείο σεζόν)
   function bundle(){
     const t = get(), d = {}; SWAP.forEach(k => { const v = read(k); if(v != null) d[k] = v; });
