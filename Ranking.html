@@ -1054,13 +1054,12 @@ function renderAthleteCard(name){
     return { t, v, e, pl: placeIn(t.name, v), partner: partnerIn(name, t.name, v, e) };
   });
   const played = rows.filter(x => !x.none);
-  const best = played.length ? played.reduce((a, b) => a.pl.from <= b.pl.from ? a : b) : null;
   const stat = (v, l) => `<div class="ac-stat"><b>${v}</b><span>${l}</span></div>`;
   document.getElementById('acStats').innerHTML =
     stat(pts ? pts.total : 0, 'πόντοι') +
     stat(hasPrizes() ? fmtEur(eur ? eur.total : 0) : '—', 'έπαθλα') +
     stat(played.length + '/' + tours.length, 'τουρνουά') +
-    stat(best ? best.pl.label + 'η' : '—', 'καλύτερη θέση');
+    stat(r ? '#' + r : '—', 'ατομική θέση');
   document.getElementById('acChart').innerHTML = chartSVG(rankHistory(name), tours);
   document.getElementById('acTours').innerHTML = rows.map((x, i) => {
     const meta = [x.t.date, x.t.coef != null ? 'συντ. ' + String(x.t.coef).replace('.', ',') : ''].filter(Boolean).join(' · ');
