@@ -24,7 +24,7 @@
   .prow{display:flex; align-items:center; gap:11px; padding:11px 2px; border-bottom:1px solid rgba(15,36,56,0.07); text-decoration:none; color:inherit;}
   .prow .dot{width:22px; height:22px; flex:none; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800;}
   .dot.done{background:var(--ok); color:#fff;} .dot.doing{background:var(--warn-bg); color:var(--warn); border:2px solid var(--warn);}
-  .dot.todo{border:2px solid rgba(15,36,56,0.25);} .dot.info{background:var(--accent-bg); color:var(--navy-2);}
+  .dot.todo{border:2px solid rgba(15,36,56,0.25); color:var(--ink-soft);} .dot.info{background:var(--accent-bg); color:var(--navy-2);}
   .prow .tx{flex:1; min-width:0;} .prow .tx b{display:block; font-size:15px;} .prow .tx span{font-size:13px; color:var(--ink-soft);}
   .prow .ar{color:rgba(15,36,56,0.35); font-size:20px;}
   .pick{display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-top:8px; cursor:pointer;}
@@ -133,7 +133,7 @@
 <script src="word-export.js"></script>
 <script src="archive.js"></script>
 <script src="calendar-data.js"></script>
-<script src="tournament.js"></script>
+<script src="tournament.js" data-bar="nav"></script>
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -153,8 +153,8 @@ function renderActive(){
   const cd = t.closedAt ? `<span class="countdown closed">✓ Έκλεισε ${new Date(t.closedAt).toLocaleDateString('el-GR')}</span>`
     : n == null ? '' : n === 0 ? '<span class="countdown">Σε εξέλιξη</span>' : n > 0 ? `<span class="countdown">Σε ${n} ${n === 1 ? 'ημέρα' : 'ημέρες'}</span>` : '<span class="countdown">Ολοκληρώθηκε</span>';
   const meta = [BVTour.rangeShort(t) + (t.from ? ' ' + t.from.slice(0, 4) : ''), t.place, t.coef != null ? 'συντελεστής ' + String(t.coef).replace('.', ',') : '', t.cats].filter(Boolean).map(esc).join(' · ');
-  const prog = BVTour.progress().map(p => `<a class="prow" href="${p.href}"><span class="dot ${p.state}">${p.state === 'done' ? '✓' : p.state === 'info' ? 'i' : ''}</span>
-    <span class="tx"><b>${p.label}</b><span>${esc(p.text)}</span></span><span class="ar">›</span></a>`).join('');
+  const prog = BVTour.steps().filter(p => p.k !== 'tour').map(p => `<a class="prow" href="${p.href}"><span class="dot ${p.state}">${p.state === 'done' ? '✓' : p.num}</span>
+    <span class="tx"><b>${p.n}</b><span>${esc(p.text)}</span></span><span class="ar">›</span></a>`).join('');
   $('activeCard').innerHTML = `<h2>Ενεργό τουρνουά</h2><h3>${esc(t.name)}</h3><div class="meta">${meta || 'Χωρίς ημερομηνίες'}</div>${cd}
     <div class="prog">${prog}</div>
     <div class="btns"><button class="btn primary" type="button" id="chgBtn">Αλλαγή τουρνουά</button><button class="link" type="button" id="editBtn">Διόρθωση στοιχείων</button></div>`;

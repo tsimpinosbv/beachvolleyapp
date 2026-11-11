@@ -55,3 +55,16 @@ html:not(.bv-admin) .bv-admin-only{display:none !important;}
 .bv-tour-d{color:rgba(11,49,80,.75); white-space:nowrap; flex:none;}
 .bv-tour-c{margin-left:auto; font-weight:700; color:#155a8a; white-space:nowrap; flex:none;}
 @media print{ .bv-tour{display:none !important;} }
+
+/* Πλοήγηση βημάτων τουρνουά (κάτω μέρος κάθε βήματος) */
+.bv-steps{margin:26px 0 8px; font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+.bv-steps-in{background:#fff; border:1px solid rgba(15,36,56,0.12); border-radius:16px; padding:12px; box-shadow:0 4px 14px rgba(18,86,138,0.06);}
+.bv-mark{display:block; width:100%; min-height:52px; border:none; border-radius:13px; background:#22764a; color:#fff; font:700 16.5px 'Space Grotesk','IBM Plex Sans',sans-serif; cursor:pointer;}
+.bv-steps-done{text-align:center; color:#22764a; font-weight:700; font-size:14.5px; padding:6px 0 4px;}
+.bv-undo{border:none; background:none; color:#155a8a; font-weight:700; text-decoration:underline; cursor:pointer; font-size:14px; padding:0;}
+.bv-steps-row{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:10px;}
+.bv-steps-row a{text-decoration:none; font-weight:700; font-size:14px; min-height:44px; display:inline-flex; align-items:center;}
+.bv-prev{color:rgba(15,36,56,0.70);}
+.bv-next{color:#fff !important; background:#0b3150; border-radius:11px; padding:0 14px; text-align:right;}
+@media print{ .bv-steps{display:none !important;} }
+body > .bv-steps{max-width:860px; margin:26px auto 24px; padding:0 16px;}

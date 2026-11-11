@@ -99,6 +99,28 @@
     .tile .d, .tile .arr{display:none;}
     .t{font-size:15.5px;}
   }
+
+  /* ΒΗΜΑΤΑ ΤΟΥΡΝΟΥΑ */
+  .steps .tour{padding:16px 14px 8px;}
+  .sbar{height:6px; background:#e6edf3; border-radius:999px; margin:12px 0 0; overflow:hidden;}
+  .sbar i{display:block; height:100%; background:#22764a; border-radius:999px;}
+  .go-next{display:grid; grid-template-columns:1fr auto; grid-template-rows:auto auto; align-items:center; column-gap:10px; margin-top:12px; padding:12px 14px; border-radius:14px; background:var(--navy); color:#fff; text-decoration:none;}
+  .go-next span{font-size:12px; font-weight:700; opacity:.8; text-transform:uppercase; letter-spacing:.05em;}
+  .go-next b{grid-column:1; font-family:'Space Grotesk',sans-serif; font-size:19px;}
+  .go-next em{grid-column:2; grid-row:1/3; font-style:normal; font-weight:700; background:#fff; color:var(--navy); border-radius:10px; padding:9px 12px; font-size:14px;}
+  .go-next.done{display:block; background:#e5f4ec; color:#22764a; text-align:center;}
+  .stp{list-style:none; margin:12px 0 0; padding:0;}
+  .stp li{position:relative;}
+  .stp li:not(:last-child)::before{content:''; position:absolute; left:15px; top:40px; bottom:-6px; width:2px; background:#dde6ee;}
+  .stp li.done:not(:last-child)::before{background:#9fd0b4;}
+  .stp a{display:flex; align-items:center; gap:12px; padding:8px 0; text-decoration:none; color:inherit; position:relative;}
+  .stp .num{width:32px; height:32px; flex:none; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; background:#fff; border:2px solid #cfdae4; color:var(--ink-soft); position:relative; z-index:1;}
+  .stp li.done .num{background:#22764a; border-color:#22764a; color:#fff;}
+  .stp li.doing .num{border-color:#a85a00; color:#a85a00; background:#fff2dc;}
+  .stp li.now .num{background:var(--navy); border-color:var(--navy); color:#fff; box-shadow:0 0 0 4px rgba(13,58,92,0.15);}
+  .stp .tx{flex:1; min-width:0;} .stp .tx b{display:block; font-size:15px;} .stp .tx span{display:block; font-size:12.5px; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .stp li.done .tx b{color:var(--ink-soft);}
+  .stp .ar{color:rgba(15,36,56,0.3); font-size:20px;}
 </style>
 <script src="bv-admin.js"></script>
 </head>
@@ -121,62 +143,7 @@
 </header>
 
 <main class="wrap">
-  <div id="tourCard"></div>
-  <section class="group s1">
-    <h2>Οργάνωση τουρνουά</h2>
-    <div class="tiles">
-    <a class="tile" href="EntryList.html">
-      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 4h10M9 9h10M9 14h10M9 19h10"/><path d="M4 4h1M4 9h1M4 14h1M4 19h1"/></svg></span>
-      <span class="txt"><span class="t">Αρχική Λίστα</span><span class="d">Δηλώσεις → βαθμοί, σειρά ομάδων, Excel</span></span>
-      <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-    </a>
-    <a class="tile" href="PoolDraw.html">
-      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><circle cx="7" cy="17" r="3"/><circle cx="17" cy="17" r="3"/></svg></span>
-      <span class="txt"><span class="t">Κλήρωση Ομίλων</span><span class="d">Όμιλοι με seeding κατά CEV</span></span>
-      <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-    </a>
-    <a class="tile" href="Schedules.html">
-      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4.5" width="18" height="16" rx="2"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6.5"/><line x1="16" y1="2.5" x2="16" y2="6.5"/><line x1="7.5" y1="13" x2="7.5" y2="13.01"/><line x1="12" y1="13" x2="12" y2="13.01"/><line x1="16.5" y1="13" x2="16.5" y2="13.01"/></svg></span>
-      <span class="txt"><span class="t">Πρόγραμμα Αγώνων</span><span class="d">Ώρες, γήπεδα και σειρά αγώνων</span></span>
-      <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-    </a>
-    <a class="tile" href="Checklist.html">
-      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="M8.5 13l2.5 2.5 4.5-5"/></svg></span>
-      <span class="txt"><span class="t">Λίστα Ελέγχου</span><span class="d">Πριν, κατά και μετά το τουρνουά</span></span>
-      <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-    </a>
-    <a class="tile" href="Payments.html">
-      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="13" rx="2.5"/><path d="M2.5 10h19"/><path d="M6.5 15h4"/></svg></span>
-      <span class="txt"><span class="t">Συμμετοχές & Πληρωμές</span><span class="d">Παράβολα: ποιοι πλήρωσαν, ποιοι χρωστάνε</span></span>
-      <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-    </a>
-    </div>
-  </section>
-  <section class="group s4">
-    <h2>Μετά το τουρνουά</h2>
-    <div class="tiles">
-    <a class="tile" href="Results.html">
-      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></span>
-      <span class="txt"><span class="t">Αποτελέσματα & Βαθμολογία</span><span class="d">Τελικές θέσεις → πόντοι, έπαθλα, Ranking.xlsx</span></span>
-      <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-    </a>
-    <a class="tile" href="PrizeSheet.html">
-      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h4"/><path d="M14 17l1.5 1.5L18 16"/></svg></span>
-      <span class="txt"><span class="t">Φύλλο Πληρωμής Επάθλων</span><span class="d">Θέσεις → ποσά ανά αθλητή, με υπογραφές (PDF)</span></span>
-      <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-    </a>
-    <a class="tile" href="Report.html">
-      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>
-      <span class="txt"><span class="t">Αναφορά Supervisor</span><span class="d">Περιστατικά, καιρός, εγκαταστάσεις → PDF / Word</span></span>
-      <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-    </a>
-    <a class="tile bv-admin-only" href="Archive.html">
-      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M10 13h4"/></svg></span>
-      <span class="txt"><span class="t">Αρχείο Σεζόν</span><span class="d">Αναφορές και φύλλα πληρωμής ανά σεζόν</span></span>
-      <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-    </a>
-    </div>
-  </section>
+  <section class="steps" id="steps" aria-label="Βήματα τουρνουά"></section>
   <section class="group s2">
     <h2>Σεζόν</h2>
     <div class="tiles">
@@ -198,6 +165,11 @@
     <a class="tile" href="Prices.html">
       <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15.5 6.5c-1.1-1-2.5-1.6-4-1.6-3.4 0-6.1 2.9-6.1 6.6s2.7 6.6 6.1 6.6c1.5 0 2.9-.6 4-1.6"/><path d="M3.5 10h8M3.5 13.2h7"/></svg></span>
       <span class="txt"><span class="t">Υπολογισμός Επάθλων</span><span class="d">Χρηματικό έπαθλο ανά θέση</span></span>
+      <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
+    <a class="tile bv-admin-only" href="Archive.html">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M10 13h4"/></svg></span>
+      <span class="txt"><span class="t">Αρχείο Σεζόν</span><span class="d">Αναφορές και φύλλα πληρωμής ανά σεζόν</span></span>
       <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
     </a>
     </div>
@@ -294,20 +266,27 @@ if ('serviceWorker' in navigator) {
 <script src="tournament.js"></script>
 <script>
 (function(){
-  const box = document.getElementById('tourCard'), t = BVTour.get();
+  const box = document.getElementById('steps'), t = BVTour.get(), all = BVTour.steps();
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  if(!t){
+  const next = all.find(s => s.next), doneN = all.filter(s => s.state === 'done').length;
+  let head;
+  if(t){
+    const n = BVTour.daysTo(t);
+    const cd = t.closedAt ? '<div class="tour-cd live"><b>✓</b><span>έκλεισε</span></div>' : n == null ? '' : n === 0 ? '<div class="tour-cd live"><b>●</b><span>τώρα</span></div>'
+      : n > 0 ? `<div class="tour-cd"><b>${n}</b><span>${n === 1 ? 'ημέρα' : 'ημέρες'}</span></div>` : '';
+    head = `<a class="tour-top" href="Tournament.html"><div><div class="tour-k">Ενεργό τουρνουά</div><div class="tour-n">${esc(t.name)}</div>
+      <div class="tour-m">${[BVTour.rangeShort(t), t.place].filter(Boolean).map(esc).join(' · ')}</div></div>${cd}</a>`;
+  } else {
     const d0 = new Date(); d0.setHours(0,0,0,0); const nx = BVCal.cached().find(e => e.to >= d0);
-    box.innerHTML = `<a class="tour empty-t" href="Tournament.html"><span class="t2"><b>Διάλεξε τουρνουά</b><span>${nx ? 'Επόμενο: ' + esc(nx.name) + '. ' : ''}Όνομα, ημερομηνίες και τόπος μπαίνουν μόνα τους σε όλα τα εργαλεία.</span></span><svg class="arr" style="color:#155a8a" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></a>`;
-    return;
+    head = `<div class="tour-k">Τουρνουά</div><div class="tour-n">Ξεκίνα από το βήμα 1</div><div class="tour-m">${nx ? 'Επόμενο στο ημερολόγιο: ' + esc(nx.name) : 'Διάλεξε τουρνουά και τα στοιχεία του μπαίνουν παντού.'}</div>`;
   }
-  const n = BVTour.daysTo(t);
-  const cd = t.closedAt ? '<div class="tour-cd live"><b>✓</b><span>έκλεισε</span></div>' : n == null ? '' : n === 0 ? '<div class="tour-cd live"><b>●</b><span>τώρα</span></div>'
-    : n > 0 ? `<div class="tour-cd"><b>${n}</b><span>${n === 1 ? 'ημέρα' : 'ημέρες'}</span></div>` : '';
-  const rows = BVTour.progress().map(p => `<a class="tp" href="${p.href}"><span class="dot ${p.state}">${p.state === 'done' ? '✓' : p.state === 'info' ? 'i' : ''}</span><b>${p.label}</b><span class="s">${esc(p.text)}</span></a>`).join('');
-  box.innerHTML = `<section class="tour"><a class="tour-top" href="Tournament.html"><div><div class="tour-k">Ενεργό τουρνουά</div><div class="tour-n">${esc(t.name)}</div>
-    <div class="tour-m">${[BVTour.rangeShort(t), t.place].filter(Boolean).map(esc).join(' · ')}</div></div>${cd}</a>
-    <div class="tour-p">${rows}</div><div class="tour-f"><a href="Tournament.html">Αλλαγή τουρνουά ›</a><a class="bv-admin-only" href="Tournament.html#closeCard">Κλείσιμο ›</a></div></section>`;
+  const bar = `<div class="sbar" role="progressbar" aria-valuemin="0" aria-valuemax="${all.length}" aria-valuenow="${doneN}" aria-label="Πρόοδος βημάτων"><i style="width:${Math.round(doneN * 100 / all.length)}%"></i></div>`;
+  const go = next ? `<a class="go-next" href="${next.href}"><span>Βήμα ${next.num} από ${all.length}</span><b>${esc(next.n)}</b><em>Συνέχεια ›</em></a>`
+    : `<div class="go-next done"><b>✓ Όλα τα βήματα ολοκληρώθηκαν</b></div>`;
+  const list = all.map(s => `<li class="${s.state}${s.next ? ' now' : ''}"><a href="${s.href}"><span class="num">${s.state === 'done' ? '✓' : s.num}</span>
+      <span class="tx"><b>${esc(s.n)}</b><span>${esc(s.text)}</span></span><span class="ar">›</span></a></li>`).join('');
+  box.innerHTML = `<div class="tour">${head}${bar}${go}<ol class="stp">${list}</ol>
+    ${t ? '<div class="tour-f"><a href="Tournament.html">Αλλαγή τουρνουά ›</a></div>' : ''}</div>`;
 })();
 </script>
 </body>

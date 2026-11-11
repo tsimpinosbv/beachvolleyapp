@@ -213,14 +213,76 @@
   }
 
   // ---- λωρίδα «Τουρνουά: …» κάτω από τη μπάρα (σελίδες με data-bar) ----
-  function bar(){
+  // ---- βήματα τουρνουά ----
+  const STEPS = [
+    { k:'tour',   n:'Τουρνουά',              href:'Tournament.html',   d:'Διάλεξε το τουρνουά που δουλεύεις' },
+    { k:'entry',  n:'Αρχική Λίστα',          href:'EntryList.html',    d:'Δηλώσεις και seeding από τη βαθμολογία' },
+    { k:'draw',   n:'Κλήρωση Ομίλων',        href:'PoolDraw.html',     d:'Όμιλοι με seeding', manual:true },
+    { k:'sched',  n:'Πρόγραμμα Αγώνων',      href:'Schedules.html',    d:'Γήπεδα, ώρες και αγώνες', manual:true },
+    { k:'pay',    n:'Συμμετοχές & Πληρωμές', href:'Payments.html',     d:'Ποιος πλήρωσε συμμετοχή και μητρώο' },
+    { k:'check',  n:'Λίστα Ελέγχου',         href:'Checklist.html',    d:'Όλοι οι έλεγχοι του supervisor' },
+    { k:'prize',  n:'Φύλλο Πληρωμής Επάθλων', href:'PrizeSheet.html',  d:'Θέσεις, ποσά και υπογραφές' },
+    { k:'report', n:'Αναφορά Supervisor',    href:'Report.html',       d:'Η αναφορά για την ομοσπονδία' },
+    { k:'close',  n:'Κλείσιμο τουρνουά',     href:'Tournament.html#closeCard', d:'Όλα στο αρχείο σεζόν', admin:true }
+  ];
+  const isAdmin = () => document.documentElement.classList.contains('bv-admin');
+  // Βήματα με κατάσταση: done (αυτόματα ή «Ολοκληρώθηκε»), doing, todo
+  function steps(){
+    const t = get(), P = {}, done = (t && t.doneSteps) || {};
+    progress().forEach(x => P[x.k] = x);
+    const out = STEPS.filter(s => !s.admin || isAdmin()).map((s, i) => {
+      const p = P[s.k] || {};
+      let state = p.state === 'info' ? 'todo' : (p.state || 'todo'), text = p.text || s.d;
+      if(s.k === 'tour'){ state = t ? 'done' : 'todo'; text = t ? t.name + (t.from ? ' · ' + rangeShort(t) : '') : s.d; }
+      if(s.k === 'draw'){ text = s.d; }
+      if(s.k === 'close'){ state = t && t.closedAt ? 'done' : 'todo'; text = t && t.closedAt ? 'Στο αρχείο σεζόν' : s.d; }
+      if(done[s.k] && state !== 'done'){ state = 'done'; }
+      return Object.assign({}, s, { num: 0, state, text, manualDone: !!done[s.k] });
+    });
+    out.forEach((s, i) => s.num = i + 1);
+    const next = out.find(s => s.state !== 'done');
+    if(next) next.next = true;
+    return out;
+  }
+  function markDone(k, v){ const t = get(); if(!t) return; t.doneSteps = t.doneSteps || {}; if(v) t.doneSteps[k] = Date.now(); else delete t.doneSteps[k]; write(ACTIVE, t); }
+  function pageStep(){
+    const f = (location.pathname.split('/').pop() || 'index.html');
+    const hash = location.hash;
+    return STEPS.find(s => s.href === f || (s.href.split('#')[0] === f && !s.href.includes('#')));
+  }
+
+  const escH = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  // Πάνω λωρίδα: «Βήμα 3 από 9 · Κλήρωση Ομίλων» + τουρνουά. Κάτω: Προηγούμενο / Ολοκληρώθηκε → Επόμενο
+  function bar(mode){
     const nav = document.querySelector('.bv-topbar'); if(!nav || document.querySelector('.bv-tour')) return;
-    const t = get(), a = document.createElement('a');
-    a.className = 'bv-tour'; a.href = 'Tournament.html';
-    const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-    a.innerHTML = t ? `<span class="bv-tour-k">Τουρνουά</span><b>${esc(t.name)}</b><span class="bv-tour-d">${esc(rangeShort(t))}</span><span class="bv-tour-c">Αλλαγή ›</span>`
-                    : `<span class="bv-tour-k">Τουρνουά</span><b>Δεν έχει οριστεί</b><span class="bv-tour-c">Ορισμός ›</span>`;
-    nav.insertAdjacentElement('afterend', a);
+    const t = get(), all = steps(), me = pageStep(), cur = me && all.find(s => s.k === me.k);
+    const idx = cur ? all.indexOf(cur) : -1, prev = all[idx - 1], nxt = all[idx + 1];
+    if(mode !== 'nav'){
+      const a = document.createElement('a');
+      a.className = 'bv-tour'; a.href = 'index.html#steps'; a.lang = 'el';
+      a.innerHTML = (cur ? `<span class="bv-tour-k">Βήμα ${cur.num}/${all.length}</span>` : '<span class="bv-tour-k">Τουρνουά</span>')
+        + (t ? `<b>${escH(t.name)}</b><span class="bv-tour-d">${escH(rangeShort(t))}</span>` : '<b>Δεν έχει οριστεί τουρνουά</b>')
+        + '<span class="bv-tour-c">Βήματα ›</span>';
+      if(!t) a.href = 'Tournament.html';
+      nav.insertAdjacentElement('afterend', a);
+    }
+    if(cur){
+      const box = document.createElement('nav'); box.className = 'bv-steps'; box.lang = 'el'; box.setAttribute('aria-label', 'Βήματα τουρνουά');
+      const nextHref = nxt ? nxt.href : 'index.html';
+      box.innerHTML = `<div class="bv-steps-in">
+        ${t && cur.k !== 'tour' && cur.k !== 'close' ? (cur.state === 'done'
+          ? `<div class="bv-steps-done">✓ Το βήμα ${cur.num} ολοκληρώθηκε${cur.manualDone ? ' · <button type="button" class="bv-undo">Αναίρεση</button>' : ''}</div>`
+          : `<button type="button" class="bv-mark">✓ Ολοκλήρωσα το βήμα ${cur.num}</button>`) : ''}
+        <div class="bv-steps-row">
+          ${prev ? `<a class="bv-prev" href="${prev.href}">‹ ${escH(prev.n)}</a>` : '<span></span>'}
+          ${nxt ? `<a class="bv-next" href="${nextHref}">Βήμα ${nxt.num}: ${escH(nxt.n)} ›</a>` : '<a class="bv-next" href="index.html">Τέλος ›</a>'}
+        </div></div>`;
+      (document.querySelector('main') || document.body).appendChild(box);
+      const m = box.querySelector('.bv-mark');
+      if(m) m.onclick = () => { markDone(cur.k, true); location.href = nextHref; };
+      const u = box.querySelector('.bv-undo');
+      if(u) u.onclick = () => { markDone(cur.k, false); location.reload(); };
+    }
     // Το «Νέο τουρνουά» μιας σελίδας θα έσβηνε τα δεδομένα του ενεργού: πάμε στη σελίδα Τουρνουά
     document.addEventListener('click', e => {
       const b = e.target.closest('#clearBtn'); if(!b || !get()) return;
@@ -246,8 +308,9 @@
 
   const me = document.currentScript;
   if(me && me.hasAttribute('data-bar')){
-    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bar); else bar();
+    const mode = me.getAttribute('data-bar'), go = () => bar(mode);
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
   }
 
-  window.BVTour = { get, switchTo, update, propagate, list, forget, bundle, restoreBundle, progress, backup, restore, makeMeta, datesText, rangeShort, daysTo, iso, SWAP };
+  window.BVTour = { steps, markDone, STEPS, get, switchTo, update, propagate, list, forget, bundle, restoreBundle, progress, backup, restore, makeMeta, datesText, rangeShort, daysTo, iso, SWAP };
 })();
