@@ -318,6 +318,7 @@
 
     <div class="btn-row">
       <button class="btn-primary" onclick="buildTeamInputs()">Set up team list</button>
+      <button class="btn-ghost" type="button" onclick="resetAll()">↺ Reset</button>
     </div>
     <div id="setupMsg" class="msg"></div>
   </div>
@@ -666,6 +667,23 @@ function handleFileUpload(evt){
     evt.target.value = '';
   };
   reader.readAsArrayBuffer(file);
+}
+
+function resetAll(){
+  if(!confirm('Reset: clear the uploaded list, all teams and the pool draw?')) return;
+  document.getElementById('numTeams').value = 16;
+  document.getElementById('numPools').value = 4;
+  document.getElementById('hostCountry').value = '';
+  document.getElementById('enforceFed').checked = true;
+  document.getElementById('enforceOrganiser').checked = true;
+  document.getElementById('fileUpload').value = '';
+  document.getElementById('teamsBody').innerHTML = '';
+  ['teamsCard','resultsCard'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  ['uploadMsg','setupMsg','teamsMsg','resultsMsg'].forEach(clearMsg);
+  document.getElementById('poolsGrid').innerHTML = '';
+  document.getElementById('overviewTable').innerHTML = '';
+  currentDraw = null;
+  window.scrollTo({ top:0, behavior:'smooth' });
 }
 
 function escapeHtml(v){

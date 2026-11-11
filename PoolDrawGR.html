@@ -58,10 +58,10 @@
     <p class="src" id="src" style="margin-top:10px"></p>
     <div class="teams" id="teams"></div>
     <div class="btns">
-      <button class="btn" type="button" id="reload">↻ Ξανά από την Αρχική Λίστα</button>
+      <button class="btn" type="button" id="reload">↺ Reset</button>
       <button class="btn ghost" type="button" id="addPh">+ Κενή θέση</button>
     </div>
-    <p class="msg">Πάτα ✕ για να βγει μια ομάδα από την κλήρωση. Η «Κενή θέση» είναι για ομάδα που θα έρθει από προκριματικά ή wild card (μπαίνει στο τέλος).</p>
+    <p class="msg">Πάτα ✕ για να βγει μια ομάδα από την κλήρωση. Το Reset τα γυρίζει όλα όπως στην Αρχική Λίστα. Η «Κενή θέση» είναι για ομάδα που θα έρθει από προκριματικά ή wild card (μπαίνει στο τέλος).</p>
   </section>
 
   <section class="card">
@@ -82,6 +82,7 @@
       <button class="btn primary" type="button" id="xlsBtn">⬇ Excel</button>
       <button class="btn" type="button" id="pdfBtn">PDF</button>
       <button class="btn ghost" type="button" id="redrawBtn" hidden>Νέα κλήρωση ισοβαθμιών</button>
+      <button class="btn ghost" type="button" onclick="document.getElementById('reload').click()">↺ Reset</button>
     </div>
   </section>
 
@@ -175,8 +176,8 @@ $('teams').addEventListener('click', e => {
 });
 $('teams').addEventListener('input', e => { const i = e.target.closest('[data-ph]'); if(!i) return; const t = C().teams.find(x => x.id === i.dataset.ph); t.name = i.value; C().pools = null; save(); $('resCard').hidden = true; });
 $('reload').addEventListener('click', () => {
-  if(C() && C().pools && !confirm('Η κλήρωση θα σβηστεί και οι ομάδες θα ξαναφορτωθούν από την Αρχική Λίστα. Συνέχεια;')) return;
-  S[S.cat] = fromEntryList(S.cat); save(); render(); toast('Φορτώθηκαν ' + C().teams.length + ' ομάδες');
+  if(!confirm('Reset ' + CAT[S.cat] + ': σβήνονται η κλήρωση και οι αλλαγές (ομάδες που έβγαλες, κενές θέσεις, αριθμός ομίλων) και οι ομάδες ξαναφορτώνονται από την Αρχική Λίστα. Συνέχεια;')) return;
+  S[S.cat] = fromEntryList(S.cat); save(); render(); window.scrollTo({ top:0, behavior:'smooth' }); toast('Reset: ' + C().teams.length + ' ομάδες από την Αρχική Λίστα');
 });
 $('addPh').addEventListener('click', () => { const c = C(), k = c.teams.filter(t => t.ph).length + 1;
   c.teams.push({ id: 'p' + Date.now(), name: 'Προκριματικά ' + k, pts: null, ph: true }); c.pools = null; save(); render(); });
