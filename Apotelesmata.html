@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Αποτελέσματα Τουρνουά — BV Supervisor Tools</title>
+<meta name="description" content="Τελική κατάταξη των τουρνουά beach volley: θέσεις και πόντοι ανά κατηγορία.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d3a5c">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tools.css">
+<style>
+  .seasons{display:flex; gap:6px; flex-wrap:wrap;}
+  .seasons button{border:1.5px solid var(--line); background:#fff; border-radius:999px; padding:0 16px; min-height:40px; font-weight:700; font-size:15px; color:var(--ink-soft); cursor:pointer;}
+  .seasons button.on{background:var(--navy); border-color:var(--navy); color:#fff;}
+  .tlist{display:flex; flex-direction:column; gap:8px; margin-top:12px;}
+  .tl{display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:#fff; border:1px solid var(--line); border-radius:12px; padding:11px 12px; cursor:pointer;}
+  .tl.on{border-color:var(--navy-2); background:var(--accent-bg);}
+  .tl .n{flex:1; min-width:0;} .tl .n b{display:block; font-size:15.5px;} .tl .n span{font-size:13px; color:var(--ink-soft);}
+  .tl .ar{color:rgba(15,36,56,.35); font-size:20px;}
+  .head h2{margin:0; font-family:'Space Grotesk',sans-serif; font-size:22px; line-height:1.2;}
+  .head p{margin:4px 0 0; color:var(--ink-soft); font-size:14px;}
+  table.st{width:100%; border-collapse:collapse; margin-top:12px; font-size:14.5px;}
+  table.st th{text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); padding:6px 8px; border-bottom:2px solid var(--line);}
+  table.st td{padding:9px 8px; border-bottom:1px solid rgba(15,36,56,.07); vertical-align:top;}
+  table.st td.p{width:52px; font-weight:800; color:var(--navy); white-space:nowrap;}
+  table.st td.pt{width:70px; text-align:right; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  table.st th.pt{text-align:right;}
+  table.st tr.m1 td.p{color:#b8860b;} table.st tr.m2 td.p{color:#7d8790;} table.st tr.m3 td.p{color:#a0522d;}
+  table.st td .b{display:block; color:var(--ink-soft);}
+  .loading{color:var(--ink-soft); padding:14px 2px;}
+</style>
+<script src="bv-admin.js"></script>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+<nav class="bv-topbar" aria-label="Πλοήγηση"><a class="bv-home" href="index.html" aria-label="Αρχική" title="Αρχική"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9v11h13V9"/><path d="M10 20v-6h4v6"/></svg></a><a class="bv-brand" href="index.html"><img src="icons/logo.png" alt="">Supervisor Tools</a></nav>
+<header class="hero">
+  <div class="wrap">
+    <h1>Αποτελέσματα Τουρνουά</h1>
+    <p>Η τελική κατάταξη κάθε τουρνουά: θέσεις και πόντοι ανά αθλητή, για Άνδρες και Γυναίκες.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card" id="pickCard">
+    <h2>Σεζόν</h2>
+    <div class="seasons" id="seasons"></div>
+    <div class="tlist" id="tlist"><p class="loading">Φόρτωση…</p></div>
+    <div class="btns"><button class="btn ghost" type="button" id="seasonXls" hidden>⬇ Excel όλης της σεζόν</button></div>
+  </section>
+
+  <section class="card" id="resCard" hidden>
+    <div class="head" id="head"></div>
+    <div class="seg" id="catSeg" style="margin-top:12px">
+      <button type="button" data-c="MEN" class="on">Άνδρες</button>
+      <button type="button" data-c="WOMEN">Γυναίκες</button>
+    </div>
+    <table class="st" id="table"></table>
+    <div class="btns">
+      <button class="btn primary" type="button" id="xlsBtn">⬇ Excel</button>
+      <button class="btn" type="button" id="shareBtn">Κοινοποίηση</button>
+      <button class="btn ghost" type="button" id="printBtn">PDF</button>
+    </div>
+    <p class="msg" id="upd"></p>
+  </section>
+
+  <footer>Οι πόντοι είναι ανά αθλητή, σύμφωνα με τον πίνακα βαθμολογίας και τον συντελεστή του τουρνουά.</footer>
+</main>
+<div class="toast" id="toast"></div>
+<div class="doc" id="doc"></div>
+
+<script src="vendor/xlsx.full.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600); }
+const CAT = { MEN:'Άνδρες', WOMEN:'Γυναίκες' };
+const fmt = n => Number(n || 0).toLocaleString('el-GR', { maximumFractionDigits:2 });
+let IDX = [], season = null, cur = null, cat = 'MEN';
+const cache = {};
+
+async function getJSON(path){ const r = await fetch(path + (path.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache:'no-store' }); if(!r.ok) throw new Error(r.status); return r.json(); }
+async function tour(e){ if(!cache[e.id]) cache[e.id] = await getJSON(e.file.split('/').map(encodeURIComponent).join('/')); return cache[e.id]; }
+
+async function load(){
+  try{ IDX = await getJSON('results/index.json'); }catch(e){ IDX = []; }
+  const seasons = [...new Set(IDX.map(x => x.season))].sort().reverse();
+  const want = decodeURIComponent(location.hash.slice(1));
+  const hit = IDX.find(x => x.id === want);
+  season = hit ? hit.season : seasons[0] || null;
+  renderPick();
+  if(hit) open(hit, false);
+}
+function renderPick(){
+  const seasons = [...new Set(IDX.map(x => x.season))].sort().reverse();
+  $('seasons').innerHTML = seasons.length ? seasons.map(s => `<button type="button" data-s="${esc(s)}" class="${s === season ? 'on' : ''}">${esc(s)}</button>`).join('')
+    : '<span class="msg" style="margin:0">Δεν έχουν δημοσιευτεί ακόμα αποτελέσματα.</span>';
+  const list = IDX.filter(x => x.season === season);
+  $('tlist').innerHTML = list.map(x => `<button class="tl ${cur && cur.id === x.id ? 'on' : ''}" type="button" data-id="${esc(x.id)}"><span class="n"><b>${esc(x.name)}</b>
+      <span>${[x.dates, x.place].filter(Boolean).map(esc).join(' · ')}</span></span><span class="ar">›</span></button>`).join('');
+  $('seasonXls').hidden = !list.length;
+}
+async function open(e, scroll){
+  cur = e; renderPick();
+  try{
+    const d = await tour(e);
+    if(!d.cats.MEN.length && d.cats.WOMEN.length) cat = 'WOMEN';
+    $('resCard').hidden = false;
+    $('head').innerHTML = `<h2>${esc(d.name)}</h2><p>${[d.dates, d.place, 'σεζόν ' + d.season].filter(Boolean).map(esc).join(' · ')}</p>`;
+    renderTable(d);
+    $('upd').textContent = 'Ενημέρωση: ' + new Date(d.updatedAt).toLocaleString('el-GR', { dateStyle:'short', timeStyle:'short' });
+    history.replaceState(null, '', '#' + encodeURIComponent(e.id));
+    if(scroll !== false) $('resCard').scrollIntoView({ behavior:'smooth', block:'start' });
+  }catch(err){ toast('Δεν φορτώθηκαν τα αποτελέσματα. Δοκίμασε ξανά.'); }
+}
+function renderTable(d){
+  document.querySelectorAll('#catSeg button').forEach(b => { b.classList.toggle('on', b.dataset.c === cat); b.disabled = !d.cats[b.dataset.c].length; });
+  const rows = d.cats[cat];
+  $('table').innerHTML = rows.length ? `<tr><th>Θέση</th><th>Ομάδα</th><th class="pt">Πόντοι</th></tr>` + rows.map(t => `<tr class="m${t.pos <= 3 ? t.pos : ''}"><td class="p">${esc(t.label)}η</td>
+      <td>${esc(t.a)}<span class="b">${esc(t.b)}</span></td><td class="pt">${fmt(t.pts)}</td></tr>`).join('')
+    : '<tr><td class="msg">Δεν υπάρχουν αποτελέσματα για ' + CAT[cat] + '.</td></tr>';
+}
+
+/* ---- Excel ---- */
+function sheetFor(d, c){
+  const rows = [[d.name.toUpperCase() + ' — ' + CAT[c].toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '')], [[d.dates, d.place].filter(Boolean).join(' · ')], [], ['Θέση', 'Αθλητής 1', 'Αθλητής 2', 'Πόντοι (ανά αθλητή)']];
+  d.cats[c].forEach(t => rows.push([t.label, t.a, t.b, t.pts]));
+  const ws = XLSX.utils.aoa_to_sheet(rows); ws['!cols'] = [{ wch:8 }, { wch:30 }, { wch:30 }, { wch:18 }]; return ws;
+}
+const safe = s => String(s).replace(/[\\/:*?"<>|\[\]]+/g, ' ').trim();
+$('xlsBtn').addEventListener('click', async () => {
+  const d = await tour(cur), wb = XLSX.utils.book_new();
+  ['MEN','WOMEN'].forEach(c => { if(d.cats[c].length) XLSX.utils.book_append_sheet(wb, sheetFor(d, c), CAT[c]); });
+  XLSX.writeFile(wb, 'Αποτελέσματα - ' + safe(d.name) + (d.season ? ' ' + d.season : '') + '.xlsx');
+});
+$('seasonXls').addEventListener('click', async () => {
+  const list = IDX.filter(x => x.season === season).slice().reverse(), wb = XLSX.utils.book_new(), used = new Set();
+  for(const e of list){ let d; try{ d = await tour(e); }catch(err){ continue; }
+    ['MEN','WOMEN'].forEach(c => { if(!d.cats[c].length) return;
+      let n = safe(d.name).slice(0, 26) + ' ' + (c === 'MEN' ? 'Α' : 'Γ'), k = 2; while(used.has(n)) n = n.slice(0, 24) + ' ' + (k++); used.add(n);
+      XLSX.utils.book_append_sheet(wb, sheetFor(d, c), n); }); }
+  if(!wb.SheetNames.length){ toast('Δεν υπάρχουν αποτελέσματα'); return; }
+  XLSX.writeFile(wb, 'Αποτελέσματα σεζόν ' + season + '.xlsx');
+});
+
+/* ---- κοινοποίηση / PDF ---- */
+$('shareBtn').addEventListener('click', async () => {
+  const url = location.href.split('#')[0] + '#' + encodeURIComponent(cur.id), title = 'Αποτελέσματα ' + cur.name;
+  try{ if(navigator.share){ await navigator.share({ title, url }); return; } }catch(e){ return; }
+  try{ await navigator.clipboard.writeText(url); toast('Ο σύνδεσμος αντιγράφηκε'); }catch(e){ prompt('Αντέγραψε τον σύνδεσμο:', url); }
+});
+function buildDoc(){
+  const d = cache[cur && cur.id]; if(!d){ $('doc').innerHTML = ''; return; }
+  $('doc').innerHTML = ['MEN','WOMEN'].filter(c => d.cats[c].length).map(c => `<div class="page"><h1>${esc(d.name)} — ${CAT[c]}</h1><p class="sub">${[d.dates, d.place, 'σεζόν ' + d.season].filter(Boolean).map(esc).join(' · ')}</p>
+    <table><tr><th style="width:16mm">Θέση</th><th>Αθλητής 1</th><th>Αθλητής 2</th><th class="r" style="width:24mm">Πόντοι</th></tr>
+    ${d.cats[c].map(t => `<tr><td>${esc(t.label)}η</td><td>${esc(t.a)}</td><td>${esc(t.b)}</td><td class="r">${fmt(t.pts)}</td></tr>`).join('')}</table></div>`).join('');
+}
+$('printBtn').addEventListener('click', () => { buildDoc(); window.print(); });
+window.addEventListener('beforeprint', buildDoc);
+
+$('seasons').addEventListener('click', e => { const b = e.target.closest('[data-s]'); if(!b) return; season = b.dataset.s; renderPick(); });
+$('tlist').addEventListener('click', e => { const b = e.target.closest('[data-id]'); if(!b) return; open(IDX.find(x => x.id === b.dataset.id)); });
+$('catSeg').addEventListener('click', async e => { const b = e.target.closest('button'); if(!b || b.disabled) return; cat = b.dataset.c; renderTable(await tour(cur)); });
+load();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>

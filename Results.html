@@ -404,15 +404,43 @@ $('dlBtn').addEventListener('click', () => {
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([OUT.bytes], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
   a.download = 'Ranking.xlsx'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 });
+/* ============ Δημόσια σελίδα αποτελεσμάτων (μόνο θέσεις και πόντοι, χωρίς ποσά) ============ */
+async function publishPublic(){
+  const m = meta() || {}, name = m.name || 'Τουρνουά', season = String(m.season || new Date().getFullYear());
+  const id = String(m.id || (season + '-' + name)).replace(/[\\/:*?"<>|#%\s]+/g, '-');
+  const cats = {};
+  GS.forEach(g => {
+    const groups = placeGroups(g);
+    cats[g] = S.cats[g].teams.filter(t => t.place).map(t => { const grp = groups.find(x => String(x.start) === String(t.place));
+      return { pos: +t.place, label: grp ? grp.text : String(t.place), a: t.a, b: t.b, pts: athletePoints(g, t.place) }; })
+      .sort((x, y) => x.pos - y.pos || x.a.localeCompare(y.a, 'el'));
+  });
+  const data = { name, dates: m.dates || '', place: m.place || '', from: m.from || '', season, coef: coef('MEN'), updatedAt: new Date().toISOString(), cats };
+  const file = 'results/' + season + '/' + id + '.json', enc = o => new TextEncoder().encode(JSON.stringify(o, null, 1));
+  const r1 = await BVPublish.publish({ path: file, bytes: enc(data), message: 'Αποτελέσματα ' + name + ' (δημόσια σελίδα)' });
+  if(!r1.ok) return r1;
+  let idx = [];
+  try{ idx = JSON.parse(new TextDecoder().decode(await BVPublish.getFile('beachvolleyapp', 'results/index.json'))); }catch(e){ idx = []; }
+  idx = idx.filter(x => x.id !== id);
+  idx.push({ id, season, name, dates: data.dates, place: data.place, from: data.from, file, updatedAt: data.updatedAt,
+    teams: { MEN: cats.MEN.length, WOMEN: cats.WOMEN.length } });
+  idx.sort((a, b) => String(b.from).localeCompare(String(a.from)) || String(b.updatedAt).localeCompare(String(a.updatedAt)));
+  const r2 = await BVPublish.publish({ path: 'results/index.json', bytes: enc(idx), message: 'Λίστα αποτελεσμάτων: ' + name });
+  return r2.ok ? { ok:true, id } : r2;
+}
 $('pubBtn').addEventListener('click', async () => {
   if(!OUT) return;
   const m = meta(), names = OUT.report.map(r => r.a.header).filter((x, i, a) => a.indexOf(x) === i).join(', ');
-  if(!confirm('Να δημοσιευτεί το νέο Ranking.xlsx (' + names + ');\nΗ Ατομική Βαθμολογία θα δείχνει τα νέα στοιχεία σε 1-2 λεπτά.')) return;
+  if(!confirm('Να δημοσιευτεί το νέο Ranking.xlsx (' + names + ');\nΗ Ατομική Βαθμολογία θα δείχνει τα νέα στοιχεία σε 1-2 λεπτά.\n\nΗ τελική κατάταξη (θέσεις και πόντοι, χωρίς ποσά) θα μπει και στη δημόσια σελίδα «Αποτελέσματα Τουρνουά».')) return;
   const b = $('pubBtn'); b.disabled = true; $('pubNote').innerHTML = '<p class="msg">Δημοσίευση…</p>';
   const res = await BVPublish.publish({ path:'Ranking.xlsx', bytes: OUT.bytes, message:'Αποτελέσματα ' + ((m && m.name) || names) + ' στη βαθμολογία (από την εφαρμογή)' });
   b.disabled = false;
   if(res.ok){ S.publishedAt = Date.now(); S.publishedCols = names; save();
-    $('pubNote').innerHTML = `<div class="done-note">✓ Δημοσιεύτηκε. Η <a href="Ranking.html">Ατομική Βαθμολογία</a> θα δείχνει τα νέα στοιχεία σε 1-2 λεπτά.</div>`; toast('✓ Το Ranking.xlsx ενημερώθηκε');
+    const pub = await publishPublic();
+    if(pub.ok){ S.publicId = pub.id; save(); }
+    $('pubNote').innerHTML = `<div class="done-note">✓ Δημοσιεύτηκε. Η <a href="Ranking.html">Ατομική Βαθμολογία</a> θα δείχνει τα νέα στοιχεία σε 1-2 λεπτά.`
+      + (pub.ok ? `<br>✓ Η κατάταξη μπήκε στα <a href="Apotelesmata.html#${encodeURIComponent(pub.id)}">Αποτελέσματα Τουρνουά</a> (δημόσια σελίδα για κοινοποίηση).` : `<br>Η δημόσια σελίδα δεν ενημερώθηκε: ${esc(pub.error || '')}`) + `</div>`;
+    toast('✓ Το Ranking.xlsx ενημερώθηκε');
     setTimeout(loadRanking, 1500);
   } else if(!res.cancelled){ $('pubNote').innerHTML = `<div class="note">${esc(res.error)}</div>`; }
   else $('pubNote').innerHTML = '';
