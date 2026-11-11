@@ -123,6 +123,25 @@
     write(BUCKETS, B); write(ACTIVE, t); fill(t);
     return t;
   }
+  // Reset ενεργού τουρνουά: σβήνει όλα τα δεδομένα του, κρατά το τουρνουά και τις ρυθμίσεις σεζόν
+  function resetActive(){
+    const t = get(); if(!t) return null;
+    const pay = read('payments_v1') || {};
+    SWAP.forEach(k => localStorage.removeItem(k));
+    write('payments_v1', { fee: pay.fee != null ? pay.fee : 40, per: pay.per || 'team', regFee: pay.regFee || '', regList: pay.regList || [], teams:{ MEN:[], WOMEN:[] } });
+    const c = read('checklist_v1');
+    if(c && Array.isArray(c.tournaments)){ c.tournaments.forEach(x => { if(x.tourId === t.id){ x.checks = {}; x.notes = {}; delete x.progress; } }); write('checklist_v1', c); }
+    const R = read('supervisorReport_v1');
+    if(R && Array.isArray(R.reports)){
+      const sup = (R.reports.find(x => x.f && x.f.supervisor) || {}).f;
+      R.reports = R.reports.filter(x => x.tourId !== t.id);
+      R.reports.unshift({ id: uid(), created: Date.now(), f:{ incPay:true, supervisor: sup ? sup.supervisor : '' }, rates:{}, weather:[], incidents:[], tourId: t.id });
+      write('supervisorReport_v1', R);
+    }
+    delete t.doneSteps; delete t.closedAt; write(ACTIVE, t);
+    fill(t);
+    return t;
+  }
   function update(fields){
     const t = get(); if(!t) return null;
     const old = { name: t.name, dates: t.dates, place: t.place };
@@ -315,5 +334,5 @@
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
   }
 
-  window.BVTour = { steps, markDone, STEPS, get, switchTo, update, propagate, list, forget, bundle, restoreBundle, progress, backup, restore, makeMeta, datesText, rangeShort, daysTo, iso, SWAP };
+  window.BVTour = { resetActive, steps, markDone, STEPS, get, switchTo, update, propagate, list, forget, bundle, restoreBundle, progress, backup, restore, makeMeta, datesText, rangeShort, daysTo, iso, SWAP };
 })();

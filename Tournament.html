@@ -157,7 +157,13 @@ function renderActive(){
     <span class="tx"><b>${p.n}</b><span>${esc(p.text)}</span></span><span class="ar">›</span></a>`).join('');
   $('activeCard').innerHTML = `<h2>Ενεργό τουρνουά</h2><h3>${esc(t.name)}</h3><div class="meta">${meta || 'Χωρίς ημερομηνίες'}</div>${cd}
     <div class="prog">${prog}</div>
-    <div class="btns"><button class="btn primary" type="button" id="chgBtn">Αλλαγή τουρνουά</button><button class="link" type="button" id="editBtn">Διόρθωση στοιχείων</button></div>`;
+    <div class="btns"><button class="btn primary" type="button" id="chgBtn">Αλλαγή τουρνουά</button><button class="link" type="button" id="editBtn">Διόρθωση στοιχείων</button></div>
+    <div style="border-top:1px solid var(--line); margin-top:12px; padding-top:4px"><button class="link danger" type="button" id="resetBtn">↺ Reset τουρνουά</button></div>`;
+  $('resetBtn').onclick = () => {
+    if(!confirm('Reset «' + t.name + '»: σβήνονται ΟΛΑ τα δεδομένα του σε αυτή τη συσκευή (Αρχική Λίστα, κλήρωση, πρόγραμμα, πληρωμές, λίστα ελέγχου, φύλλο πληρωμής, αποτελέσματα, αναφορά) και τα βήματα ξεκινούν από την αρχή.\n\nΜένουν: το τουρνουά, η λίστα μητρώου και οι ρυθμίσεις συμμετοχής. Ό,τι υπάρχει στο αρχείο σεζόν δεν αλλάζει.')) return;
+    if(!confirm('Σίγουρα; Δεν αναιρείται.')) return;
+    BVTour.resetActive(); toast('Έγινε reset του «' + t.name + '»'); renderAll();
+  };
   $('chgBtn').onclick = () => { showPick(); };
   $('editBtn').onclick = () => { showPick(); setPick('new'); $('nName').value = t.name; $('nPlace').value = t.place || ''; $('nFrom').value = t.from || ''; $('nTo').value = t.to || '';
     $('nOk').textContent = 'Αποθήκευση στοιχείων'; $('nOk').dataset.edit = t.id; $('pickCard').scrollIntoView({ behavior:'smooth' }); };
